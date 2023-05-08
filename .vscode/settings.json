@@ -1,0 +1,5 @@
+{
+    "rust-analyzer.linkedProjects": [
+        "./programs/dark-bonds/Cargo.toml"
+    ]
+}
