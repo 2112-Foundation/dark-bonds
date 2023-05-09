@@ -14,6 +14,10 @@ declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
 pub mod dark_bonds {
     use super::*;
 
+    pub fn init_ibo_master(ctx: Context<Claim>) -> Result<()> {
+        Ok(())
+    }
+
     pub fn create_ibo(ctx: Context<Claim>) -> Result<()> {
         Ok(())
     }

@@ -14,3 +14,10 @@ pub struct MainIBO {
     // Admin not sure if needed
     pub admin: Pubkey,
 }
+
+impl MainIBO {
+    pub fn init_main_ibo(&mut self, admin: &Pubkey, master_cut: &u64) {
+        self.admin = *admin;
+        self.master_cut = *master_cut;
+    }
+}
