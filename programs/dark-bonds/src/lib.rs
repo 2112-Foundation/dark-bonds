@@ -15,7 +15,12 @@ pub mod dark_bonds {
     use super::*;
 
     pub fn buy_bonds(ctx: Context<BuyBond>) -> Result<()> {
-        instructions::buy_bond::buy_bond(ctx);
+        instructions::buy_bond::buy_bond(ctx, 0, 0);
+        Ok(())
+    }
+
+    pub fn claim(ctx: Context<Claim>) -> Result<()> {
+        instructions::claim::claim(ctx);
         Ok(())
     }
 }
