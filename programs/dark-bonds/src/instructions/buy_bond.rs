@@ -30,14 +30,12 @@ pub struct BuyBond<'info> {
 
 // Extra cut for deposit which goes on to make LP in raydium
 
-pub fn buy_bond(
-    ctx: Context<BuyBond>,
-    stable_amount_liquidity: u64,
-    lock_up_period: u8, // needs to be counter of the lock-up period PDA
-) -> Result<()> {
+pub fn buy_bond(ctx: Context<BuyBond>, stable_amount_liquidity: u64) -> Result<()> {
     let buyer: &mut Signer = &mut ctx.accounts.buyer;
     let lock_up: &mut Account<LockUp> = &mut ctx.accounts.lock_up;
     let ticket: &mut Account<Ticket> = &mut ctx.accounts.ticket;
+
+    // Transfer users liquid to our addreess
 
     // Prior ensure that the lock-up PDA provided has been derived from this IBO account TODO
 
@@ -45,26 +43,7 @@ pub fn buy_bond(
     let total_gains = lock_up.get_total_gain(stable_amount_liquidity);
 
     // Create a new bond instance PDA
-    ticket.create(buyer.key(), lock_up.get_maturity_stamp());
-
-    // Fixed dark price is set in the account for this bond
-
-    // Ensure that it is a correct currency
-
-    // calcualte DARK to increment
-
-    // Transfer USDC to us
-
-    // add to dark_bond_balance
-
-    // Increment total DARK bond ticket calculator
-
-    // Write toal DARK and owner to the new ticket
-    // Transfer that dark to it
-
-    // Need to assemble all the necessery accounts
-
-    // Need to create swapleg struct
+    ticket.new(buyer.key(), lock_up.get_maturity_stamp(), total_gains);
 
     Ok(())
 }

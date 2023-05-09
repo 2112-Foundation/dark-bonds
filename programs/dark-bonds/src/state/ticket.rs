@@ -27,10 +27,11 @@ impl Ticket {
     // Move SPL over and
 
     // Create new bond ticket
-    pub fn create(&mut self, owner: Pubkey, maturity_date: i64) {
+    pub fn new(&mut self, owner: Pubkey, maturity_date: i64, total_gains: u64) {
         self.maturity_date = maturity_date;
         self.owner = owner;
         self.bond_start = Clock::get().unwrap().unix_timestamp;
+        self.total_claimable = total_gains;
     }
 
     // Update last claimed
