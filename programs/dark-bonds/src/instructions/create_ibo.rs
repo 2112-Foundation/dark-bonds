@@ -1,8 +1,5 @@
-use crate::errors::errors::ErrorCode;
 use crate::state::*;
 use anchor_lang::prelude::*;
-
-use anchor_lang::solana_program::clock;
 
 use solana_program::{
     instruction::{AccountMeta, Instruction},
@@ -10,7 +7,7 @@ use solana_program::{
 };
 
 #[derive(Accounts)]
-pub struct InitIBO<'info> {
+pub struct CreateIBO<'info> {
     #[account(mut)]
     pub admin: Signer<'info>,
 
@@ -23,9 +20,8 @@ pub struct InitIBO<'info> {
 }
 
 // Extra cut for deposit which goes on to make LP in raydium
-
-pub fn init_IBO(
-    ctx: Context<InitIBO>,
+pub fn create_ibo(
+    ctx: Context<CreateIBO>,
     fixed_exchange_rate: u64,
     live_date: i64,
     stablecoin: Pubkey,

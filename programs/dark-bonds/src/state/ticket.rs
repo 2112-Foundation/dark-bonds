@@ -11,7 +11,7 @@ pub struct Ticket {
     pub owner: Pubkey,
 
     // Swap: if non zero someone can exucte it with a transfer otherwise not for sale
-    pub swap_price: f64,
+    pub swap_price: u64,
     // Subdivide
     pub total_claimable: u64, // Fixed
 
