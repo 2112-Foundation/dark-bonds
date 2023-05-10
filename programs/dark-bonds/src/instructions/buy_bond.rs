@@ -24,6 +24,15 @@ pub struct BuyBond<'info> {
     pub lockup: Account<'info, LockUp>,
     // Need PDA of the to be derived of some shared register which is incremented
     pub system_program: Program<'info, System>,
+
+
+    // NEED stable coin ATA:
+    // - buyer (from)
+    // - recipient (to)
+
+    // NEED bond coin ATA:
+    // - ibo PDA (from)
+    // - buyer's PDA (to)    
 }
 
 // PDA for acceptable mints
@@ -42,6 +51,10 @@ pub fn buy_bond(ctx: Context<BuyBond>, stable_amount_liquidity: u64) -> Result<(
 
     // Cacluclate total amount to be netted over the whole lock-up period
     let total_gains: u64 = lockup.get_total_gain(stable_amount_liquidity);
+
+
+    // Ensure there are enough tokens TODO
+
     let maturity_stamp: i64 = lockup.get_maturity_stamp();
 
     msg!("total_gains: {:?}",total_gains);

@@ -5,4 +5,6 @@ pub enum ErrorCode {
     WithdrawTooEarly,
     #[msg("Can not add new lockup type")]
     RatesLocked,
+    #[msg("There aren't enought tokens left for this bond allocation. Try again with a smaller amount")]
+    BondsSoldOut,
 }
