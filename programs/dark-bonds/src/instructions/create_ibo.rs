@@ -14,7 +14,7 @@ pub struct CreateIBO<'info> {
     // This needs to be init (along with counter checks)
     pub ibo: Account<'info, IBO>,
 
-    pub main_ibo: Account<'info, MainIBO>,
+    pub main_ibo: Account<'info, Master>,
     // Need PDA of the to be derived of some shared register which is incremented
     pub system_program: Program<'info, System>,
 }
@@ -28,7 +28,7 @@ pub fn create_ibo(
 ) -> Result<()> {
     let admin: &Signer = &mut ctx.accounts.admin;
     let ibo: &mut Account<IBO> = &mut ctx.accounts.ibo;
-    let main_ibo: &mut Account<MainIBO> = &mut ctx.accounts.main_ibo;
+    let main_ibo: &mut Account<Master> = &mut ctx.accounts.main_ibo;
 
     // Counter is incremebted for IBO counter
     main_ibo.ibo_counter += 1;

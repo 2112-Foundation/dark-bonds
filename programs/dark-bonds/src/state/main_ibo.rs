@@ -4,20 +4,13 @@ use anchor_lang::prelude::*;
 // "ibo_counter"
 
 #[account]
-pub struct MainIBO {
+pub struct Master {
     // Counter for all of the IBOs to date
     pub ibo_counter: u32,
 
     // Applied to non-dark IBOs
-    pub master_cut: u64,
+    pub master_cut: u64, // Could be just hardcoded
 
     // Admin not sure if needed
     pub admin: Pubkey,
-}
-
-impl MainIBO {
-    pub fn init_main_ibo(&mut self, admin: &Pubkey, master_cut: &u64) {
-        self.admin = *admin;
-        self.master_cut = *master_cut;
-    }
 }

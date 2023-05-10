@@ -15,8 +15,8 @@ pub mod dark_bonds {
     use super::*;
 
     // Invoke once at the deployement,sets IBO counter and recipient
-    pub fn init_ibo_master(ctx: Context<InitIBOMaster>, cut: u64) -> Result<()> {
-        instructions::init_ibo_master::init_ibo_master(ctx, cut)
+    pub fn init(ctx: Context<Init>) -> Result<()> {
+        instructions::init::init(ctx)
     }
 
     // Create a bond offering
