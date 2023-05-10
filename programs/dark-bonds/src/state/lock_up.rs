@@ -10,11 +10,11 @@ const SECONDS_YEAR: i64 = 31536000;
 #[account]
 pub struct LockUp {
     pub period: i64, // In seconds
-    pub apy: u64,    // yearly gain for that lock up
+    pub apy: f64,    // yearly gain for that lock up
 }
 impl LockUp {
     pub fn get_total_gain(&self, liquidity_provided: u64) -> u64 {
-        return self.apy * (self.period / SECONDS_YEAR) as u64 * liquidity_provided;
+        return (self.apy * (self.period / SECONDS_YEAR) as f64) as u64 * liquidity_provided;
     }
 
     pub fn get_maturity_stamp(&self) -> i64 {

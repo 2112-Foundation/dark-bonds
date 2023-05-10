@@ -1,3 +1,4 @@
+pub mod add_lockup;
 pub mod buy_bond;
 pub mod buy_swap;
 pub mod claim;
@@ -7,6 +8,7 @@ pub mod init;
 pub mod set_swap;
 pub mod split;
 
+pub use add_lockup::*;
 pub use buy_bond::*;
 pub use buy_swap::*;
 pub use claim::*;

@@ -29,6 +29,14 @@ pub mod dark_bonds {
         instructions::create_ibo::create_ibo(ctx, fixed_exchange_rate, live_date, stablecoin)
     }
 
+    pub fn add_lockup(
+        ctx: Context<AddLockUp>,
+        lock_up_duration: i64,
+        lock_up_apy: f64,
+    ) -> Result<()> {
+        instructions::add_lockup::add_lockup(ctx, lock_up_duration, lock_up_apy)
+    }
+
     // Provide liquidity for bonds for a given bond offering
     pub fn buy_bonds(ctx: Context<BuyBond>, liquidity_provided: u64) -> Result<()> {
         instructions::buy_bond::buy_bond(ctx, liquidity_provided)

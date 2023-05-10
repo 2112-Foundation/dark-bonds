@@ -183,4 +183,6 @@ describe("dark-bonds", async () => {
       TOKEN_PROGRAM_ID
     );
   });
+
+  it("Add PDA for bond rate and lock-up.", async () => {});
 });
