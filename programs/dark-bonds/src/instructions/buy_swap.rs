@@ -16,7 +16,7 @@ pub struct BuySwap<'info> {
     pub ticket: Account<'info, Ticket>,
 
     // For look up of trying to pay in the correct mint
-    pub ibo: Account<'info, IBO>,
+    pub ibo: Account<'info, Ibo>,
     // Need ATA of buyer and seller and mint
 
     // #[account(mut,
@@ -48,7 +48,7 @@ pub struct Initialize<'info> {
 pub fn buy_swap(ctx: Context<BuySwap>) -> Result<()> {
     let buyer: &mut Signer = &mut ctx.accounts.trader;
     let ticket: &mut Account<Ticket> = &mut ctx.accounts.ticket;
-    let ibo: &mut Account<IBO> = &mut ctx.accounts.ibo;
+    let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
 
     // Assert sale price is not-zero
 

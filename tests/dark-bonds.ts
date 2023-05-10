@@ -46,11 +46,20 @@ describe("dark-bonds", async () => {
   // PDA
   let mainIbo: PublicKey;
 
-  // IBO 0
+  // Ibo 0
   let ibo0: PublicKey;
   let exchangeRate: number = 40;
   let liveDate: number = 1683718579;
   let iboATA_b;
+  let lockUp1PDA: PublicKey;
+  let lockUp1Period: number = 31556952;
+  let lockUp1Apy: number = 1.2;
+  let lockUp2PDA: PublicKey;
+  let lockUp2Period: number = 63113904;
+  let lockUp2Apy: number = 1.33;
+  let lockUp3PDA: PublicKey;
+  let lockUp3Period: number = 94670856;
+  let lockUp3Apy: number = 1.5;
 
   async function topUp(topUpAcc: PublicKey) {
     {
@@ -170,7 +179,7 @@ describe("dark-bonds", async () => {
       true
     );
 
-    // Mint bond tokens into the IBO PDA derived ATA
+    // Mint bond tokens into the Ibo PDA derived ATA
     await mintTo(
       provider.connection,
       mintAuthB,
@@ -184,5 +193,55 @@ describe("dark-bonds", async () => {
     );
   });
 
-  it("Add PDA for bond rate and lock-up.", async () => {});
+  it("Add PDA for bond rate and lock-up.", async () => {
+    // let ibo_state = await bondProgram.account.ibo.fetch(ibo0); //;  ibo.fetch(ibo0);
+    console.log("trying main fetch", mainIbo.toBase58());
+    let ibo_master = await bondProgram.account.master.fetch(mainIbo); //;  ibo.fetch(ibo0);
+    console.log("trying fetch  ibo", ibo0.toBase58());
+    let ibo_state = await bondProgram.account.ibo.fetch(ibo0); //;  ibo.fetch(ibo0);
+    // Derive ibo lockup 1 pda for counter 0
+    [lockUp1PDA] = await PublicKey.findProgramAddress(
+      [Buffer.from("lockup"), new BN(0).toArrayLike(Buffer, "be", 4)],
+      bondProgram.programId
+    );
+    console.log("ibo: ", ibo0.toBase58());
+    ibo_state = await bondProgram.account.ibo.fetch(ibo0); //;  ibo.fetch(ibo0);
+    console.log("ibo_state: ", ibo_state);
+
+    const tx_lu1 = await bondProgram.methods
+      .addLockup(new anchor.BN(lockUp1Period), new anchor.BN(lockUp1Apy))
+      .accounts({
+        // mainIbo: mainIbo,
+        admin: adminIbo0.publicKey,
+        ibo: ibo0,
+        lockup: lockUp1PDA,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .signers([adminIbo0])
+      .rpc();
+    ibo_state = await bondProgram.account.ibo.fetch(ibo0);
+    console.log("ibo_state: ", ibo_state);
+
+    ibo_state = await bondProgram.account.ibo.fetch(ibo0); //;  ibo.fetch(ibo0);
+    console.log("ibo_state: ", ibo_state);
+
+    // Derive ibo lockup 2 pda for counter 1
+    [lockUp2PDA] = await PublicKey.findProgramAddress(
+      [Buffer.from("lockup"), new BN(1).toArrayLike(Buffer, "be", 4)],
+      bondProgram.programId
+    );
+    const tx_lu2 = await bondProgram.methods
+      .addLockup(new anchor.BN(lockUp2Period), new anchor.BN(lockUp2Apy))
+      .accounts({
+        // mainIbo: mainIbo,
+        admin: adminIbo0.publicKey,
+        ibo: ibo0,
+        lockup: lockUp2PDA,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .signers([adminIbo0])
+      .rpc();
+    console.log("Your transaction signature", tx_lu1);
+    // TODO assert lock up counter incremented
+  });
 });

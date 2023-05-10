@@ -1,9 +1,9 @@
 use anchor_lang::prelude::*;
 
 #[account]
-pub struct IBO {
-    // Index of this specific IBO instance
-    pub ibo_idx: u32,
+pub struct Ibo {
+    // Index of this specific Ibo instance
+    pub ibo_idx: u64, // not needed maybe
 
     // Fixed rate of conversion between underlying SPL and USDC
     // Set by the deployer at the start
@@ -20,11 +20,13 @@ pub struct IBO {
 
     // Admin
     pub admin: Pubkey,
+
+    pub lockup_counter: u32, // TODO Can definitaly reduce this one
 }
 
 // TODO check in the constraints
 
-impl IBO {
+impl Ibo {
     pub fn correct_mint(&self, provided_mint: &Pubkey) -> bool {
         return &self.stablecoin == provided_mint;
     }

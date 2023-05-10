@@ -8,13 +8,13 @@ pub use errors::*;
 pub use instructions::*;
 pub use state::*;
 
-declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
+declare_id!("H7zcGXtV7Fo1JkhxJ4hao7ZkLpAqzBTkQySAUbVxnLj7");
 
 #[program]
 pub mod dark_bonds {
     use super::*;
 
-    // Invoke once at the deployement,sets IBO counter and recipient
+    // Invoke once at the deployement,sets Ibo counter and recipient
     pub fn init(ctx: Context<Init>) -> Result<()> {
         instructions::init::init(ctx)
     }

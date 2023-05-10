@@ -20,8 +20,8 @@ pub struct BuyBond<'info> {
 
     // This needs to be init (along with counter checks)
     pub ticket: Account<'info, Ticket>,
-    pub ibo: Account<'info, IBO>,
-    pub lock_up: Account<'info, LockUp>,
+    pub ibo: Account<'info, Ibo>,
+    pub lockup: Account<'info, LockUp>,
     // Need PDA of the to be derived of some shared register which is incremented
     pub system_program: Program<'info, System>,
 }
@@ -32,18 +32,18 @@ pub struct BuyBond<'info> {
 
 pub fn buy_bond(ctx: Context<BuyBond>, stable_amount_liquidity: u64) -> Result<()> {
     let buyer: &mut Signer = &mut ctx.accounts.buyer;
-    let lock_up: &mut Account<LockUp> = &mut ctx.accounts.lock_up;
+    let lockup: &mut Account<LockUp> = &mut ctx.accounts.lockup;
     let ticket: &mut Account<Ticket> = &mut ctx.accounts.ticket;
 
     // Transfer users liquid to our addreess
 
-    // Prior ensure that the lock-up PDA provided has been derived from this IBO account TODO
+    // Prior ensure that the lock-up PDA provided has been derived from this Ibo account TODO
 
     // Cacluclate total amount to be netted over the whole lock-up period
-    let total_gains = lock_up.get_total_gain(stable_amount_liquidity);
+    let total_gains = lockup.get_total_gain(stable_amount_liquidity);
 
     // Create a new bond instance PDA
-    ticket.new(buyer.key(), lock_up.get_maturity_stamp(), total_gains);
+    ticket.new(buyer.key(), lockup.get_maturity_stamp(), total_gains);
 
     Ok(())
 }
