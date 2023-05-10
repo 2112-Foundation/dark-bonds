@@ -14,7 +14,7 @@ pub struct LockUp {
 }
 impl LockUp {
     pub fn get_total_gain(&self, liquidity_provided: u64) -> u64 {
-        (liquidity_provided as f64 * self.apy / (self.period as f64 / SECONDS_YEAR) / 100.0) as u64
+        (liquidity_provided as f64 * self.apy / (SECONDS_YEAR / self.period as f64) / 100.0) as u64
     }
 
     pub fn get_maturity_stamp(&self) -> i64 {

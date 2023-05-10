@@ -401,4 +401,44 @@ describe("dark-bonds", async () => {
     // Check that buyer set as the owner in the ticket
     // Check calculation of bond to receive is correct
   });
+
+  it("Buyer 2 deposits funds at a rate 2", async () => {
+    // Derive ticket from latest counter instance
+    [ticket2] = await PublicKey.findProgramAddress(
+      [
+        Buffer.from("ticket"),
+        Buffer.from(ibo0.toBytes()),
+        new BN(2).toArrayLike(Buffer, "be", 4),
+      ],
+      bondProgram.programId
+    );
+
+    // Spend 500 for rate 1 as player 1
+    const tx_lu1 = await bondProgram.methods
+      .buyBonds(new anchor.BN(500))
+      .accounts({
+        buyer: bondBuyer2.publicKey,
+        ticket: ticket2,
+        ibo: ibo0,
+        lockup: lockUp3PDA,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .signers([bondBuyer2])
+      .rpc();
+
+    let ticket1_state = await bondProgram.account.ticket.fetch(ticket2);
+    console.log("ticket2 owner: ", ticket1_state.owner.toBase58());
+    console.log(
+      "ticket2 maturity date: ",
+      ticket1_state.maturityDate.toString()
+    );
+    console.log(
+      "ticket2 total to claim: ",
+      ticket1_state.totalClaimable.toString()
+    );
+
+    // Check that stablecoin balance decresed
+    // Check that buyer set as the owner in the ticket
+    // Check calculation of bond to receive is correct
+  });
 });
