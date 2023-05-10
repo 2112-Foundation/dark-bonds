@@ -12,6 +12,7 @@ import {
   TOKEN_PROGRAM_ID,
   ASSOCIATED_TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
+import { BN } from "bn.js";
 
 describe("dark-bonds", async () => {
   // Configure the client to use the local cluster.
@@ -23,11 +24,14 @@ describe("dark-bonds", async () => {
   const bondProgram = anchor.workspace.DarkBonds as Program<DarkBonds>;
 
   const superAdmin = anchor.web3.Keypair.generate();
+  const adminIbo0 = anchor.web3.Keypair.generate();
   const bondBuyer1 = anchor.web3.Keypair.generate();
   const bondBuyer2 = anchor.web3.Keypair.generate();
 
-  let bondBuyer1ATA;
-  let bondBuyer2ATA;
+  let bondBuyer1ATA_sc;
+  let bondBuyer2ATA_sc;
+  let bondBuyer1ATA_b;
+  let bondBuyer2ATA_b;
 
   // Stable coin mint
   let mintSC: PublicKey;
@@ -41,6 +45,11 @@ describe("dark-bonds", async () => {
 
   // PDA
   let mainIbo: PublicKey;
+
+  // IBO 0
+  let ibo0: PublicKey;
+  let exchangeRate: number = 40;
+  let liveDate: number = 1683718579;
 
   async function topUp(topUpAcc: PublicKey) {
     {
@@ -62,6 +71,7 @@ describe("dark-bonds", async () => {
       topUp(mintAuthB.publicKey),
       topUp(mintKeypairB.publicKey),
       topUp(superAdmin.publicKey),
+      topUp(adminIbo0.publicKey),
     ]);
 
     // Stablecoin mint
@@ -81,30 +91,44 @@ describe("dark-bonds", async () => {
       10
     );
 
-    // Initialise bondBuyer ATAs
-    // bondBuyer1ATA = await getOrCreateAssociatedTokenAccount(
-    //   provider.connection,
-    //   superAdmin,
-    //   mintSC,
-    //   bondBuyer1.publicKey
-    // );
+    // Initialise bondBuyer ATAs for the stablecoin
+    bondBuyer1ATA_sc = await getOrCreateAssociatedTokenAccount(
+      provider.connection,
+      bondBuyer1,
+      mintSC,
+      bondBuyer1.publicKey
+    );
 
-    // bondBuyer2ATA = await getOrCreateAssociatedTokenAccount(
-    //   provider.connection,
-    //   superAdmin,
-    //   mintSC,
-    //   bondBuyer2.publicKey
-    // );
+    bondBuyer2ATA_sc = await getOrCreateAssociatedTokenAccount(
+      provider.connection,
+      bondBuyer2,
+      mintSC,
+      bondBuyer2.publicKey
+    );
+
+    // Initialise bondBuyer ATAs for the bond token
+    bondBuyer1ATA_b = await getOrCreateAssociatedTokenAccount(
+      provider.connection,
+      bondBuyer1,
+      mintB,
+      bondBuyer1.publicKey
+    );
+
+    bondBuyer2ATA_b = await getOrCreateAssociatedTokenAccount(
+      provider.connection,
+      bondBuyer2,
+      mintB,
+      bondBuyer2.publicKey
+    );
   });
 
-  it("Is initialized!", async () => {
+  it("Main register initialised!", async () => {
     // Derive
     [mainIbo] = await PublicKey.findProgramAddress(
       [Buffer.from("main_register")],
       bondProgram.programId
     );
 
-    // Add your test here.
     const tx = await bondProgram.methods
       .init()
       .accounts({
@@ -113,6 +137,28 @@ describe("dark-bonds", async () => {
         systemProgram: anchor.web3.SystemProgram.programId,
       })
       .signers([superAdmin])
+      .rpc();
+    console.log("Your transaction signature", tx);
+  });
+
+  it("Register bond offering.", async () => {
+    // Derive ibo pda for counter 0
+    [ibo0] = await PublicKey.findProgramAddress(
+      [Buffer.from("ibo_instance"), new BN(0).toArrayLike(Buffer, "le", 8)],
+      bondProgram.programId
+    );
+
+    // console.log("ibo0: ", ibo0.toBase58());
+
+    const tx = await bondProgram.methods
+      .createIbo(new anchor.BN(exchangeRate), new anchor.BN(liveDate), mintSC)
+      .accounts({
+        mainIbo: mainIbo,
+        admin: adminIbo0.publicKey,
+        ibo: ibo0,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .signers([adminIbo0])
       .rpc();
     console.log("Your transaction signature", tx);
   });

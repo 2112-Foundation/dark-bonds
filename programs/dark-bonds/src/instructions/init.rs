@@ -8,7 +8,7 @@ pub struct Init<'info> {
     // Need PDA of the to be derived of some shared register which is incremented
     #[account(        
         init,      
-        seeds = ["main_register".as_bytes()], // TODO add hardcoded string
+        seeds = ["main_register".as_bytes()], 
         bump,      
         payer = superadmin, 
         space = 400

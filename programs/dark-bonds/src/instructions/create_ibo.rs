@@ -11,11 +11,22 @@ pub struct CreateIBO<'info> {
     #[account(mut)]
     pub admin: Signer<'info>,
 
-    // This needs to be init (along with counter checks)
+    // Must be derived from the latest counter
+    #[account(        
+        init,      
+        seeds = ["ibo_instance".as_bytes(), &main_ibo.ibo_counter.to_be_bytes()], // TODO add counter
+        bump,      
+        payer = admin, 
+        space = 400
+    )]    
     pub ibo: Account<'info, IBO>,
 
-    pub main_ibo: Account<'info, Master>,
-    // Need PDA of the to be derived of some shared register which is incremented
+    // Checks for correct main account provided
+    #[account(                
+        seeds = ["main_register".as_bytes()], 
+        bump,       
+    )]    
+    pub main_ibo: Account<'info, Master>,    
     pub system_program: Program<'info, System>,
 }
 

@@ -6,7 +6,7 @@ use anchor_lang::prelude::*;
 #[account]
 pub struct Master {
     // Counter for all of the IBOs to date
-    pub ibo_counter: u32,
+    pub ibo_counter: u64,
 
     // Applied to non-dark IBOs
     pub master_cut: u64, // Could be just hardcoded
