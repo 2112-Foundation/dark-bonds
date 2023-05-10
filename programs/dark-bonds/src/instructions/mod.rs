@@ -8,6 +8,7 @@ pub mod init;
 pub mod lock;
 pub mod set_swap;
 pub mod split;
+pub mod withdraw;
 
 pub use add_lockup::*;
 pub use buy_bond::*;
@@ -19,3 +20,4 @@ pub use init::*;
 pub use lock::*;
 pub use set_swap::*;
 pub use split::*;
+pub use withdraw::*;

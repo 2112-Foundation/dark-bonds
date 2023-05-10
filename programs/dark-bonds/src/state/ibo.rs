@@ -37,10 +37,12 @@ impl Ibo {
         live_date: i64,
         stablecoin: Pubkey,
         admin: Pubkey,
+        recipient: Pubkey,
     ) {
         self.live_date = live_date;
         self.fixed_exchange_rate = fixed_exchange_rate;
         self.stablecoin = stablecoin;
-        self.admin = admin
+        self.admin = admin;
+        self.recipient_address = recipient;
     }
 }

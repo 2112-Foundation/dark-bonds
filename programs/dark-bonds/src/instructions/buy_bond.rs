@@ -1,6 +1,10 @@
 use crate::errors::errors::ErrorCode;
 use crate::state::*;
 use anchor_lang::prelude::*;
+use anchor_spl::{
+    associated_token::AssociatedToken,
+    token::{self, Mint, Token, TokenAccount, Transfer},
+};
 
 use solana_program::{
     instruction::{AccountMeta, Instruction},
@@ -21,18 +25,22 @@ pub struct BuyBond<'info> {
     pub ticket: Account<'info, Ticket>,
     #[account(mut)]
     pub ibo: Account<'info, Ibo>,
+
+    // TODO add check for this being derived correctly
     pub lockup: Account<'info, LockUp>,
-    // Need PDA of the to be derived of some shared register which is incremented
-    pub system_program: Program<'info, System>,
+    // purchse token
+    pub buyer_ata: Box<Account<'info, TokenAccount>>,
+    pub recipient_ata: Box<Account<'info, TokenAccount>>,
 
+    // // bond token
+    pub ibo_ata: Box<Account<'info, TokenAccount>>,
+    pub buyer_pda_ata: Box<Account<'info, TokenAccount>>,
 
-    // NEED stable coin ATA:
-    // - buyer (from)
-    // - recipient (to)
-
-    // NEED bond coin ATA:
-    // - ibo PDA (from)
-    // - buyer's PDA (to)    
+    
+    pub token_program: Program<'info, Token>,
+    pub associated_token_program: Program<'info, AssociatedToken>,
+    pub rent: Sysvar<'info, Rent>,
+    pub system_program: Program<'info, System>, 
 }
 
 // PDA for acceptable mints

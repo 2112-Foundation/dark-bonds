@@ -25,8 +25,15 @@ pub mod dark_bonds {
         fixed_exchange_rate: u64,
         live_date: i64,
         stablecoin: Pubkey,
+        recipient: Pubkey,
     ) -> Result<()> {
-        instructions::create_ibo::create_ibo(ctx, fixed_exchange_rate, live_date, stablecoin)
+        instructions::create_ibo::create_ibo(
+            ctx,
+            fixed_exchange_rate,
+            live_date,
+            stablecoin,
+            recipient,
+        )
     }
 
     pub fn add_lockup(

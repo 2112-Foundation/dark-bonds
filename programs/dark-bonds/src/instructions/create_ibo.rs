@@ -36,6 +36,7 @@ pub fn create_ibo(
     fixed_exchange_rate: u64,
     live_date: i64,
     stablecoin: Pubkey,
+    recipient: Pubkey,
 ) -> Result<()> {
     let admin: &Signer = &mut ctx.accounts.admin;
     let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
@@ -45,7 +46,7 @@ pub fn create_ibo(
     main_ibo.ibo_counter += 1;
 
     // Fill out details of the new Ibo
-    ibo.new(fixed_exchange_rate, live_date, stablecoin, admin.key());
+    ibo.new(fixed_exchange_rate, live_date, stablecoin, admin.key(), recipient);
 
     Ok(())
 }
