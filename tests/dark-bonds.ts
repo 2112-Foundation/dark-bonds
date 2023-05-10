@@ -193,55 +193,81 @@ describe("dark-bonds", async () => {
     );
   });
 
-  it("Add PDA for bond rate and lock-up.", async () => {
-    // let ibo_state = await bondProgram.account.ibo.fetch(ibo0); //;  ibo.fetch(ibo0);
-    console.log("trying main fetch", mainIbo.toBase58());
-    let ibo_master = await bondProgram.account.master.fetch(mainIbo); //;  ibo.fetch(ibo0);
-    console.log("trying fetch  ibo", ibo0.toBase58());
-    let ibo_state = await bondProgram.account.ibo.fetch(ibo0); //;  ibo.fetch(ibo0);
-    // Derive ibo lockup 1 pda for counter 0
+  it("Add three different lockups.", async () => {
+    // Derive lock up PDAs for 1,2,3
     [lockUp1PDA] = await PublicKey.findProgramAddress(
       [Buffer.from("lockup"), new BN(0).toArrayLike(Buffer, "be", 4)],
       bondProgram.programId
     );
-    console.log("ibo: ", ibo0.toBase58());
-    ibo_state = await bondProgram.account.ibo.fetch(ibo0); //;  ibo.fetch(ibo0);
-    console.log("ibo_state: ", ibo_state);
-
-    const tx_lu1 = await bondProgram.methods
-      .addLockup(new anchor.BN(lockUp1Period), new anchor.BN(lockUp1Apy))
-      .accounts({
-        // mainIbo: mainIbo,
-        admin: adminIbo0.publicKey,
-        ibo: ibo0,
-        lockup: lockUp1PDA,
-        systemProgram: anchor.web3.SystemProgram.programId,
-      })
-      .signers([adminIbo0])
-      .rpc();
-    ibo_state = await bondProgram.account.ibo.fetch(ibo0);
-    console.log("ibo_state: ", ibo_state);
-
-    ibo_state = await bondProgram.account.ibo.fetch(ibo0); //;  ibo.fetch(ibo0);
-    console.log("ibo_state: ", ibo_state);
-
-    // Derive ibo lockup 2 pda for counter 1
     [lockUp2PDA] = await PublicKey.findProgramAddress(
       [Buffer.from("lockup"), new BN(1).toArrayLike(Buffer, "be", 4)],
       bondProgram.programId
     );
-    const tx_lu2 = await bondProgram.methods
-      .addLockup(new anchor.BN(lockUp2Period), new anchor.BN(lockUp2Apy))
-      .accounts({
-        // mainIbo: mainIbo,
-        admin: adminIbo0.publicKey,
-        ibo: ibo0,
-        lockup: lockUp2PDA,
-        systemProgram: anchor.web3.SystemProgram.programId,
-      })
-      .signers([adminIbo0])
-      .rpc();
-    console.log("Your transaction signature", tx_lu1);
-    // TODO assert lock up counter incremented
+
+    [lockUp3PDA] = await PublicKey.findProgramAddress(
+      [Buffer.from("lockup"), new BN(2).toArrayLike(Buffer, "be", 4)],
+      bondProgram.programId
+    );
+
+    let lockUp1Instruction = bondProgram.instruction.addLockup(
+      new anchor.BN(lockUp1Period),
+      new anchor.BN(lockUp1Apy),
+      {
+        accounts: {
+          // mainIbo: mainIbo,
+          admin: adminIbo0.publicKey,
+          ibo: ibo0,
+          lockup: lockUp1PDA,
+          systemProgram: anchor.web3.SystemProgram.programId,
+        },
+      }
+    );
+
+    let lockUp2Instruction = bondProgram.instruction.addLockup(
+      new anchor.BN(lockUp2Period),
+      new anchor.BN(lockUp2Apy),
+      {
+        accounts: {
+          // mainIbo: mainIbo,
+          admin: adminIbo0.publicKey,
+          ibo: ibo0,
+          lockup: lockUp2PDA,
+          systemProgram: anchor.web3.SystemProgram.programId,
+        },
+      }
+    );
+
+    let lockUp3Instruction = bondProgram.instruction.addLockup(
+      new anchor.BN(lockUp3Period),
+      new anchor.BN(lockUp3Apy),
+      {
+        accounts: {
+          // mainIbo: mainIbo,
+          admin: adminIbo0.publicKey,
+          ibo: ibo0,
+          lockup: lockUp3PDA,
+          systemProgram: anchor.web3.SystemProgram.programId,
+        },
+      }
+    );
+
+    let transaction = new anchor.web3.Transaction();
+    transaction.add(lockUp1Instruction);
+    transaction.add(lockUp2Instruction);
+    transaction.add(lockUp3Instruction);
+
+    let tx = await anchor.web3.sendAndConfirmTransaction(
+      anchor.getProvider().connection,
+      transaction,
+      [adminIbo0],
+      {
+        skipPreflight: false,
+        preflightCommitment: "single",
+      }
+    );
+
+    // TODO assert lock up counter incremented to 3
+
+    // Check one of them for setting correct rates
   });
 });
