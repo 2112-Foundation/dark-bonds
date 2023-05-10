@@ -50,6 +50,7 @@ describe("dark-bonds", async () => {
   let ibo0: PublicKey;
   let exchangeRate: number = 40;
   let liveDate: number = 1683718579;
+  let iboATA_b;
 
   async function topUp(topUpAcc: PublicKey) {
     {
@@ -106,7 +107,7 @@ describe("dark-bonds", async () => {
       bondBuyer2.publicKey
     );
 
-    // Initialise bondBuyer ATAs for the bond token
+    // Initialise  ATAs for the bond token
     bondBuyer1ATA_b = await getOrCreateAssociatedTokenAccount(
       provider.connection,
       bondBuyer1,
@@ -148,8 +149,6 @@ describe("dark-bonds", async () => {
       bondProgram.programId
     );
 
-    // console.log("ibo0: ", ibo0.toBase58());
-
     const tx = await bondProgram.methods
       .createIbo(new anchor.BN(exchangeRate), new anchor.BN(liveDate), mintSC)
       .accounts({
@@ -161,5 +160,27 @@ describe("dark-bonds", async () => {
       .signers([adminIbo0])
       .rpc();
     console.log("Your transaction signature", tx);
+
+    // derive ibo ata
+    iboATA_b = await getOrCreateAssociatedTokenAccount(
+      provider.connection,
+      adminIbo0,
+      mintB,
+      ibo0,
+      true
+    );
+
+    // Mint bond tokens into the IBO PDA derived ATA
+    await mintTo(
+      provider.connection,
+      mintAuthB,
+      mintB,
+      iboATA_b.address,
+      mintAuthB,
+      10000,
+      [],
+      undefined,
+      TOKEN_PROGRAM_ID
+    );
   });
 });
