@@ -11,7 +11,7 @@ use solana_program::{
 pub struct AddLockUp<'info> {
     #[account(mut)]
     pub admin: Signer<'info>,
-    #[account(mut, has_one = admin)]
+    #[account(mut, has_one = admin, constraint = ibo.locked == false @ErrorCode::RatesLocked)]
     pub ibo: Account<'info, Ibo>,
     #[account(        
         init,      
@@ -28,6 +28,8 @@ pub struct AddLockUp<'info> {
 pub fn add_lockup(ctx: Context<AddLockUp>, lock_up_duration: i64, lock_up_apy: f64) -> Result<()> {    
     let lockup: &mut Account<LockUp> = &mut ctx.accounts.lockup;
     let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
+
+    msg!("\nsetting APY of: {:?}", lock_up_apy);
 
     // Set these lockup values
     lockup.period = lock_up_duration;

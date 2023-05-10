@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use std::time::Duration;
 
-const SECONDS_YEAR: i64 = 31536000;
+const SECONDS_YEAR: f64 = 31536000.0;
 
 // Those PDAs are spun off the main Ibo PDA by the reuser
 // Only used to fill out the ticket
@@ -14,7 +14,7 @@ pub struct LockUp {
 }
 impl LockUp {
     pub fn get_total_gain(&self, liquidity_provided: u64) -> u64 {
-        return (self.apy * (self.period / SECONDS_YEAR) as f64) as u64 * liquidity_provided;
+        (liquidity_provided as f64 * self.apy / (self.period as f64 / SECONDS_YEAR) / 100.0) as u64
     }
 
     pub fn get_maturity_stamp(&self) -> i64 {

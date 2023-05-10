@@ -3,4 +3,6 @@ use anchor_lang::prelude::*;
 pub enum ErrorCode {
     #[msg("Need 24h between withdraws")]
     WithdrawTooEarly,
+    #[msg("Can not add new lockup type")]
+    RatesLocked,
 }

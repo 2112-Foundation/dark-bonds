@@ -13,6 +13,7 @@ import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
 import { BN } from "bn.js";
+import { assert, expect } from "chai";
 
 describe("dark-bonds", async () => {
   // Configure the client to use the local cluster.
@@ -51,15 +52,22 @@ describe("dark-bonds", async () => {
   let exchangeRate: number = 40;
   let liveDate: number = 1683718579;
   let iboATA_b;
+
+  // Tickets
+  let ticket0: PublicKey;
+  let ticket1: PublicKey;
+  let ticket2: PublicKey;
+
+  // Lock ups
   let lockUp1PDA: PublicKey;
-  let lockUp1Period: number = 31556952;
-  let lockUp1Apy: number = 1.2;
+  let lockUp1Period: number = 31536000;
+  let lockUp1Apy: number = 1.2 * 100;
   let lockUp2PDA: PublicKey;
-  let lockUp2Period: number = 63113904;
-  let lockUp2Apy: number = 1.33;
+  let lockUp2Period: number = 63072000;
+  let lockUp2Apy: number = 1.33 * 100;
   let lockUp3PDA: PublicKey;
-  let lockUp3Period: number = 94670856;
-  let lockUp3Apy: number = 1.5;
+  let lockUp3Period: number = 94608000;
+  let lockUp3Apy: number = 1.5 * 100;
 
   async function topUp(topUpAcc: PublicKey) {
     {
@@ -129,6 +137,31 @@ describe("dark-bonds", async () => {
       bondBuyer2,
       mintB,
       bondBuyer2.publicKey
+    );
+
+    // Airdrop liquditi token to the accounts
+    await mintTo(
+      provider.connection,
+      mintAuthSC,
+      mintSC,
+      bondBuyer1ATA_sc.address,
+      mintAuthSC,
+      10000,
+      [],
+      undefined,
+      TOKEN_PROGRAM_ID
+    );
+
+    await mintTo(
+      provider.connection,
+      mintAuthSC,
+      mintSC,
+      bondBuyer2ATA_sc.address,
+      mintAuthSC,
+      10000,
+      [],
+      undefined,
+      TOKEN_PROGRAM_ID
     );
   });
 
@@ -267,7 +300,105 @@ describe("dark-bonds", async () => {
     );
 
     // TODO assert lock up counter incremented to 3
+    let ibo0_state = await bondProgram.account.ibo.fetch(ibo0);
+    console.log("lock up ocunter: ", ibo0_state.lockupCounter);
+    assert(ibo0_state.lockupCounter == 3);
 
     // Check one of them for setting correct rates
+  });
+
+  it("Lock further lockups.", async () => {
+    const tx_lu1 = await bondProgram.methods
+      .lock()
+      .accounts({
+        admin: adminIbo0.publicKey,
+        ibo: ibo0,
+      })
+      .signers([adminIbo0])
+      .rpc();
+
+    // Assert lock changed to true
+    let ibo0_state = await bondProgram.account.ibo.fetch(ibo0);
+    assert(ibo0_state.locked == true);
+  });
+
+  it("Buyer 1 deposits funds at a rate 1", async () => {
+    // Derive ticket from latest counter instance
+    [ticket0] = await PublicKey.findProgramAddress(
+      [
+        Buffer.from("ticket"),
+        Buffer.from(ibo0.toBytes()),
+        new BN(0).toArrayLike(Buffer, "be", 4),
+      ],
+      bondProgram.programId
+    );
+
+    // Spend 500 for rate 1 as player 1
+    const tx_lu1 = await bondProgram.methods
+      .buyBonds(new anchor.BN(500))
+      .accounts({
+        buyer: bondBuyer1.publicKey,
+        ticket: ticket0,
+        ibo: ibo0,
+        lockup: lockUp1PDA,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .signers([bondBuyer1])
+      .rpc();
+
+    let ticket0_state = await bondProgram.account.ticket.fetch(ticket0);
+    console.log("ticket0 owner: ", ticket0_state.owner.toBase58());
+    console.log(
+      "ticket0 maturity date: ",
+      ticket0_state.maturityDate.toString()
+    );
+    console.log(
+      "ticket0 total to claim: ",
+      ticket0_state.totalClaimable.toString()
+    );
+
+    // Check that stablecoin balance decresed
+    // Check that buyer set as the owner in the ticket
+    // Check calculation of bond to receive is correct
+  });
+
+  it("Buyer 2 deposits funds at a rate 2", async () => {
+    // Derive ticket from latest counter instance
+    [ticket1] = await PublicKey.findProgramAddress(
+      [
+        Buffer.from("ticket"),
+        Buffer.from(ibo0.toBytes()),
+        new BN(1).toArrayLike(Buffer, "be", 4),
+      ],
+      bondProgram.programId
+    );
+
+    // Spend 500 for rate 1 as player 1
+    const tx_lu1 = await bondProgram.methods
+      .buyBonds(new anchor.BN(500))
+      .accounts({
+        buyer: bondBuyer2.publicKey,
+        ticket: ticket1,
+        ibo: ibo0,
+        lockup: lockUp2PDA,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .signers([bondBuyer2])
+      .rpc();
+
+    let ticket1_state = await bondProgram.account.ticket.fetch(ticket1);
+    console.log("ticket0 owner: ", ticket1_state.owner.toBase58());
+    console.log(
+      "ticket0 maturity date: ",
+      ticket1_state.maturityDate.toString()
+    );
+    console.log(
+      "ticket0 total to claim: ",
+      ticket1_state.totalClaimable.toString()
+    );
+
+    // Check that stablecoin balance decresed
+    // Check that buyer set as the owner in the ticket
+    // Check calculation of bond to receive is correct
   });
 });

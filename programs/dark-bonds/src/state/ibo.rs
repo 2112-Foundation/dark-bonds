@@ -2,8 +2,7 @@ use anchor_lang::prelude::*;
 
 #[account]
 pub struct Ibo {
-    // Index of this specific Ibo instance
-    pub ibo_idx: u64, // not needed maybe
+    pub locked: bool,
 
     // Fixed rate of conversion between underlying SPL and USDC
     // Set by the deployer at the start
@@ -22,6 +21,7 @@ pub struct Ibo {
     pub admin: Pubkey,
 
     pub lockup_counter: u32, // TODO Can definitaly reduce this one
+    pub ticket_counter: u32,
 }
 
 // TODO check in the constraints
