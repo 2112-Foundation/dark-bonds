@@ -37,7 +37,8 @@ pub struct BuyBond<'info> {
     )]    
     pub lockup: Account<'info, LockUp>,
     // purchse token
-    #[account(mut)]
+    // #[account(mut)]
+    #[account(mut, token::mint = ibo.stablecoin, token::authority = buyer)]
     pub buyer_ata: Box<Account<'info, TokenAccount>>,
     // #[account(mut)]
     // #[account(mut, token::mint = ibo.stablecoin, token::authority = buyer)]
@@ -84,6 +85,9 @@ pub fn buy_bond(ctx: Context<BuyBond>, _lockup_idx: u32, ibo_idx: u64, stable_am
             stable_amount_liquidity
     )?;           
 
+
+    
+
     // Rederive bump
     let (_, bump) = anchor_lang::prelude::Pubkey::find_program_address(&["ibo_instance".as_bytes(),  &ibo_idx.to_be_bytes()], &ctx.program_id);
     let seeds = &["ibo_instance".as_bytes(), &ibo_idx.to_be_bytes(), &[bump]];  
@@ -98,6 +102,9 @@ pub fn buy_bond(ctx: Context<BuyBond>, _lockup_idx: u32, ibo_idx: u64, stable_am
 
     let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;         
     let ticket: &mut Account<Ticket> = &mut ctx.accounts.ticket;     
+
+    msg!("desired stable mint: {:?}", ibo.stablecoin);
+    msg!("provided mint: {:?}", ctx.accounts.recipient_ata.mint);
 
     // Create a new bond instance PDA
     let maturity_stamp: i64 = lockup.get_maturity_stamp();

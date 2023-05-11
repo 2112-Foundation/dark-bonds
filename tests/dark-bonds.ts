@@ -443,6 +443,9 @@ describe("dark-bonds", async () => {
       ticket1_state.totalClaimable.toString()
     );
 
+    console.log("stable coin mint: ", mintSC.toBase58());
+    console.log("bond coin mint: ", mintB.toBase58());
+
     // Check that stablecoin balance decresed
     // Check that buyer set as the owner in the ticket
     // Check calculation of bond to receive is correct
