@@ -31,22 +31,26 @@ pub struct BuyBond<'info> {
     pub ibo: Account<'info, Ibo>,
 
     // TODO add check for this being derived correctly
-    // #[account(                
-    //     seeds = ["lockup".as_bytes(), ibo.key().as_ref(),  &lockup_idx.to_be_bytes()], // TODO add counter
-    //     bump,              
-    // )]    
+    #[account(                
+        seeds = ["lockup".as_bytes(), ibo.key().as_ref(),  &lockup_idx.to_be_bytes()], // TODO add counter
+        bump,              
+    )]    
     pub lockup: Account<'info, LockUp>,
     // purchse token
     #[account(mut)]
     pub buyer_ata: Box<Account<'info, TokenAccount>>,
-    #[account(mut)]
+    // #[account(mut)]
+    // #[account(mut, token::mint = ibo.stablecoin, token::authority = buyer)]
+    #[account(mut)] 
     pub recipient_ata: Box<Account<'info, TokenAccount>>,
 
     // bond token
+    // #[account(mut)]
+    // #[account(mut, token::mint = mint, token::authority = vault)]    
     #[account(mut)]
     pub ibo_ata: Box<Account<'info, TokenAccount>>,
     #[account(mut)]
-    pub buyer_pda_ata: Box<Account<'info, TokenAccount>>,    
+    pub buyer_pda_ata: Box<Account<'info, TokenAccount>>,       
     pub token_program: Program<'info, Token>,
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub rent: Sysvar<'info, Rent>,
@@ -99,7 +103,7 @@ pub fn buy_bond(ctx: Context<BuyBond>, _lockup_idx: u32, ibo_idx: u64, stable_am
     let maturity_stamp: i64 = lockup.get_maturity_stamp();
     ticket.new(buyer.key(), maturity_stamp, total_gains);
 
-    // // // Increment counter of all bond tickets issued
+    // Increment counter of all bond tickets issued
     ibo.ticket_counter += 1;    
 
     Ok(())
@@ -129,5 +133,4 @@ impl<'info> BuyBond<'info> {
             },
         )
     }
-
 }
