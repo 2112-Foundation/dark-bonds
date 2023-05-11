@@ -12,7 +12,11 @@ use solana_program::{
 };
 
 #[derive(Accounts)]
+#[instruction(lockup_idx: u32)]
 pub struct BuyBond<'info> {
+
+    // TODO need a mint correctness check
+    // #[account(mut, token::mint = mint, token::authority = vault)]
     #[account(mut)]
     pub buyer: Signer<'info>,    
     #[account(        
@@ -27,16 +31,22 @@ pub struct BuyBond<'info> {
     pub ibo: Account<'info, Ibo>,
 
     // TODO add check for this being derived correctly
+    #[account(                
+        seeds = ["lockup".as_bytes(), ibo.key().as_ref(),  &lockup_idx.to_be_bytes()], // TODO add counter
+        bump,              
+    )]    
     pub lockup: Account<'info, LockUp>,
     // purchse token
+    #[account(mut)]
     pub buyer_ata: Box<Account<'info, TokenAccount>>,
+    #[account(mut)]
     pub recipient_ata: Box<Account<'info, TokenAccount>>,
 
     // // bond token
+    #[account(mut)]
     pub ibo_ata: Box<Account<'info, TokenAccount>>,
-    pub buyer_pda_ata: Box<Account<'info, TokenAccount>>,
-
-    
+    #[account(mut)]
+    pub buyer_pda_ata: Box<Account<'info, TokenAccount>>,    
     pub token_program: Program<'info, Token>,
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub rent: Sysvar<'info, Rent>,
@@ -47,26 +57,38 @@ pub struct BuyBond<'info> {
 
 // Extra cut for deposit which goes on to make LP in raydium
 
-pub fn buy_bond(ctx: Context<BuyBond>, stable_amount_liquidity: u64) -> Result<()> {    
-    let buyer: &mut Signer = &mut ctx.accounts.buyer;
-    let lockup: &Account<LockUp> = &ctx.accounts.lockup;
-    let ticket: &mut Account<Ticket> = &mut ctx.accounts.ticket;
-    let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
-
-    // Transfer users liquid to our addreess
-
-    // Prior ensure that the lock-up PDA provided has been derived from this Ibo account TODO
+pub fn buy_bond(ctx: Context<BuyBond>, lockup_idx: u32, stable_amount_liquidity: u64) -> Result<()> {    
+    let buyer: &Signer = &ctx.accounts.buyer;
+    let lockup: &Account<LockUp> = &ctx.accounts.lockup;    
 
     // Cacluclate total amount to be netted over the whole lock-up period
     let total_gains: u64 = lockup.get_total_gain(stable_amount_liquidity);
+
+    // TODO ensure correct account tprovided
+
+    // Transfer to the specified account    
+    token::transfer(
+        ctx.accounts
+            .transfer_ctx(&ctx.accounts.buyer_ata, &ctx.accounts.recipient_ata, buyer),                 
+            200
+    )?;
+
+    let ticket: &mut Account<Ticket> = &mut ctx.accounts.ticket; 
+    let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
+
+    
+
+    // Prior ensure that the lock-up PDA provided has been derived from this Ibo account TODO
+
+        
 
 
     // Ensure there are enough tokens TODO
 
     let maturity_stamp: i64 = lockup.get_maturity_stamp();
 
-    msg!("total_gains: {:?}",total_gains);
-    msg!("maturity_stamp: {:?}",maturity_stamp);
+    // msg!("total_gains: {:?}",total_gains);
+    // msg!("maturity_stamp: {:?}",maturity_stamp);
 
     // Create a new bond instance PDA
     ticket.new(buyer.key(), maturity_stamp, total_gains);
@@ -77,5 +99,26 @@ pub fn buy_bond(ctx: Context<BuyBond>, stable_amount_liquidity: u64) -> Result<(
     Ok(())
 }
 
-// Add option vested programable NFT presale from a mint
-// Can be traded before
+
+impl<'info> BuyBond<'info> {
+    fn transfer_ctx(&self, from_ata: &Account<'info, TokenAccount>, to_ata: &Account<'info, TokenAccount>, auth: &Signer<'info>) -> CpiContext<'_, '_, '_, 'info, Transfer<'info>>{
+        CpiContext::new(
+            self.token_program.to_account_info(),
+            Transfer {
+                from: from_ata.to_account_info(),
+                to: to_ata.to_account_info(),
+                authority: auth.to_account_info(),
+            },
+        )
+    }
+
+    // fn transfer_ctx2 (&self, from_ata: &Account<'info, TokenAccount>, to_ata: &Account<'info, TokenAccount>, auth: &Account<'info, TokenAccount>) {
+    //     CpiContext::new(
+    //     ctx.accounts.token_program.to_account_info(),
+    //     Transfer {
+    //         from: attendee_sc.to_account_info(),
+    //         authority: ctx.accounts.attendee.to_account_info(),
+    //         to: event_stablecoin_ata.to_account_info(),
+    //     }
+    // );      
+}
