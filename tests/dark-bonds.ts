@@ -70,10 +70,10 @@ describe("dark-bonds", async () => {
   let lockUp0Apy: number = 1.2 * 100;
   let lockUp1PDA: PublicKey;
   let lockUp1Period: number = 63072000;
-  let lockUp1Apy: number = 1.33 * 100;
+  let lockUp1Apy: number = 1.2 * 100;
   let lockUp2PDA: PublicKey;
   let lockUp2Period: number = 94608000;
-  let lockUp2Apy: number = 1.5 * 100;
+  let lockUp2Apy: number = 1.2 * 100;
 
   async function topUp(topUpAcc: PublicKey) {
     {
