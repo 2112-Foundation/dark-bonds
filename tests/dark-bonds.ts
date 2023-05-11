@@ -515,14 +515,16 @@ describe("dark-bonds", async () => {
     // Call claim
     // See how much has been taken
 
+    console.log("ticket: ", ticket2);
+
     // Spend 500 for rate 1 as player 1
     const tx_lu1 = await bondProgram.methods
-      .claim(ibo0, 0)
+      .claim(ibo0, 2)
       .accounts({
         bondOwner: bondBuyer2.publicKey,
         ticket: ticket2,
-        bondOwnerAta: ibo0,
-        ticketAta: lockUp2PDA,
+        bondOwnerAta: bondBuyer2ATA_b.address,
+        ticketAta: ticket2ATA_b.address,
         // buyerAta: bondBuyer2ATA_sc.address,
         // recipientAta: iboAdminATA_sc.address,
         // iboAta: ibo0ATA_b.address,

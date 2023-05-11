@@ -48,8 +48,10 @@ impl<'info> Claim<'info> {
     }
 }
 
+// TODO function to claim everything if time has expeired claim_all
+
 // option to add % to claim?
-pub fn claim(ctx: Context<Claim>, ibo_address: Pubkey, ibo_idx: u32) -> Result<()> {
+pub fn claim(ctx: Context<Claim>, ibo_address: Pubkey, ticket_idx: u32) -> Result<()> {
     let ticket: &mut Account<Ticket> = &mut ctx.accounts.ticket;
 
     // Ensure can only withdraw once a day
@@ -61,20 +63,23 @@ pub fn claim(ctx: Context<Claim>, ibo_address: Pubkey, ibo_idx: u32) -> Result<(
     // Update withdraw date to now
     ticket.update_claim_date();
 
-    let (_, bump) = anchor_lang::prelude::Pubkey::find_program_address(
+    let (rederived, bump) = anchor_lang::prelude::Pubkey::find_program_address(
         &[
             "ticket".as_bytes(),
             ibo_address.as_ref(),
-            &ibo_idx.to_be_bytes(),
+            &ticket_idx.to_be_bytes(),
         ],
         &ctx.program_id,
     );
     let seeds = &[
         "ticket".as_bytes(),
         ibo_address.as_ref(),
-        &ibo_idx.to_be_bytes(),
+        &ticket_idx.to_be_bytes(),
         &[bump],
     ];
+
+    msg!("rederived: {:?}", rederived);
+    msg!("ticket: {:?}", ticket.key());
 
     // Transfer SPL balance calculated
     token::transfer(
