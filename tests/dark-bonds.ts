@@ -358,7 +358,7 @@ describe("dark-bonds", async () => {
 
     // Spend 500 for rate 1 as player 1
     const tx_lu1 = await bondProgram.methods
-      .buyBonds(0, new anchor.BN(500))
+      .buyBonds(0, new anchor.BN(0), new anchor.BN(500))
       .accounts({
         buyer: bondBuyer1.publicKey,
         ticket: ticket0,

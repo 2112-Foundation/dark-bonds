@@ -52,9 +52,10 @@ pub mod dark_bonds {
     pub fn buy_bonds(
         ctx: Context<BuyBond>,
         lockup_idx: u32,
+        ibo_idx: u64,
         liquidity_provided: u64,
     ) -> Result<()> {
-        instructions::buy_bond::buy_bond(ctx, lockup_idx, liquidity_provided)
+        instructions::buy_bond::buy_bond(ctx, lockup_idx, ibo_idx, liquidity_provided)
     }
 
     // Claim tokens yielded for that specifc bond ticket

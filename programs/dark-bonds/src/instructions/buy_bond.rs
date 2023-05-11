@@ -57,7 +57,7 @@ pub struct BuyBond<'info> {
 
 // Extra cut for deposit which goes on to make LP in raydium
 
-pub fn buy_bond(ctx: Context<BuyBond>, lockup_idx: u32, stable_amount_liquidity: u64) -> Result<()> {    
+pub fn buy_bond(ctx: Context<BuyBond>, lockup_idx: u32, ibo_idx: u64, stable_amount_liquidity: u64) -> Result<()> {    
     let buyer: &Signer = &ctx.accounts.buyer;
     let lockup: &Account<LockUp> = &ctx.accounts.lockup;    
 
@@ -86,8 +86,17 @@ pub fn buy_bond(ctx: Context<BuyBond>, lockup_idx: u32, stable_amount_liquidity:
 
     let maturity_stamp: i64 = lockup.get_maturity_stamp();
 
+    let (ata_address, bump) = anchor_lang::prelude::Pubkey::find_program_address(&["ibo_instance".as_bytes(),  &ibo_idx.to_be_bytes()], &ctx.program_id);
+    let seeds = &["ibo_instance".as_bytes(), &ibo_idx.to_be_bytes(), &[bump]];  
+
+
+    msg!("rederived address: {:?}", ata_address);
+    msg!("provided address: {:?}", ibo.key());
+
     // msg!("total_gains: {:?}",total_gains);
     // msg!("maturity_stamp: {:?}",maturity_stamp);
+
+    // Transfer bond coin to the ticket PDA
 
     // Create a new bond instance PDA
     ticket.new(buyer.key(), maturity_stamp, total_gains);
