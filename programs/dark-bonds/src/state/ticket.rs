@@ -31,6 +31,7 @@ impl Ticket {
         self.maturity_date = maturity_date;
         self.owner = owner;
         self.bond_start = Clock::get().unwrap().unix_timestamp;
+        self.last_claimed = self.bond_start;
         self.total_claimable = total_gains;
     }
 
@@ -47,8 +48,43 @@ impl Ticket {
     // How much can be claimed on this particular call absed on time elsapsed since
     // last time and total that is to be claimable
     pub fn claim_amount(&self) -> u64 {
-        return ((self.last_claimed - Clock::get().unwrap().unix_timestamp)
-            / (self.maturity_date - self.bond_start)) as u64
-            * self.total_claimable;
+        // msg!(
+        //     "self.last_claimed - Clock::get().unwrap().unix_timestamp: {:?}",
+        //     Clock::get().unwrap().unix_timestamp - self.last_claimed
+        // );
+        // msg!(
+        //     "self.maturity_date - self.bond_start: {:?}",
+        //     self.maturity_date - self.bond_start
+        // );
+        // msg!("total_claimable: {:?}", self.total_claimable);
+
+        // return ((Clock::get().unwrap().unix_timestamp - self.last_claimed)
+        //     / (self.maturity_date - self.bond_start)) as u64
+        //     * self.total_claimable;
+
+        // Need to calculate time since last claim
+        let time_elapsed: i64 = Clock::get().unwrap().unix_timestamp - self.last_claimed;
+        msg!("time_elapsed: {:?}", time_elapsed);
+
+        // Need to work out total time from start to maturity
+        let total_time: i64 = self.maturity_date - self.bond_start;
+        msg!("total_time: {:?}", total_time);
+
+        // Need work out the ratio of total time
+        let ratio: f64 = time_elapsed as f64 / total_time as f64;
+        msg!("ratio: {:?}", ratio);
+
+        msg!("total_claimable: {:?}", self.total_claimable);
+        msg!(
+            "claiming this time: {:?}",
+            ratio * self.total_claimable as f64
+        );
+
+        // Multiplly ratio by total that is to gain
+        return (ratio * self.total_claimable as f64) as u64;
     }
 }
+
+// 1683842
+
+// TODO: Need to standardise input to seconds or miliseconds

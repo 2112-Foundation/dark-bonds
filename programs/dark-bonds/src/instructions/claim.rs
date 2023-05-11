@@ -49,21 +49,31 @@ impl<'info> Claim<'info> {
 }
 
 // TODO function to claim everything if time has expeired claim_all
+pub fn claim_all(ctx: Context<Claim>, ibo_address: Pubkey, ticket_idx: u32) -> Result<()> {
+    // Check that bond expired
 
+    // transfer all
+
+    // close it
+
+    Ok(())
+}
 // option to add % to claim?
 pub fn claim(ctx: Context<Claim>, ibo_address: Pubkey, ticket_idx: u32) -> Result<()> {
     let ticket: &mut Account<Ticket> = &mut ctx.accounts.ticket;
 
     // Ensure can only withdraw once a day
-    require!(ticket.time_elapsed(), ErrorCode::WithdrawTooEarly);
+    // require!(ticket.time_elapsed(), ErrorCode::WithdrawTooEarly);
 
-    // Calculate balance that can be witdhrawn
+    // // Calculate balance that can be witdhrawn
     let claimable: u64 = ticket.claim_amount();
+
+    msg!("\nclaim: {:?}", claimable);
 
     // Update withdraw date to now
     ticket.update_claim_date();
 
-    let (rederived, bump) = anchor_lang::prelude::Pubkey::find_program_address(
+    let (_, bump) = anchor_lang::prelude::Pubkey::find_program_address(
         &[
             "ticket".as_bytes(),
             ibo_address.as_ref(),
@@ -78,8 +88,8 @@ pub fn claim(ctx: Context<Claim>, ibo_address: Pubkey, ticket_idx: u32) -> Resul
         &[bump],
     ];
 
-    msg!("rederived: {:?}", rederived);
-    msg!("ticket: {:?}", ticket.key());
+    msg!("total claimable: {:?}", ticket.total_claimable);
+    msg!("claimable: {:?}", claimable);
 
     // Transfer SPL balance calculated
     token::transfer(

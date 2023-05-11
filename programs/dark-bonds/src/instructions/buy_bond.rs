@@ -11,6 +11,8 @@ use solana_program::{
     pubkey::Pubkey,
 };
 
+const SECONDS_YEAR: f64 = 31536000.0;
+
 #[derive(Accounts)]
 #[instruction(lockup_idx: u32)]
 pub struct BuyBond<'info> {
@@ -62,8 +64,35 @@ pub fn buy_bond(ctx: Context<BuyBond>, _lockup_idx: u32, ibo_idx: u64, stable_am
     let lockup: &Account<LockUp> = &ctx.accounts.lockup;    
 
     // Cacluclate total amount to be netted over the whole lock-up period
-    let total_gains: u64 = lockup.get_total_gain(stable_amount_liquidity);
+    // let total_gains: u64 = lockup.get_total_gain(stable_amount_liquidity);
 
+
+    // Convert APY, time and initial input to f64
+    // Moved here
+    // ------------------------------------------------------------------------------------------
+    let apy: f64 = lockup.apy / 100.0;
+    let time_in_years: f64 = lockup.period as f64 / SECONDS_YEAR;
+    let initial_input: f64 = stable_amount_liquidity as f64;
+
+    msg!("\n\n\tliquidity provided: {:?}", stable_amount_liquidity);
+    msg!("apy: {:?}", apy);
+    msg!("time_in_years: {:?}", time_in_years);
+    msg!("self.period : {:?}", lockup.period);
+    // msg!("SECONDS_YEAR: {:?}", SECONDS_YEAR);
+
+    // Calculate total value using compound interest formula
+    let total_balance: f64 = initial_input * apy.powf(time_in_years);
+    msg!("total balance: {:?}", total_balance);
+
+    // Total earnings is the total value minus the initial input
+    let profit: f64 = total_balance - initial_input;
+    msg!("total profit: {:?}", profit);
+    msg!("yearly earnings: {:?}", profit);
+ 
+    let total_gains: u64 = profit as u64;
+
+    // ------------------------------------------------------------------------------------------
+    // 
     // Get balance within the bond main
     let bond_token_left: u64  = ctx.accounts.ibo_ata.amount;    
 
@@ -71,7 +100,7 @@ pub fn buy_bond(ctx: Context<BuyBond>, _lockup_idx: u32, ibo_idx: u64, stable_am
     require!(bond_token_left >= total_gains, ErrorCode::BondsSoldOut);    
 
     msg!("bond_token_left: {:?}", bond_token_left);
-    msg!("total_gains: {:?}", total_gains);
+    msg!("full bond value: {:?}", total_gains);
 
     // Transfer liquidity coin to the specified account    
     token::transfer(

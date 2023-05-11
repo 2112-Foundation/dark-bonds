@@ -22,6 +22,10 @@ describe("dark-bonds", async () => {
 
   const LAMPORTS_PER_SOL = 1000000000;
 
+  function delay(seconds: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
+  }
+
   const bondProgram = anchor.workspace.DarkBonds as Program<DarkBonds>;
 
   const superAdmin = anchor.web3.Keypair.generate();
@@ -72,8 +76,8 @@ describe("dark-bonds", async () => {
   let lockUp1Period: number = 63072000;
   let lockUp1Apy: number = 1.2 * 100;
   let lockUp2PDA: PublicKey;
-  let lockUp2Period: number = 10;
-  let lockUp2Apy: number = 2000000000 * 100;
+  let lockUp2Period: number = 20;
+  let lockUp2Apy: number = 10000000 * 100;
 
   async function topUp(topUpAcc: PublicKey) {
     {
@@ -171,7 +175,7 @@ describe("dark-bonds", async () => {
       mintSC,
       bondBuyer2ATA_sc.address,
       mintAuthSC,
-      10000,
+      10000000000000,
       [],
       undefined,
       TOKEN_PROGRAM_ID
@@ -218,7 +222,7 @@ describe("dark-bonds", async () => {
       mintB,
       ibo0ATA_b.address,
       mintAuthB,
-      10000000,
+      1000000000000000,
       [],
       undefined,
       TOKEN_PROGRAM_ID
@@ -473,7 +477,7 @@ describe("dark-bonds", async () => {
 
     // Spend 500 for rate 1 as player 1
     const tx_lu1 = await bondProgram.methods
-      .buyBonds(2, new anchor.BN(0), new anchor.BN(500))
+      .buyBonds(2, new anchor.BN(0), new anchor.BN(100000000))
       .accounts({
         buyer: bondBuyer2.publicKey,
         ticket: ticket2,
@@ -515,7 +519,9 @@ describe("dark-bonds", async () => {
     // Call claim
     // See how much has been taken
 
-    console.log("ticket: ", ticket2);
+    console.log("ticket: ", ticket2.toBase58());
+
+    await delay(5);
 
     // Spend 500 for rate 1 as player 1
     const tx_lu1 = await bondProgram.methods
@@ -525,13 +531,7 @@ describe("dark-bonds", async () => {
         ticket: ticket2,
         bondOwnerAta: bondBuyer2ATA_b.address,
         ticketAta: ticket2ATA_b.address,
-        // buyerAta: bondBuyer2ATA_sc.address,
-        // recipientAta: iboAdminATA_sc.address,
-        // iboAta: ibo0ATA_b.address,
-        // ticketAta: ticket1ATA_b.address,
         systemProgram: anchor.web3.SystemProgram.programId,
-        // tokenProgram: TOKEN_PROGRAM_ID,
-        // associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
       })
       .signers([bondBuyer2])
       .rpc();
