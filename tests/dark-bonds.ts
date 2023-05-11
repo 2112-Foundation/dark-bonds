@@ -65,15 +65,15 @@ describe("dark-bonds", async () => {
   let ticket2: PublicKey;
 
   // Lock ups
+  let lockUp0PDA: PublicKey;
+  let lockUp0Period: number = 31536000;
+  let lockUp0Apy: number = 1.2 * 100;
   let lockUp1PDA: PublicKey;
-  let lockUp1Period: number = 31536000;
-  let lockUp1Apy: number = 1.2 * 100;
+  let lockUp1Period: number = 63072000;
+  let lockUp1Apy: number = 1.33 * 100;
   let lockUp2PDA: PublicKey;
-  let lockUp2Period: number = 63072000;
-  let lockUp2Apy: number = 1.33 * 100;
-  let lockUp3PDA: PublicKey;
-  let lockUp3Period: number = 94608000;
-  let lockUp3Apy: number = 1.5 * 100;
+  let lockUp2Period: number = 94608000;
+  let lockUp2Apy: number = 1.5 * 100;
 
   async function topUp(topUpAcc: PublicKey) {
     {
@@ -243,7 +243,7 @@ describe("dark-bonds", async () => {
 
   it("Add three different lockups.", async () => {
     // Derive lock up PDAs for 1,2,3
-    [lockUp1PDA] = await PublicKey.findProgramAddress(
+    [lockUp0PDA] = await PublicKey.findProgramAddress(
       [
         Buffer.from("lockup"),
         Buffer.from(ibo0.toBytes()),
@@ -251,7 +251,7 @@ describe("dark-bonds", async () => {
       ],
       bondProgram.programId
     );
-    [lockUp2PDA] = await PublicKey.findProgramAddress(
+    [lockUp1PDA] = await PublicKey.findProgramAddress(
       [
         Buffer.from("lockup"),
         Buffer.from(ibo0.toBytes()),
@@ -259,13 +259,26 @@ describe("dark-bonds", async () => {
       ],
       bondProgram.programId
     );
-    [lockUp3PDA] = await PublicKey.findProgramAddress(
+    [lockUp2PDA] = await PublicKey.findProgramAddress(
       [
         Buffer.from("lockup"),
         Buffer.from(ibo0.toBytes()),
         new BN(2).toArrayLike(Buffer, "be", 4),
       ],
       bondProgram.programId
+    );
+    let lockUp0Instruction = bondProgram.instruction.addLockup(
+      new anchor.BN(lockUp0Period),
+      new anchor.BN(lockUp0Apy),
+      {
+        accounts: {
+          // mainIbo: mainIbo,
+          admin: adminIbo0.publicKey,
+          ibo: ibo0,
+          lockup: lockUp0PDA,
+          systemProgram: anchor.web3.SystemProgram.programId,
+        },
+      }
     );
     let lockUp1Instruction = bondProgram.instruction.addLockup(
       new anchor.BN(lockUp1Period),
@@ -293,23 +306,10 @@ describe("dark-bonds", async () => {
         },
       }
     );
-    let lockUp3Instruction = bondProgram.instruction.addLockup(
-      new anchor.BN(lockUp3Period),
-      new anchor.BN(lockUp3Apy),
-      {
-        accounts: {
-          // mainIbo: mainIbo,
-          admin: adminIbo0.publicKey,
-          ibo: ibo0,
-          lockup: lockUp3PDA,
-          systemProgram: anchor.web3.SystemProgram.programId,
-        },
-      }
-    );
     let transaction = new anchor.web3.Transaction();
+    transaction.add(lockUp0Instruction);
     transaction.add(lockUp1Instruction);
     transaction.add(lockUp2Instruction);
-    transaction.add(lockUp3Instruction);
     let tx = await anchor.web3.sendAndConfirmTransaction(
       anchor.getProvider().connection,
       transaction,
@@ -363,7 +363,7 @@ describe("dark-bonds", async () => {
         buyer: bondBuyer1.publicKey,
         ticket: ticket0,
         ibo: ibo0,
-        lockup: lockUp1PDA,
+        lockup: lockUp0PDA,
         buyerAta: bondBuyer1ATA_sc.address,
         recipientAta: iboAdminATA_sc.address,
         iboAta: ibo0ATA_b.address,
@@ -386,50 +386,67 @@ describe("dark-bonds", async () => {
       ticket0_state.totalClaimable.toString()
     );
 
+    // let ibo0_state = await bondProgram.account.ibo.fetch(ibo0);
+    // console.log("ibo0_state: ", ibo0_state.)
+
     // Check that stablecoin balance decresed
     // Check that buyer set as the owner in the ticket
     // Check calculation of bond to receive is correct
   });
 
-  // it("Buyer 2 deposits funds at a rate 2", async () => {
-  //   // Derive ticket from latest counter instance
-  //   [ticket1] = await PublicKey.findProgramAddress(
-  //     [
-  //       Buffer.from("ticket"),
-  //       Buffer.from(ibo0.toBytes()),
-  //       new BN(1).toArrayLike(Buffer, "be", 4),
-  //     ],
-  //     bondProgram.programId
-  //   );
+  it("Buyer 2 deposits funds at a rate 2", async () => {
+    // Derive ticket from latest counter instance
+    [ticket1] = await PublicKey.findProgramAddress(
+      [
+        Buffer.from("ticket"),
+        Buffer.from(ibo0.toBytes()),
+        new BN(1).toArrayLike(Buffer, "be", 4),
+      ],
+      bondProgram.programId
+    );
 
-  //   // Spend 500 for rate 1 as player 1
-  //   const tx_lu1 = await bondProgram.methods
-  //     .buyBonds(new anchor.BN(500))
-  //     .accounts({
-  //       buyer: bondBuyer2.publicKey,
-  //       ticket: ticket1,
-  //       ibo: ibo0,
-  //       lockup: lockUp2PDA,
-  //       systemProgram: anchor.web3.SystemProgram.programId,
-  //     })
-  //     .signers([bondBuyer2])
-  //     .rpc();
+    ticket1ATA_b = await getOrCreateAssociatedTokenAccount(
+      provider.connection,
+      bondBuyer2,
+      mintB,
+      ticket1,
+      true
+    );
 
-  //   let ticket1_state = await bondProgram.account.ticket.fetch(ticket1);
-  //   console.log("ticket0 owner: ", ticket1_state.owner.toBase58());
-  //   console.log(
-  //     "ticket0 maturity date: ",
-  //     ticket1_state.maturityDate.toString()
-  //   );
-  //   console.log(
-  //     "ticket0 total to claim: ",
-  //     ticket1_state.totalClaimable.toString()
-  //   );
+    // Spend 500 for rate 1 as player 1
+    const tx_lu1 = await bondProgram.methods
+      .buyBonds(1, new anchor.BN(0), new anchor.BN(500))
+      .accounts({
+        buyer: bondBuyer2.publicKey,
+        ticket: ticket1,
+        ibo: ibo0,
+        lockup: lockUp1PDA,
+        buyerAta: bondBuyer2ATA_sc.address,
+        recipientAta: iboAdminATA_sc.address,
+        iboAta: ibo0ATA_b.address,
+        buyerPdaAta: ticket1ATA_b.address,
+        systemProgram: anchor.web3.SystemProgram.programId,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+      })
+      .signers([bondBuyer2])
+      .rpc();
 
-  //   // Check that stablecoin balance decresed
-  //   // Check that buyer set as the owner in the ticket
-  //   // Check calculation of bond to receive is correct
-  // });
+    let ticket1_state = await bondProgram.account.ticket.fetch(ticket1);
+    console.log("ticket0 owner: ", ticket1_state.owner.toBase58());
+    console.log(
+      "ticket0 maturity date: ",
+      ticket1_state.maturityDate.toString()
+    );
+    console.log(
+      "ticket0 total to claim: ",
+      ticket1_state.totalClaimable.toString()
+    );
+
+    // Check that stablecoin balance decresed
+    // Check that buyer set as the owner in the ticket
+    // Check calculation of bond to receive is correct
+  });
 
   // it("Buyer 2 deposits funds at a rate 2", async () => {
   //   // Derive ticket from latest counter instance
@@ -449,7 +466,7 @@ describe("dark-bonds", async () => {
   //       buyer: bondBuyer2.publicKey,
   //       ticket: ticket2,
   //       ibo: ibo0,
-  //       lockup: lockUp3PDA,
+  //       lockup: lockUp2PDA,
   //       systemProgram: anchor.web3.SystemProgram.programId,
   //     })
   //     .signers([bondBuyer2])
