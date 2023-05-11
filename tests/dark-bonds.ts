@@ -204,25 +204,25 @@ describe("dark-bonds", async () => {
       bondProgram.programId
     );
 
-    // ibo0ATA_b = await getOrCreateAssociatedTokenAccount(
-    //   provider.connection,
-    //   adminIbo0,
-    //   mintB,
-    //   ibo0,
-    //   true
-    // );
+    ibo0ATA_b = await getOrCreateAssociatedTokenAccount(
+      provider.connection,
+      adminIbo0,
+      mintB,
+      ibo0,
+      true
+    );
 
-    // await mintTo(
-    //   provider.connection,
-    //   mintAuthB,
-    //   mintB,
-    //   ibo0ATA_b.address,
-    //   mintAuthB,
-    //   6666,
-    //   [],
-    //   undefined,
-    //   TOKEN_PROGRAM_ID
-    // );
+    await mintTo(
+      provider.connection,
+      mintAuthB,
+      mintB,
+      ibo0ATA_b.address,
+      mintAuthB,
+      10000000,
+      [],
+      undefined,
+      TOKEN_PROGRAM_ID
+    );
 
     const tx = await bondProgram.methods
       .createIbo(
@@ -239,29 +239,6 @@ describe("dark-bonds", async () => {
       })
       .signers([adminIbo0])
       .rpc();
-    console.log("Your transaction signature", tx);
-
-    // derive ibo ata
-    // ibo0ATA_b = await getOrCreateAssociatedTokenAccount(
-    //   provider.connection,
-    //   adminIbo0,
-    //   mintB,
-    //   ibo0,
-    //   true
-    // );
-
-    // // Mint bond tokens into the Ibo PDA derived ATA
-    // await mintTo(
-    //   provider.connection,
-    //   mintAuthB,
-    //   mintB,
-    //   ibo0ATA_b.address,
-    //   mintAuthB,
-    //   100000,
-    //   [],
-    //   undefined,
-    //   TOKEN_PROGRAM_ID
-    // );
   });
 
   it("Add three different lockups.", async () => {
@@ -344,75 +321,75 @@ describe("dark-bonds", async () => {
     );
   });
 
-  // it("Lock further lockups.", async () => {
-  //   const tx_lu1 = await bondProgram.methods
-  //     .lock()
-  //     .accounts({
-  //       admin: adminIbo0.publicKey,
-  //       ibo: ibo0,
-  //     })
-  //     .signers([adminIbo0])
-  //     .rpc();
+  it("Lock further lockups.", async () => {
+    const tx_lu1 = await bondProgram.methods
+      .lock()
+      .accounts({
+        admin: adminIbo0.publicKey,
+        ibo: ibo0,
+      })
+      .signers([adminIbo0])
+      .rpc();
 
-  //   // Assert lock changed to true
-  //   let ibo0_state = await bondProgram.account.ibo.fetch(ibo0);
-  //   assert(ibo0_state.locked == true);
-  // });
+    // Assert lock changed to true
+    let ibo0_state = await bondProgram.account.ibo.fetch(ibo0);
+    assert(ibo0_state.locked == true);
+  });
 
-  // it("Buyer 1 deposits funds at a rate 1", async () => {
-  //   // Derive ticket from latest counter instance
-  //   [ticket0] = await PublicKey.findProgramAddress(
-  //     [
-  //       Buffer.from("ticket"),
-  //       Buffer.from(ibo0.toBytes()),
-  //       new BN(0).toArrayLike(Buffer, "be", 4),
-  //     ],
-  //     bondProgram.programId
-  //   );
+  it("Buyer 1 deposits funds at a rate 1", async () => {
+    // Derive ticket from latest counter instance
+    [ticket0] = await PublicKey.findProgramAddress(
+      [
+        Buffer.from("ticket"),
+        Buffer.from(ibo0.toBytes()),
+        new BN(0).toArrayLike(Buffer, "be", 4),
+      ],
+      bondProgram.programId
+    );
 
-  //   // Get ATA for ticket0 PDA
-  //   ticket0ATA_b = await getOrCreateAssociatedTokenAccount(
-  //     provider.connection,
-  //     bondBuyer1,
-  //     mintB,
-  //     ticket0,
-  //     true
-  //   );
+    // Get ATA for ticket0 PDA
+    ticket0ATA_b = await getOrCreateAssociatedTokenAccount(
+      provider.connection,
+      bondBuyer1,
+      mintB,
+      ticket0,
+      true
+    );
 
-  //   // Spend 500 for rate 1 as player 1
-  //   const tx_lu1 = await bondProgram.methods
-  //     .buyBonds(0, new anchor.BN(500))
-  //     .accounts({
-  //       buyer: bondBuyer1.publicKey,
-  //       ticket: ticket0,
-  //       ibo: ibo0,
-  //       lockup: lockUp1PDA,
-  //       buyerAta: bondBuyer1ATA_sc.address,
-  //       recipientAta: iboAdminATA_sc.address,
-  //       iboAta: ibo0ATA_b.address,
-  //       buyerPdaAta: ticket0ATA_b.address,
-  //       systemProgram: anchor.web3.SystemProgram.programId,
-  //       tokenProgram: TOKEN_PROGRAM_ID,
-  //       associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-  //     })
-  //     .signers([bondBuyer1])
-  //     .rpc();
+    // Spend 500 for rate 1 as player 1
+    const tx_lu1 = await bondProgram.methods
+      .buyBonds(0, new anchor.BN(500))
+      .accounts({
+        buyer: bondBuyer1.publicKey,
+        ticket: ticket0,
+        ibo: ibo0,
+        lockup: lockUp1PDA,
+        buyerAta: bondBuyer1ATA_sc.address,
+        recipientAta: iboAdminATA_sc.address,
+        iboAta: ibo0ATA_b.address,
+        buyerPdaAta: ticket0ATA_b.address,
+        systemProgram: anchor.web3.SystemProgram.programId,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+      })
+      .signers([bondBuyer1])
+      .rpc();
 
-  //   let ticket0_state = await bondProgram.account.ticket.fetch(ticket0);
-  //   console.log("ticket0 owner: ", ticket0_state.owner.toBase58());
-  //   console.log(
-  //     "ticket0 maturity date: ",
-  //     ticket0_state.maturityDate.toString()
-  //   );
-  //   console.log(
-  //     "ticket0 total to claim: ",
-  //     ticket0_state.totalClaimable.toString()
-  //   );
+    let ticket0_state = await bondProgram.account.ticket.fetch(ticket0);
+    console.log("ticket0 owner: ", ticket0_state.owner.toBase58());
+    console.log(
+      "ticket0 maturity date: ",
+      ticket0_state.maturityDate.toString()
+    );
+    console.log(
+      "ticket0 total to claim: ",
+      ticket0_state.totalClaimable.toString()
+    );
 
-  //   // Check that stablecoin balance decresed
-  //   // Check that buyer set as the owner in the ticket
-  //   // Check calculation of bond to receive is correct
-  // });
+    // Check that stablecoin balance decresed
+    // Check that buyer set as the owner in the ticket
+    // Check calculation of bond to receive is correct
+  });
 
   // it("Buyer 2 deposits funds at a rate 2", async () => {
   //   // Derive ticket from latest counter instance
