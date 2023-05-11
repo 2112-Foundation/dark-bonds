@@ -42,7 +42,7 @@ pub struct BuyBond<'info> {
     #[account(mut)]
     pub recipient_ata: Box<Account<'info, TokenAccount>>,
 
-    // // bond token
+    // bond token
     #[account(mut)]
     pub ibo_ata: Box<Account<'info, TokenAccount>>,
     #[account(mut)]
@@ -64,26 +64,25 @@ pub fn buy_bond(ctx: Context<BuyBond>, lockup_idx: u32, stable_amount_liquidity:
     // Cacluclate total amount to be netted over the whole lock-up period
     let total_gains: u64 = lockup.get_total_gain(stable_amount_liquidity);
 
-    // TODO ensure correct account tprovided
+    // Get balance within the bond main
+    let bond_token_left: u64  = ctx.accounts.ibo_ata.amount;    
 
-    // Transfer to the specified account    
+    // Ensure there are enough tokens TODO
+    require!(bond_token_left >= total_gains, ErrorCode::BondsSoldOut);    
+
+    msg!("bond_token_left: {:?}", bond_token_left);
+    msg!("total_gains: {:?}", total_gains);
+
+    // Transfer liquidity coin to the specified account    
     token::transfer(
         ctx.accounts
             .transfer_ctx(&ctx.accounts.buyer_ata, &ctx.accounts.recipient_ata, buyer),                 
-            200
+            total_gains
     )?;
 
     let ticket: &mut Account<Ticket> = &mut ctx.accounts.ticket; 
-    let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
-
-    
-
-    // Prior ensure that the lock-up PDA provided has been derived from this Ibo account TODO
-
-        
-
-
-    // Ensure there are enough tokens TODO
+    let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;          
+   
 
     let maturity_stamp: i64 = lockup.get_maturity_stamp();
 

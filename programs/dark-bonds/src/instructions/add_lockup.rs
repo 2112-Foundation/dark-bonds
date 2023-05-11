@@ -15,7 +15,7 @@ pub struct AddLockUp<'info> {
     pub ibo: Account<'info, Ibo>,
     #[account(        
         init,      
-        seeds = ["lockup".as_bytes(), &ibo.lockup_counter.to_be_bytes()], // TODO add counter
+        seeds = ["lockup".as_bytes(), ibo.key().as_ref(), &ibo.lockup_counter.to_be_bytes()], // TODO add counter
         bump,      
         payer = admin, 
         space = 400
