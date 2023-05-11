@@ -1,5 +1,4 @@
 use anchor_lang::prelude::*;
-use std::time::Duration;
 
 const SECONDS_YEAR: f64 = 31536000.0;
 
@@ -19,20 +18,20 @@ impl LockUp {
         let time_in_years: f64 = self.period as f64 / SECONDS_YEAR;
         let initial_input: f64 = initial_input as f64;
 
-        // msg!("\ninitial_inputpy: {:?}", initial_input);
-        // msg!("apy: {:?}", apy);
-        // msg!("time_in_years: {:?}", time_in_years);
-        // msg!("self.period : {:?}", self.period);
-        // msg!("SECONDS_YEAR: {:?}", SECONDS_YEAR);
+        msg!("\ninitial_inputpy: {:?}", initial_input);
+        msg!("apy: {:?}", apy);
+        msg!("time_in_years: {:?}", time_in_years);
+        msg!("self.period : {:?}", self.period);
+        msg!("SECONDS_YEAR: {:?}", SECONDS_YEAR);
 
         // Calculate total value using compound interest formula
-        let total_value = initial_input * apy.powf(time_in_years);
-        // msg!("total_value: {:?}", total_value);
+        let total_value: f64 = initial_input * apy.powf(time_in_years);
+        msg!("total_value: {:?}", total_value);
 
         // Total earnings is the total value minus the initial input
-        let total_earnings = total_value - initial_input;
-        // msg!("total_earnings: {:?}", total_earnings);
-        // msg!("yearly earnings: {:?}", total_earnings);
+        let total_earnings: f64 = total_value - initial_input;
+        msg!("total_earnings: {:?}", total_earnings);
+        msg!("yearly earnings: {:?}", total_earnings);
 
         total_earnings as u64
     }

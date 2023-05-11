@@ -44,9 +44,9 @@ pub struct BuyBond<'info> {
     // bond token    
     #[account(mut)]
     pub ibo_ata: Box<Account<'info, TokenAccount>>,
-    #[account(mut)]
-    pub buyer_pda_ata: Box<Account<'info, TokenAccount>>,       
-
+    // Check for ticket substitution attack
+    #[account(mut, token::authority = ticket)]
+    pub ticket_ata: Box<Account<'info, TokenAccount>>,       
 
     pub token_program: Program<'info, Token>,
     pub associated_token_program: Program<'info, AssociatedToken>,
@@ -126,7 +126,7 @@ impl<'info> BuyBond<'info> {
             self.token_program.to_account_info(),
             Transfer {
                 from: self.ibo_ata.to_account_info(),
-                to: self.buyer_pda_ata.to_account_info(),
+                to: self.ticket_ata.to_account_info(),
                 authority: self.ibo.to_account_info(),
             },
         )

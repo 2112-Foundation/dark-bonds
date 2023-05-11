@@ -72,8 +72,8 @@ describe("dark-bonds", async () => {
   let lockUp1Period: number = 63072000;
   let lockUp1Apy: number = 1.2 * 100;
   let lockUp2PDA: PublicKey;
-  let lockUp2Period: number = 94608000;
-  let lockUp2Apy: number = 1.2 * 100;
+  let lockUp2Period: number = 10;
+  let lockUp2Apy: number = 2000000000 * 100;
 
   async function topUp(topUpAcc: PublicKey) {
     {
@@ -367,7 +367,7 @@ describe("dark-bonds", async () => {
         buyerAta: bondBuyer1ATA_sc.address,
         recipientAta: iboAdminATA_sc.address,
         iboAta: ibo0ATA_b.address,
-        buyerPdaAta: ticket0ATA_b.address,
+        ticketAta: ticket0ATA_b.address,
         systemProgram: anchor.web3.SystemProgram.programId,
         tokenProgram: TOKEN_PROGRAM_ID,
         associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -424,7 +424,7 @@ describe("dark-bonds", async () => {
         buyerAta: bondBuyer2ATA_sc.address,
         recipientAta: iboAdminATA_sc.address,
         iboAta: ibo0ATA_b.address,
-        buyerPdaAta: ticket1ATA_b.address,
+        ticketAta: ticket1ATA_b.address,
         systemProgram: anchor.web3.SystemProgram.programId,
         tokenProgram: TOKEN_PROGRAM_ID,
         associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -462,6 +462,15 @@ describe("dark-bonds", async () => {
       bondProgram.programId
     );
 
+    // Get ATA for ticket0 PDA
+    ticket2ATA_b = await getOrCreateAssociatedTokenAccount(
+      provider.connection,
+      bondBuyer2,
+      mintB,
+      ticket2,
+      true
+    );
+
     // Spend 500 for rate 1 as player 1
     const tx_lu1 = await bondProgram.methods
       .buyBonds(2, new anchor.BN(0), new anchor.BN(500))
@@ -473,13 +482,16 @@ describe("dark-bonds", async () => {
         buyerAta: bondBuyer2ATA_sc.address,
         recipientAta: iboAdminATA_sc.address,
         iboAta: ibo0ATA_b.address,
-        buyerPdaAta: ticket1ATA_b.address,
+        ticketAta: ticket2ATA_b.address,
         systemProgram: anchor.web3.SystemProgram.programId,
         tokenProgram: TOKEN_PROGRAM_ID,
         associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
       })
       .signers([bondBuyer2])
       .rpc();
+
+    // TODO: ticket substitition attack
+    // can provide any ticket ATA right now
 
     let ticket1_state = await bondProgram.account.ticket.fetch(ticket2);
     console.log("ticket2 owner: ", ticket1_state.owner.toBase58());
@@ -495,5 +507,31 @@ describe("dark-bonds", async () => {
     // Check that stablecoin balance decresed
     // Check that buyer set as the owner in the ticket
     // Check calculation of bond to receive is correct
+  });
+
+  it("Claim test", async () => {
+    // Get start time for last bond
+    // Get time now
+    // Call claim
+    // See how much has been taken
+
+    // Spend 500 for rate 1 as player 1
+    const tx_lu1 = await bondProgram.methods
+      .claim(ibo0, 0)
+      .accounts({
+        bondOwner: bondBuyer2.publicKey,
+        ticket: ticket2,
+        bondOwnerAta: ibo0,
+        ticketAta: lockUp2PDA,
+        // buyerAta: bondBuyer2ATA_sc.address,
+        // recipientAta: iboAdminATA_sc.address,
+        // iboAta: ibo0ATA_b.address,
+        // ticketAta: ticket1ATA_b.address,
+        systemProgram: anchor.web3.SystemProgram.programId,
+        // tokenProgram: TOKEN_PROGRAM_ID,
+        // associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+      })
+      .signers([bondBuyer2])
+      .rpc();
   });
 });

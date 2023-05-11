@@ -59,8 +59,8 @@ pub mod dark_bonds {
     }
 
     // Claim tokens yielded for that specifc bond ticket
-    pub fn claim(ctx: Context<Claim>) -> Result<()> {
-        instructions::claim::claim(ctx)
+    pub fn claim(ctx: Context<Claim>, ibo_address: Pubkey, ibo_idx: u32) -> Result<()> {
+        instructions::claim::claim(ctx, ibo_address, ibo_idx)
     }
 
     // Split bond ticket into multiples
