@@ -76,18 +76,25 @@ pub fn buy_bond(ctx: Context<BuyBond>, lockup_idx: u32, ibo_idx: u64, stable_amo
     // Transfer liquidity coin to the specified account    
     token::transfer(
         ctx.accounts
-            .transfer_ctx(&ctx.accounts.buyer_ata, &ctx.accounts.recipient_ata, buyer),                 
+            .transfer_liquidity(),                 
             total_gains
-    )?;
-
-    let ticket: &mut Account<Ticket> = &mut ctx.accounts.ticket; 
-    let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;          
+    )?;        
    
 
     let maturity_stamp: i64 = lockup.get_maturity_stamp();
-
     let (ata_address, bump) = anchor_lang::prelude::Pubkey::find_program_address(&["ibo_instance".as_bytes(),  &ibo_idx.to_be_bytes()], &ctx.program_id);
     let seeds = &["ibo_instance".as_bytes(), &ibo_idx.to_be_bytes(), &[bump]];  
+    
+    token::transfer(
+        ctx.accounts
+            .transfer_bond()
+            .with_signer(&[seeds]),
+            bond_token_left,
+    )?;
+
+    let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;         
+    let ticket: &mut Account<Ticket> = &mut ctx.accounts.ticket; 
+
 
 
     msg!("rederived address: {:?}", ata_address);
@@ -104,29 +111,34 @@ pub fn buy_bond(ctx: Context<BuyBond>, lockup_idx: u32, ibo_idx: u64, stable_amo
     // Increment bond counter
     ibo.ticket_counter += 1;
 
+    
+
     Ok(())
 }
 
 
 impl<'info> BuyBond<'info> {
-    fn transfer_ctx(&self, from_ata: &Account<'info, TokenAccount>, to_ata: &Account<'info, TokenAccount>, auth: &Signer<'info>) -> CpiContext<'_, '_, '_, 'info, Transfer<'info>>{
+    // fn transfer_liquidity(&self, from_ata: &Account<'info, TokenAccount>, to_ata: &Account<'info, TokenAccount>, auth: &Signer<'info>) -> CpiContext<'_, '_, '_, 'info, Transfer<'info>>{
+    fn transfer_liquidity(&self) -> CpiContext<'_, '_, '_, 'info, Transfer<'info>>{
         CpiContext::new(
             self.token_program.to_account_info(),
             Transfer {
-                from: from_ata.to_account_info(),
-                to: to_ata.to_account_info(),
-                authority: auth.to_account_info(),
+                from: self.buyer_ata.to_account_info(),
+                to: self.recipient_ata.to_account_info(),
+                authority: self.buyer.to_account_info(),
             },
         )
     }
 
-    // fn transfer_ctx2 (&self, from_ata: &Account<'info, TokenAccount>, to_ata: &Account<'info, TokenAccount>, auth: &Account<'info, TokenAccount>) {
-    //     CpiContext::new(
-    //     ctx.accounts.token_program.to_account_info(),
-    //     Transfer {
-    //         from: attendee_sc.to_account_info(),
-    //         authority: ctx.accounts.attendee.to_account_info(),
-    //         to: event_stablecoin_ata.to_account_info(),
-    //     }
-    // );      
+    fn transfer_bond(&self) -> CpiContext<'_, '_, '_, 'info, Transfer<'info>>{
+        CpiContext::new(
+            self.token_program.to_account_info(),
+            Transfer {
+                from: self.ibo_ata.to_account_info(),
+                to: self.buyer_pda_ata.to_account_info(),
+                authority: self.ibo.to_account_info(),
+            },
+        )
+    }
+
 }
