@@ -14,9 +14,7 @@ use solana_program::{
 #[derive(Accounts)]
 #[instruction(lockup_idx: u32)]
 pub struct BuyBond<'info> {
-
-    // TODO need a mint correctness check
-    // #[account(mut, token::mint = mint, token::authority = vault)]
+    
     #[account(mut)]
     pub buyer: Signer<'info>,    
     #[account(        
@@ -29,29 +27,27 @@ pub struct BuyBond<'info> {
     pub ticket: Account<'info, Ticket>,
     #[account(mut)]
     pub ibo: Account<'info, Ibo>,
-
-    // TODO add check for this being derived correctly
+    
     #[account(                
         seeds = ["lockup".as_bytes(), ibo.key().as_ref(),  &lockup_idx.to_be_bytes()], // TODO add counter
         bump,              
     )]    
     pub lockup: Account<'info, LockUp>,
+
     // purchse token
-    // #[account(mut)]
+    // Provided ATA has to be same mint as the one set in ibo
     #[account(mut, token::mint = ibo.stablecoin, token::authority = buyer)]
-    pub buyer_ata: Box<Account<'info, TokenAccount>>,
-    // #[account(mut)]
-    // #[account(mut, token::mint = ibo.stablecoin, token::authority = buyer)]
+    pub buyer_ata: Box<Account<'info, TokenAccount>>,    
     #[account(mut)] 
     pub recipient_ata: Box<Account<'info, TokenAccount>>,
 
-    // bond token
-    // #[account(mut)]
-    // #[account(mut, token::mint = mint, token::authority = vault)]    
+    // bond token    
     #[account(mut)]
     pub ibo_ata: Box<Account<'info, TokenAccount>>,
     #[account(mut)]
     pub buyer_pda_ata: Box<Account<'info, TokenAccount>>,       
+
+
     pub token_program: Program<'info, Token>,
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub rent: Sysvar<'info, Rent>,
@@ -59,7 +55,6 @@ pub struct BuyBond<'info> {
 }
 
 // PDA for acceptable mints
-
 // Extra cut for deposit which goes on to make LP in raydium
 
 pub fn buy_bond(ctx: Context<BuyBond>, _lockup_idx: u32, ibo_idx: u64, stable_amount_liquidity: u64) -> Result<()> {    
@@ -83,10 +78,7 @@ pub fn buy_bond(ctx: Context<BuyBond>, _lockup_idx: u32, ibo_idx: u64, stable_am
         ctx.accounts
             .transfer_liquidity(),                 
             stable_amount_liquidity
-    )?;           
-
-
-    
+    )?;               
 
     // Rederive bump
     let (_, bump) = anchor_lang::prelude::Pubkey::find_program_address(&["ibo_instance".as_bytes(),  &ibo_idx.to_be_bytes()], &ctx.program_id);
@@ -115,7 +107,6 @@ pub fn buy_bond(ctx: Context<BuyBond>, _lockup_idx: u32, ibo_idx: u64, stable_am
 
     Ok(())
 }
-
 
 impl<'info> BuyBond<'info> {
     // fn transfer_liquidity(&self, from_ata: &Account<'info, TokenAccount>, to_ata: &Account<'info, TokenAccount>, auth: &Signer<'info>) -> CpiContext<'_, '_, '_, 'info, Transfer<'info>>{
