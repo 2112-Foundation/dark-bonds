@@ -65,8 +65,12 @@ pub fn claim(ctx: Context<Claim>, ibo_address: Pubkey, ticket_idx: u32) -> Resul
     // Ensure can only withdraw once a day
     // require!(ticket.time_elapsed(), ErrorCode::WithdrawTooEarly);
 
-    // // Calculate balance that can be witdhrawn
-    let claimable: u64 = ticket.claim_amount();
+    // Calculate balance that can be witdhrawn
+    let claimable = if Clock::get().unwrap().unix_timestamp > ticket.maturity_date {
+        ctx.accounts.ticket_ata.amount
+    } else {
+        ticket.claim_amount()
+    };
 
     msg!("\nclaim: {:?}", claimable);
 
