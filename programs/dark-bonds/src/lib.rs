@@ -20,6 +20,7 @@ pub mod dark_bonds {
     }
 
     // Create a bond offering
+    // TODO ADD WITHDRFAW THIS OWN
     pub fn create_ibo(
         ctx: Context<CreateIBO>,
         fixed_exchange_rate: u64,

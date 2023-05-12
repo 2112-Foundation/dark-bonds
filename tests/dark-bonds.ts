@@ -532,11 +532,6 @@ describe("dark-bonds", async () => {
   });
 
   it("Claim test 1", async () => {
-    // Get start time for last bond
-    // Get time now
-    // Call claim
-    // See how much has been taken
-
     console.log("ticket: ", ticket2.toBase58());
 
     let ticektBalanceStart = await getTokenBalance(ticket2ATA_b);
@@ -566,7 +561,7 @@ describe("dark-bonds", async () => {
     assert(roughlyEqual(0.5, balanceBuyer / ticektBalanceStart, 10));
   });
 
-  it("Claim test 1, full amount", async () => {
+  it("Claim test 1, ALMOST FUKLK amount", async () => {
     console.log("ticket: ", ticket2.toBase58());
 
     let ticektBalanceStart = await getTokenBalance(ticket2ATA_b);
@@ -596,10 +591,11 @@ describe("dark-bonds", async () => {
     // assert(roughlyEqual(0.5, balanceBuyer / ticektBalanceStart, 10));
   });
 
-  it("Claim test 1, almost full", async () => {
+  it("Claim test 1, full", async () => {
     console.log("ticket: ", ticket2.toBase58());
 
     let ticektBalanceStart = await getTokenBalance(ticket2ATA_b);
+    let ticket2_state = await bondProgram.account.ticket.fetch(ticket2);
 
     await delay(8);
 
@@ -624,5 +620,6 @@ describe("dark-bonds", async () => {
     console.log("ticekt: ", ticektBalance);
 
     assert(ticektBalance == 0);
+    assert(balanceBuyer.toString() == ticket2_state.totalClaimable.toString());
   });
 });

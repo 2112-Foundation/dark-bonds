@@ -8,6 +8,7 @@ const SECONDS_YEAR: f64 = 31536000.0;
 
 #[account]
 pub struct LockUp {
+    //
     pub period: i64, // In seconds
     pub apy: f64,    // yearly gain for that lockup
 }
