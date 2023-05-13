@@ -10,7 +10,7 @@ use anchor_spl::{
 #[derive(Accounts)]
 pub struct BuySwap<'info> {
     #[account(mut)]
-    pub trader: Signer<'info>,
+    pub buyer: Signer<'info>,
 
     // This needs to be init (along with counter checks)
     pub ticket: Account<'info, Ticket>,
@@ -18,16 +18,18 @@ pub struct BuySwap<'info> {
     // For look up of trying to pay in the correct mint
     pub ibo: Account<'info, Ibo>,
     // Need ATA of buyer and seller and mint
+    #[account(mut,
+        token::mint = ibo.stablecoin,
+        token::authority = buyer,
+    )]
+    pub buyer_ata: Account<'info, TokenAccount>,
 
-    // #[account(mut,
-    //     token::mint = mint,
-    //     token::authority = vault,
-    // )]
-    // pub seller_ata: Account<'info, TokenAccount>,
-    // #[account(mut)]
-    // pub buyer_ata: Account<'info, TokenAccount>,
-    #[account(mut)]
-    pub matre: Account<'info, TokenAccount>,
+    #[account(mut, 
+        token::mint = ibo.stablecoin,
+        token::authority = ticket.owner
+    )]
+    pub seller_ata: Account<'info, TokenAccount>,
+
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_program: Program<'info, Token>,
 }
@@ -46,7 +48,7 @@ pub struct Initialize<'info> {
 }
 
 pub fn buy_swap(ctx: Context<BuySwap>) -> Result<()> {
-    let buyer: &mut Signer = &mut ctx.accounts.trader;
+    let buyer: &mut Signer = &mut ctx.accounts.buyer;
     let ticket: &mut Account<Ticket> = &mut ctx.accounts.ticket;
     let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
 

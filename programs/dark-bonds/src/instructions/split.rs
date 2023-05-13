@@ -2,11 +2,10 @@ use crate::errors::errors::ErrorCode;
 use crate::state::*;
 use anchor_lang::prelude::*;
 
-use jupiter_cpi::*;
-
-use anchor_lang::solana_program::clock;
-use std::convert::TryInto;
-use switchboard_v2::{AggregatorAccountData, SwitchboardDecimal, SWITCHBOARD_PROGRAM_ID};
+use anchor_spl::{
+    associated_token::AssociatedToken,
+    token::{self, Mint, Token, TokenAccount, Transfer},
+};
 
 use solana_program::{
     instruction::{AccountMeta, Instruction},
@@ -16,22 +15,98 @@ use solana_program::{
 #[derive(Accounts)]
 pub struct Split<'info> {
     #[account(mut)]
-    pub trader: Signer<'info>,
+    pub bond_owner: Signer<'info>,
 
     // This needs to be init (along with counter checks)
+    #[account(mut)]
     pub ticket: Account<'info, Ticket>,
+    #[account(mut)]
+    pub ticket_ata_old: Box<Account<'info, TokenAccount>>,
+    #[account(mut)]
+    pub ticket_ata_new: Box<Account<'info, TokenAccount>>,
+
+    // New ticket to be made
+    #[account(
+        init,
+        seeds = ["ticket".as_bytes(), ibo.key().as_ref(),  &ibo.ticket_counter.to_be_bytes()], // TODO add counter
+        bump,
+        payer = bond_owner,
+        space = 400
+    )]
+    pub new_ticket: Account<'info, Ticket>,
+    #[account(mut)]
+    pub ibo: Account<'info, Ibo>,
+    pub token_program: Program<'info, Token>,
+    pub system_program: Program<'info, System>,
+}
+impl<'info> Split<'info> {
+    fn transfer_bond(&self) -> CpiContext<'_, '_, '_, 'info, Transfer<'info>> {
+        CpiContext::new(
+            self.token_program.to_account_info(),
+            Transfer {
+                from: self.ticket_ata_old.to_account_info(),
+                to: self.ticket_ata_new.to_account_info(),
+                authority: self.ticket.to_account_info(),
+            },
+        )
+    }
 }
 
 // PDA for acceptable mints
 
 // Extra cut for deposit which goes on to make LP in raydium
 
-pub fn split(ctx: Context<Split>, sell_price: u64) -> Result<()> {
-    let seller: &mut Signer = &mut ctx.accounts.trader;
+pub fn split(
+    ctx: Context<Split>,
+    percent_new: u16,
+    ibo_address: Pubkey,
+    ticket_idx: u32,
+) -> Result<()> {
     let ticket: &mut Account<Ticket> = &mut ctx.accounts.ticket;
+    // let new_ticket: &mut Account<Ticket> = &mut ctx.accounts.new_ticket;
 
-    // Set price they want this to be sold at
-    ticket.swap_price = sell_price;
+    let percent_new_fraction = (percent_new as f64) / 100.0;
+
+    // Figure out total claimable
+    let balance_new_ticket: u64 = (ticket.total_claimable as f64 * percent_new_fraction) as u64;
+    let balance_old_ticket: u64 = ticket.total_claimable - balance_new_ticket;
+
+    // Update existing ticket
+    ticket.total_claimable = balance_old_ticket;
+    // new_ticket.total_claimable = balance_new_ticket;
+
+    // Get signing dets
+    let (_, bump) = anchor_lang::prelude::Pubkey::find_program_address(
+        &[
+            "ticket".as_bytes(),
+            ibo_address.as_ref(),
+            &ticket_idx.to_be_bytes(),
+        ],
+        &ctx.program_id,
+    );
+    let seeds = &[
+        "ticket".as_bytes(),
+        ibo_address.as_ref(),
+        &ticket_idx.to_be_bytes(),
+        &[bump],
+    ];
+
+    // Get balance
+    let current_bond_balance = ctx.accounts.ticket_ata_old.amount as f64;
+    let new_balance: u64 = (current_bond_balance * percent_new_fraction) as u64;
+
+    msg!("current_bond_balance: {:?}", current_bond_balance);
+    msg!("new_balance: {:?}", new_balance);
+
+    // Transfer same percent of remaining tokens
+    token::transfer(
+        ctx.accounts.transfer_bond().with_signer(&[seeds]),
+        new_balance,
+    )?;
+
+    // Increment counter of all bond tickets issued
+    let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
+    ibo.ticket_counter += 1;
 
     Ok(())
 }

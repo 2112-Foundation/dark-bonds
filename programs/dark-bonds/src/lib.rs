@@ -65,8 +65,13 @@ pub mod dark_bonds {
     }
 
     // Split bond ticket into multiples
-    pub fn split(ctx: Context<Split>, sell_price: u64) -> Result<()> {
-        instructions::split::split(ctx, sell_price)
+    pub fn split(
+        ctx: Context<Split>,
+        percent_new: u16,
+        ibo_address: Pubkey,
+        ticket_idx: u32,
+    ) -> Result<()> {
+        instructions::split::split(ctx, percent_new, ibo_address, ticket_idx)
     }
 
     // Join several bonds into one
