@@ -15,13 +15,12 @@ pub struct AddLockUp<'info> {
     pub ibo: Account<'info, Ibo>,
     #[account(        
         init,      
-        seeds = ["lockup".as_bytes(), ibo.key().as_ref(), &ibo.lockup_counter.to_be_bytes()], // TODO add counter
+        seeds = ["lockup".as_bytes(), ibo.key().as_ref(), &ibo.lockup_counter.to_be_bytes()], 
         bump,      
         payer = admin, 
         space = 400
     )]    
-    pub lockup: Account<'info, LockUp>,    
-    // Need PDA of the to be derived of some shared register which is incremented
+    pub lockup: Account<'info, LockUp>,        
     pub system_program: Program<'info, System>,
 }
 

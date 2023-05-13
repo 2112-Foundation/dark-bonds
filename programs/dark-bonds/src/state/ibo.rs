@@ -24,25 +24,8 @@ pub struct Ibo {
     pub ticket_counter: u32,
 }
 
-// TODO check in the constraints
-
 impl Ibo {
     pub fn correct_mint(&self, provided_mint: &Pubkey) -> bool {
         return &self.stablecoin == provided_mint;
-    }
-
-    pub fn new(
-        &mut self,
-        fixed_exchange_rate: u64,
-        live_date: i64,
-        stablecoin: Pubkey,
-        admin: Pubkey,
-        recipient: Pubkey,
-    ) {
-        self.live_date = live_date;
-        self.fixed_exchange_rate = fixed_exchange_rate;
-        self.stablecoin = stablecoin;
-        self.admin = admin;
-        self.recipient_address = recipient;
     }
 }

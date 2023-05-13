@@ -2,36 +2,23 @@ use crate::errors::errors::ErrorCode;
 use crate::state::*;
 use anchor_lang::prelude::*;
 
-use jupiter_cpi::*;
-
-use anchor_lang::solana_program::clock;
-use std::convert::TryInto;
-use switchboard_v2::{AggregatorAccountData, SwitchboardDecimal, SWITCHBOARD_PROGRAM_ID};
-
-use solana_program::{
-    instruction::{AccountMeta, Instruction},
-    pubkey::Pubkey,
-};
-
 #[derive(Accounts)]
 pub struct Consolidate<'info> {
     #[account(mut)]
     pub trader: Signer<'info>,
 
     // This needs to be init (along with counter checks)
-    pub ticket: Account<'info, Ticket>,
+    pub ticket1: Account<'info, Ticket>,
+    pub ticket2: Account<'info, Ticket>,
 }
-
-// PDA for acceptable mints
-
-// Extra cut for deposit which goes on to make LP in raydium
 
 pub fn consolidate(ctx: Context<Consolidate>, sell_price: u64) -> Result<()> {
     let seller: &mut Signer = &mut ctx.accounts.trader;
-    let ticket: &mut Account<Ticket> = &mut ctx.accounts.ticket;
+    let ticket1: &mut Account<Ticket> = &mut ctx.accounts.ticket1;
+    let ticket2: &mut Account<Ticket> = &mut ctx.accounts.ticket2;
 
     // Set price they want this to be sold at
-    ticket.swap_price = sell_price;
+    // ticket.swap_price = sell_price;
 
     Ok(())
 }

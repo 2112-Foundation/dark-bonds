@@ -7,4 +7,10 @@ pub enum ErrorCode {
     RatesLocked,
     #[msg("There aren't enought tokens left for this bond allocation. Try again with a smaller amount")]
     BondsSoldOut,
+    #[msg("This ticket is not for sale")]
+    NotForSale,
+    #[msg("Signing account is not the owner of this ticket")]
+    NotTicketOwner,
+    #[msg("Signing account is not IBO admin")]
+    NotIBOAdmin,
 }

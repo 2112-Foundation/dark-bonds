@@ -30,7 +30,6 @@ pub struct CreateIBO<'info> {
     pub system_program: Program<'info, System>,
 }
 
-// Extra cut for deposit which goes on to make LP in raydium
 pub fn create_ibo(
     ctx: Context<CreateIBO>,
     fixed_exchange_rate: u64,
@@ -45,8 +44,11 @@ pub fn create_ibo(
     // Counter is incremebted for Ibo counter
     main_ibo.ibo_counter += 1;
 
-    // Fill out details of the new Ibo
-    ibo.new(fixed_exchange_rate, live_date, stablecoin, admin.key(), recipient);
-
+    // Fill out details of the new Ibo    
+    ibo.live_date = live_date;
+    ibo.fixed_exchange_rate = fixed_exchange_rate;
+    ibo.stablecoin = stablecoin;
+    ibo.admin = admin.key();
+    ibo.recipient_address = recipient;
     Ok(())
 }

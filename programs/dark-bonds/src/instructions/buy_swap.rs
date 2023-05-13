@@ -12,12 +12,11 @@ pub struct BuySwap<'info> {
     #[account(mut)]
     pub buyer: Signer<'info>,
 
-    // This needs to be init (along with counter checks)
+    // Can't buy swap that is not listed
+    #[account(mut, constraint = ticket.swap_price > 0 @ErrorCode::NotForSale)]
     pub ticket: Account<'info, Ticket>,
-
-    // For look up of trying to pay in the correct mint
-    pub ibo: Account<'info, Ibo>,
-    // Need ATA of buyer and seller and mint
+    
+    pub ibo: Account<'info, Ibo>,    
     #[account(mut,
         token::mint = ibo.stablecoin,
         token::authority = buyer,
@@ -34,6 +33,19 @@ pub struct BuySwap<'info> {
     pub token_program: Program<'info, Token>,
 }
 
+impl<'info> BuySwap<'info> {    
+    fn transfer_liquidity(&self) -> CpiContext<'_, '_, '_, 'info, Transfer<'info>>{
+        CpiContext::new(
+            self.token_program.to_account_info(),
+            Transfer {
+                from: self.buyer_ata.to_account_info(),
+                to: self.seller_ata.to_account_info(),
+                authority: self.buyer.to_account_info(),
+            },
+        )
+    }
+}
+
 #[derive(Accounts)]
 pub struct Initialize<'info> {
     #[account(mut)]
@@ -48,13 +60,22 @@ pub struct Initialize<'info> {
 }
 
 pub fn buy_swap(ctx: Context<BuySwap>) -> Result<()> {
-    let buyer: &mut Signer = &mut ctx.accounts.buyer;
-    let ticket: &mut Account<Ticket> = &mut ctx.accounts.ticket;
-    let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
+    let mut accounts = ctx.accounts;  // Now you borrowed ctx.accounts only once
+    let buyer: &mut Signer = &mut accounts.buyer;
+    let ticket: &mut Account<Ticket> = &mut accounts.ticket;    
 
-    // Assert sale price is not-zero
+    // Set as the new ticket owner
+    ticket.owner = buyer.key();
+
+    // Set swap price to zero
+    ticket.swap_price = 0;
 
     // Transfer sell price base stable coin to the ATA of the owner
+    token::transfer(
+        accounts.transfer_liquidity(),  // use accounts here
+        accounts.ticket.swap_price
+    )?;                   
 
     Ok(())
 }
+

@@ -685,7 +685,7 @@ describe("dark-bonds", async () => {
     const tx_lu1 = await bondProgram.methods
       .split(50, ibo0, 1)
       .accounts({
-        bondOwner: bondBuyer2.publicKey,
+        owner: bondBuyer2.publicKey,
         ticket: ticket1,
         newTicket: ticket3,
         ibo: ibo0,
@@ -723,6 +723,13 @@ describe("dark-bonds", async () => {
   });
 
   it("Buy bond offered on swap", async () => {
+    let ticket1_state_start = await bondProgram.account.ticket.fetch(ticket1);
+    console.log(
+      "ticket1_state_start.owner: ",
+      ticket1_state_start.owner.toBase58()
+    );
+    console.log("buyer: ", resaleBuyer1.publicKey.toBase58());
+
     const tx_lu1 = await bondProgram.methods
       .buySwap()
       .accounts({
@@ -739,9 +746,7 @@ describe("dark-bonds", async () => {
 
     let ticket1_state = await bondProgram.account.ticket.fetch(ticket1);
 
-    console.log(
-      "ticket1_state.sell_price: ",
-      ticket1_state.swapPrice.toString()
-    );
+    // New owner set
+    assert(resaleBuyer1.publicKey.toBase58() == ticket1_state.owner.toBase58());
   });
 });

@@ -56,6 +56,31 @@ pub struct BuyBond<'info> {
     pub system_program: Program<'info, System>, 
 }
 
+impl<'info> BuyBond<'info> {
+    // fn transfer_liquidity(&self, from_ata: &Account<'info, TokenAccount>, to_ata: &Account<'info, TokenAccount>, auth: &Signer<'info>) -> CpiContext<'_, '_, '_, 'info, Transfer<'info>>{
+    fn transfer_liquidity(&self) -> CpiContext<'_, '_, '_, 'info, Transfer<'info>>{
+        CpiContext::new(
+            self.token_program.to_account_info(),
+            Transfer {
+                from: self.buyer_ata.to_account_info(),
+                to: self.recipient_ata.to_account_info(),
+                authority: self.buyer.to_account_info(),
+            },
+        )
+    }
+
+    fn transfer_bond(&self) -> CpiContext<'_, '_, '_, 'info, Transfer<'info>>{
+        CpiContext::new(
+            self.token_program.to_account_info(),
+            Transfer {
+                from: self.ibo_ata.to_account_info(),
+                to: self.ticket_ata.to_account_info(),
+                authority: self.ibo.to_account_info(),
+            },
+        )
+    }
+}
+
 // PDA for acceptable mints
 // Extra cut for deposit which goes on to make LP in raydium
 
@@ -137,27 +162,3 @@ pub fn buy_bond(ctx: Context<BuyBond>, _lockup_idx: u32, ibo_idx: u64, stable_am
     Ok(())
 }
 
-impl<'info> BuyBond<'info> {
-    // fn transfer_liquidity(&self, from_ata: &Account<'info, TokenAccount>, to_ata: &Account<'info, TokenAccount>, auth: &Signer<'info>) -> CpiContext<'_, '_, '_, 'info, Transfer<'info>>{
-    fn transfer_liquidity(&self) -> CpiContext<'_, '_, '_, 'info, Transfer<'info>>{
-        CpiContext::new(
-            self.token_program.to_account_info(),
-            Transfer {
-                from: self.buyer_ata.to_account_info(),
-                to: self.recipient_ata.to_account_info(),
-                authority: self.buyer.to_account_info(),
-            },
-        )
-    }
-
-    fn transfer_bond(&self) -> CpiContext<'_, '_, '_, 'info, Transfer<'info>>{
-        CpiContext::new(
-            self.token_program.to_account_info(),
-            Transfer {
-                from: self.ibo_ata.to_account_info(),
-                to: self.ticket_ata.to_account_info(),
-                authority: self.ibo.to_account_info(),
-            },
-        )
-    }
-}

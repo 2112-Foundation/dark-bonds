@@ -12,15 +12,14 @@ pub struct Ticket {
 
     // Swap: if non zero someone can exucte it with a transfer otherwise not for sale
     pub swap_price: u64,
+
     // Subdivide
     pub total_claimable: u64, // Fixed
 
     // Payouts
-    // Maturity date
     pub maturity_date: i64, // Fixed
     pub last_claimed: i64,
     pub bond_start: i64,
-    // Total DARK left (is subtracted each time) either PDA owns balance or withdrawn from a pool
 }
 
 impl Ticket {
@@ -48,20 +47,6 @@ impl Ticket {
     // How much can be claimed on this particular call absed on time elsapsed since
     // last time and total that is to be claimable
     pub fn claim_amount(&self) -> u64 {
-        // msg!(
-        //     "self.last_claimed - Clock::get().unwrap().unix_timestamp: {:?}",
-        //     Clock::get().unwrap().unix_timestamp - self.last_claimed
-        // );
-        // msg!(
-        //     "self.maturity_date - self.bond_start: {:?}",
-        //     self.maturity_date - self.bond_start
-        // );
-        // msg!("total_claimable: {:?}", self.total_claimable);
-
-        // return ((Clock::get().unwrap().unix_timestamp - self.last_claimed)
-        //     / (self.maturity_date - self.bond_start)) as u64
-        //     * self.total_claimable;
-
         // Need to calculate time since last claim
         let time_elapsed: i64 = Clock::get().unwrap().unix_timestamp - self.last_claimed;
         msg!("time_elapsed: {:?}", time_elapsed);

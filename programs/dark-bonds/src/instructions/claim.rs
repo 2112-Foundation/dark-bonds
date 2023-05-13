@@ -6,12 +6,6 @@ use anchor_spl::{
     token::{self, Mint, Token, TokenAccount, Transfer},
 };
 
-use jupiter_cpi::*;
-
-// use anchor_lang::solana_program::clock;
-// use std::convert::TryInto;
-// use switchboard_v2::{AggregatorAccountData, SwitchboardDecimal, SWITCHBOARD_PROGRAM_ID};
-
 use solana_program::{
     instruction::{AccountMeta, Instruction},
     pubkey::Pubkey,
@@ -32,9 +26,6 @@ pub struct Claim<'info> {
     pub token_program: Program<'info, Token>,
 }
 
-// PDA for acceptable mints
-
-// Extra cut for deposit which goes on to make LP in raydium
 impl<'info> Claim<'info> {
     fn transfer_bond(&self) -> CpiContext<'_, '_, '_, 'info, Transfer<'info>> {
         CpiContext::new(
@@ -48,16 +39,6 @@ impl<'info> Claim<'info> {
     }
 }
 
-// TODO function to claim everything if time has expeired claim_all
-pub fn claim_all(ctx: Context<Claim>, ibo_address: Pubkey, ticket_idx: u32) -> Result<()> {
-    // Check that bond expired
-
-    // transfer all
-
-    // close it
-
-    Ok(())
-}
 // option to add % to claim?
 pub fn claim(ctx: Context<Claim>, ibo_address: Pubkey, ticket_idx: u32) -> Result<()> {
     let ticket: &mut Account<Ticket> = &mut ctx.accounts.ticket;

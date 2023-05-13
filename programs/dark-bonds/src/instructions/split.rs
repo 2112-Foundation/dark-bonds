@@ -15,22 +15,19 @@ use solana_program::{
 #[derive(Accounts)]
 pub struct Split<'info> {
     #[account(mut)]
-    pub bond_owner: Signer<'info>,
-
-    // This needs to be init (along with counter checks)
-    #[account(mut)]
+    pub owner: Signer<'info>,
+    // Only owner can split
+    #[account(mut, has_one = owner @ErrorCode::NotTicketOwner)]
     pub ticket: Account<'info, Ticket>,
     #[account(mut)]
     pub ticket_ata_old: Box<Account<'info, TokenAccount>>,
     #[account(mut)]
     pub ticket_ata_new: Box<Account<'info, TokenAccount>>,
-
-    // New ticket to be made
     #[account(
         init,
         seeds = ["ticket".as_bytes(), ibo.key().as_ref(),  &ibo.ticket_counter.to_be_bytes()], // TODO add counter
         bump,
-        payer = bond_owner,
+        payer = owner,
         space = 400
     )]
     pub new_ticket: Account<'info, Ticket>,
@@ -52,10 +49,6 @@ impl<'info> Split<'info> {
     }
 }
 
-// PDA for acceptable mints
-
-// Extra cut for deposit which goes on to make LP in raydium
-
 pub fn split(
     ctx: Context<Split>,
     percent_new: u16,
@@ -63,9 +56,9 @@ pub fn split(
     ticket_idx: u32,
 ) -> Result<()> {
     let ticket: &mut Account<Ticket> = &mut ctx.accounts.ticket;
-    // let new_ticket: &mut Account<Ticket> = &mut ctx.accounts.new_ticket;
+    let new_ticket: &mut Account<Ticket> = &mut ctx.accounts.new_ticket;
 
-    let percent_new_fraction = (percent_new as f64) / 100.0;
+    let percent_new_fraction: f64 = (percent_new as f64) / 100.0;
 
     // Figure out total claimable
     let balance_new_ticket: u64 = (ticket.total_claimable as f64 * percent_new_fraction) as u64;
@@ -73,7 +66,7 @@ pub fn split(
 
     // Update existing ticket
     ticket.total_claimable = balance_old_ticket;
-    // new_ticket.total_claimable = balance_new_ticket;
+    new_ticket.total_claimable = balance_new_ticket;
 
     // Get signing dets
     let (_, bump) = anchor_lang::prelude::Pubkey::find_program_address(
@@ -107,6 +100,8 @@ pub fn split(
     // Increment counter of all bond tickets issued
     let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
     ibo.ticket_counter += 1;
+
+    // TODO check if actual amoutn gets transfered in tests
 
     Ok(())
 }
