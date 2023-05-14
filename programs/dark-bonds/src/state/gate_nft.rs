@@ -7,13 +7,11 @@ const SECONDS_YEAR: f64 = 31536000.0;
 // After that not accessed
 
 #[account]
-pub struct LockUp {
-    pub period: i64,       // In seconds
-    pub apy: f64,          // yearly gain for that lockup
-    pub gate_counter: u16, // TODO check that is zero for normal buy
+pub struct Gate {
+    pub mint: Pubkey,
 }
 
-impl LockUp {
+impl Gate {
     pub fn get_maturity_stamp(&self) -> i64 {
         return Clock::get().unwrap().unix_timestamp + self.period;
     }

@@ -13,4 +13,6 @@ pub enum ErrorCode {
     NotTicketOwner,
     #[msg("Signing account is not IBO admin")]
     NotIBOAdmin,
+    #[msg("Purchase requires seperate function call with NTF ownership proof")]
+    RestrictedLockup,
 }

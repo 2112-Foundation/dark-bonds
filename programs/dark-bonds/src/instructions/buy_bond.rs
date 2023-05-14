@@ -32,7 +32,8 @@ pub struct BuyBond<'info> {
     
     #[account(                
         seeds = ["lockup".as_bytes(), ibo.key().as_ref(),  &lockup_idx.to_be_bytes()], // TODO add counter
-        bump,              
+        bump,      
+        constraint = lockup.gate_counter == 0 @ErrorCode::RestrictedLockup
     )]    
     pub lockup: Account<'info, LockUp>,
 
