@@ -1,4 +1,11 @@
-import { Metaplex, keypairIdentity } from "@metaplex-foundation/js";
+import {
+  keypairIdentity,
+  KeypairIdentityDriver,
+  Metaplex,
+  toBigNumber,
+  token,
+  walletAdapterIdentity,
+} from "@metaplex-foundation/js";
 import {
   Connection,
   clusterApiUrl,
@@ -95,12 +102,13 @@ describe("mint mate", () => {
   });
 
   it("Test mint", async () => {
-    const connection = new Connection(clusterApiUrl("devnet"), "confirmed");
+    const connection = new Connection("http://127.0.0.1:8899", "confirmed");
     // const keypair = Keypair.fromSecretKey(
     //   Buffer.from(JSON.parse(process.env.SOLANA_KEYPAIR!.toString()))
     // );
 
     const keypair = anchor.web3.Keypair.generate();
+    const owner = anchor.web3.Keypair.generate();
 
     const metaplex = new Metaplex(connection);
     metaplex.use(keypairIdentity(keypair));
@@ -111,13 +119,52 @@ describe("mint mate", () => {
     );
     await connection.confirmTransaction(feePayerAirdropSignature);
 
-    //   const mintNFTResponse = await metaplex.nfts().create({
-    //     uri: "https://ffaaqinzhkt4ukhbohixfliubnvpjgyedi3f2iccrq4efh3s.arweave.net/KUAIIbk6p8oo4XHRcq0U__C2r0mwQaNl0gQow4Qp9yk",
-    //     maxSupply: toBigNumber(1),
-    //   });
+    const { nft } = await metaplex.nfts().create({
+      uri: "https://arweave.net/123",
+      name: "CUNT",
+      sellerFeeBasisPoints: 500,
+      maxSupply: toBigNumber(5),
+      isMutable: false,
+    });
 
-    //   console.log(mintNFTResponse);
+    console.log(nft);
 
-    console.log("THE END");
+    // console.log("mint address: ", mintNFTResponse.mintAddress.toBase58());
+
+    // await metaplex.nfts().mint({
+    //   nftOrSft: nft,
+    //   toOwner: owner.publicKey,
+    //   amount: token(1),
+    // });
+
+    const { nft: printedNft } = await metaplex.nfts().printNewEdition({
+      originalMint: nft.mint.address,
+    });
+
+    console.log("\n\nprintedNft: ", printedNft);
+
+    console.log("wallet.pubkey :", wallet.publicKey.toBase58());
+    console.log("keypair :", keypair.publicKey.toBase58());
+
+    await metaplex.nfts().transfer({
+      nftOrSft: nft,
+      authority: keypair,
+      fromOwner: keypair.publicKey,
+      toOwner: owner.publicKey,
+      amount: token(1),
+    });
+
+    console.log("Transferred");
+
+    // await metaplex.nfts().update({
+    //   nftOrSft: nft,
+    //   name: "My Updated Name",
+    // });
+
+    const myNfts = await metaplex.nfts().findAllByOwner({
+      owner: owner.publicKey,
+    });
+
+    console.log("NFTs owner by: ", myNfts);
   });
 });
