@@ -564,97 +564,97 @@ describe("dark-bonds", async () => {
     // Check calculation of bond to receive is correct
   });
 
-  // it("Claim test 1", async () => {
-  //   console.log("ticket: ", ticket2.toBase58());
+  it("Claim test 1", async () => {
+    console.log("ticket: ", ticket2.toBase58());
 
-  //   let ticektBalanceStart = await getTokenBalance(ticket2ATA_b);
+    let ticektBalanceStart = await getTokenBalance(ticket2ATA_b);
 
-  //   await delay(shortBond / 2);
+    await delay(shortBond / 2);
 
-  //   // Spend 500 for rate 1 as player 1
-  //   const tx_lu1 = await bondProgram.methods
-  //     .claim(ibo0, 2)
-  //     .accounts({
-  //       bondOwner: bondBuyer2.publicKey,
-  //       ticket: ticket2,
-  //       bondOwnerAta: bondBuyer2ATA_b.address,
-  //       ticketAta: ticket2ATA_b.address,
-  //       systemProgram: anchor.web3.SystemProgram.programId,
-  //     })
-  //     .signers([bondBuyer2])
-  //     .rpc();
+    // Spend 500 for rate 1 as player 1
+    const tx_lu1 = await bondProgram.methods
+      .claim(ibo0, 2)
+      .accounts({
+        bondOwner: bondBuyer2.publicKey,
+        ticket: ticket2,
+        bondOwnerAta: bondBuyer2ATA_b.address,
+        ticketAta: ticket2ATA_b.address,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .signers([bondBuyer2])
+      .rpc();
 
-  //   // Get bond amounts
-  //   let balanceBuyer = await getTokenBalance(bondBuyer2ATA_b);
-  //   let ticektBalance = await getTokenBalance(ticket2ATA_b);
+    // Get bond amounts
+    let balanceBuyer = await getTokenBalance(bondBuyer2ATA_b);
+    let ticektBalance = await getTokenBalance(ticket2ATA_b);
 
-  //   console.log("balanceBuyer: ", balanceBuyer);
-  //   console.log("ticekt: ", ticektBalance);
+    console.log("balanceBuyer: ", balanceBuyer);
+    console.log("ticekt: ", ticektBalance);
 
-  //   assert(roughlyEqual(0.5, balanceBuyer / ticektBalanceStart, 10));
-  // });
+    assert(roughlyEqual(0.5, balanceBuyer / ticektBalanceStart, 10));
+  });
 
-  // it("Claim test 1, ALMOST FUKLK amount", async () => {
-  //   console.log("ticket: ", ticket2.toBase58());
+  it("Claim test 1, ALMOST FUKLK amount", async () => {
+    console.log("ticket: ", ticket2.toBase58());
 
-  //   let ticektBalanceStart = await getTokenBalance(ticket2ATA_b);
+    let ticektBalanceStart = await getTokenBalance(ticket2ATA_b);
 
-  //   await delay(8);
+    await delay(8);
 
-  //   // Spend 500 for rate 1 as player 1
-  //   const tx_lu1 = await bondProgram.methods
-  //     .claim(ibo0, 2)
-  //     .accounts({
-  //       bondOwner: bondBuyer2.publicKey,
-  //       ticket: ticket2,
-  //       bondOwnerAta: bondBuyer2ATA_b.address,
-  //       ticketAta: ticket2ATA_b.address,
-  //       systemProgram: anchor.web3.SystemProgram.programId,
-  //     })
-  //     .signers([bondBuyer2])
-  //     .rpc();
+    // Spend 500 for rate 1 as player 1
+    const tx_lu1 = await bondProgram.methods
+      .claim(ibo0, 2)
+      .accounts({
+        bondOwner: bondBuyer2.publicKey,
+        ticket: ticket2,
+        bondOwnerAta: bondBuyer2ATA_b.address,
+        ticketAta: ticket2ATA_b.address,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .signers([bondBuyer2])
+      .rpc();
 
-  //   // Get bond amounts
-  //   let balanceBuyer = await getTokenBalance(bondBuyer2ATA_b);
-  //   let ticektBalance = await getTokenBalance(ticket2ATA_b);
+    // Get bond amounts
+    let balanceBuyer = await getTokenBalance(bondBuyer2ATA_b);
+    let ticektBalance = await getTokenBalance(ticket2ATA_b);
 
-  //   console.log("balanceBuyer: ", balanceBuyer);
-  //   console.log("ticekt: ", ticektBalance);
+    console.log("balanceBuyer: ", balanceBuyer);
+    console.log("ticekt: ", ticektBalance);
 
-  //   // assert(roughlyEqual(0.5, balanceBuyer / ticektBalanceStart, 10));
-  // });
+    // assert(roughlyEqual(0.5, balanceBuyer / ticektBalanceStart, 10));
+  });
 
-  // it("Claim test 1, full", async () => {
-  //   console.log("ticket: ", ticket2.toBase58());
+  it("Claim test 1, full", async () => {
+    console.log("ticket: ", ticket2.toBase58());
 
-  //   let ticektBalanceStart = await getTokenBalance(ticket2ATA_b);
-  //   let ticket2_state = await bondProgram.account.ticket.fetch(ticket2);
+    let ticektBalanceStart = await getTokenBalance(ticket2ATA_b);
+    let ticket2_state = await bondProgram.account.ticket.fetch(ticket2);
 
-  //   await delay(8);
+    await delay(8);
 
-  //   // Spend 500 for rate 1 as player 1
-  //   const tx_lu1 = await bondProgram.methods
-  //     .claim(ibo0, 2)
-  //     .accounts({
-  //       bondOwner: bondBuyer2.publicKey,
-  //       ticket: ticket2,
-  //       bondOwnerAta: bondBuyer2ATA_b.address,
-  //       ticketAta: ticket2ATA_b.address,
-  //       systemProgram: anchor.web3.SystemProgram.programId,
-  //     })
-  //     .signers([bondBuyer2])
-  //     .rpc();
+    // Spend 500 for rate 1 as player 1
+    const tx_lu1 = await bondProgram.methods
+      .claim(ibo0, 2)
+      .accounts({
+        bondOwner: bondBuyer2.publicKey,
+        ticket: ticket2,
+        bondOwnerAta: bondBuyer2ATA_b.address,
+        ticketAta: ticket2ATA_b.address,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .signers([bondBuyer2])
+      .rpc();
 
-  //   // Get bond amounts
-  //   let balanceBuyer = await getTokenBalance(bondBuyer2ATA_b);
-  //   let ticektBalance = await getTokenBalance(ticket2ATA_b);
+    // Get bond amounts
+    let balanceBuyer = await getTokenBalance(bondBuyer2ATA_b);
+    let ticektBalance = await getTokenBalance(ticket2ATA_b);
 
-  //   console.log("balanceBuyer: ", balanceBuyer);
-  //   console.log("ticekt: ", ticektBalance);
+    console.log("balanceBuyer: ", balanceBuyer);
+    console.log("ticekt: ", ticektBalance);
 
-  //   assert(ticektBalance == 0);
-  //   assert(balanceBuyer.toString() == ticket2_state.totalClaimable.toString());
-  // });
+    assert(ticektBalance == 0);
+    assert(balanceBuyer.toString() == ticket2_state.totalClaimable.toString());
+  });
 
   it("Split bond ticket 50%", async () => {
     console.log("ticket: ", ticket2.toBase58());
@@ -748,5 +748,26 @@ describe("dark-bonds", async () => {
 
     // New owner set
     assert(resaleBuyer1.publicKey.toBase58() == ticket1_state.owner.toBase58());
+  });
+
+  it("Buy gated bond offered on ibo", async () => {
+    // Spend 500 for rate 1 as player 1
+    // const tx_lu1 = await bondProgram.methods
+    //   .buyBonds(2, new anchor.BN(0), new anchor.BN(100000000))
+    //   .accounts({
+    //     buyer: bondBuyer2.publicKey,
+    //     ticket: ticket2,
+    //     ibo: ibo0,
+    //     lockup: lockUp2PDA,
+    //     buyerAta: bondBuyer2ATA_sc.address,
+    //     recipientAta: iboAdminATA_sc.address,
+    //     iboAta: ibo0ATA_b.address,
+    //     ticketAta: ticket2ATA_b.address,
+    //     systemProgram: anchor.web3.SystemProgram.programId,
+    //     tokenProgram: TOKEN_PROGRAM_ID,
+    //     associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+    //   })
+    //   .signers([bondBuyer2])
+    //   .rpc();
   });
 });

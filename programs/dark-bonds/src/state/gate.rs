@@ -10,9 +10,3 @@ const SECONDS_YEAR: f64 = 31536000.0;
 pub struct Gate {
     pub mint: Pubkey,
 }
-
-impl Gate {
-    pub fn get_maturity_stamp(&self) -> i64 {
-        return Clock::get().unwrap().unix_timestamp + self.period;
-    }
-}
