@@ -39,6 +39,8 @@ pub struct GatedBuy<'info> {
         bump,              
     )]    
     pub lockup: Account<'info, LockUp>,
+
+    // TODO needs to be derived off the lockup counter
     #[account(mut)]
     pub gate: Account<'info, Gate>,
     // purchse token
@@ -97,7 +99,7 @@ impl<'info> GatedBuy<'info> {
         )
     }
 
-    fn verify(&self) -> Result<()> {
+    fn verify(&self, mint_key: Pubkey, master_key: Pubkey, creator_key: Pubkey) -> Result<()> {
         // Verify NFT token account
         if self.nft_token_account.owner != self.buyer.key() {
             return Err(ErrorCode::InvalidNFTAccountOwner.into());
@@ -109,11 +111,12 @@ impl<'info> GatedBuy<'info> {
             return Err(ErrorCode::InvalidNFTAccountAmount.into());
         }
 
-        // Verify NFT Mint
+        
         // let expected_master_edition_key = get_master_edition(&self.nft_mint)?;
-        // if expected_master_edition_key != self.nft_master_edition_account.key() {
-        //     return Err(ErrorCode::InvalidMasterEdition.into());
-        // }
+        // Verify NFT Mint
+        if master_key != self.nft_master_edition_account.key() {
+            return Err(ErrorCode::InvalidMasterEdition.into());
+        }
         if self.nft_master_edition_account.data_is_empty() {
             return Err(ErrorCode::InvalidMasterEdition.into());
         }
@@ -131,9 +134,23 @@ impl<'info> GatedBuy<'info> {
 
         // Verify NFT creator
         // let expected_creator_key = get_expected_creator()?; // Replace with your expected creator key
-        // if !metadata.data.creators.iter().any(|creator| creator.address == expected_creator_key && creator.verified) {
+        // if !metadata.data.creators.iter().any(|creator: &Vec<metaplex_token_metadata::state::Creator>| creator.address == master_key && creator.verified) {
         //     return Err(ErrorCode::InvalidCreator.into());
         // }
+
+        if !metadata.data.creators.iter().any(|creator_vec| {
+            if let Some(creator) = creator_vec.first() {
+                creator.address == master_key && creator.verified
+            } else {
+                false
+            }
+        }) {
+            return Err(ErrorCode::InvalidCreator.into());
+        }
+        
+        
+        
+        
 
         Ok(())
     }
@@ -166,8 +183,13 @@ impl<'info> GatedBuy<'info> {
 
 pub fn gated_buy_bond(ctx: Context<GatedBuy>, _lockup_idx: u32, ibo_idx: u64, stable_amount_liquidity: u64) -> Result<()> {    
 
+    let buyer: &Signer = &ctx.accounts.buyer;
+    let lockup: &Account<LockUp> = &ctx.accounts.lockup;
+    let gate: &Account<Gate> = &ctx.accounts.gate;
+
 
     // Check that the caller is the owner
+    ctx.accounts.verify(gate.mint_key, gate.master_key, gate.creator_key)?;
 
 
     Ok(())

@@ -8,5 +8,7 @@ const SECONDS_YEAR: f64 = 31536000.0;
 
 #[account]
 pub struct Gate {
-    pub mint: Pubkey,
+    pub mint_key: Pubkey,
+    pub master_key: Pubkey,
+    pub creator_key: Pubkey,
 }
