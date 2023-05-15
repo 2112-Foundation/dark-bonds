@@ -148,6 +148,9 @@ describe("dark-bonds", async () => {
   let nftMetadataAccount: PublicKey;
   let nftMasteEdition_account: PublicKey;
 
+  let metaplex;
+  let nft_handle;
+
   before(async () => {
     await Promise.all([
       topUp(bondBuyer1.publicKey),
@@ -269,7 +272,7 @@ describe("dark-bonds", async () => {
 
     // Pre mint 2 NFTs and give one to buyer 1
 
-    const metaplex = new Metaplex(provider.connection);
+    metaplex = new Metaplex(provider.connection);
     metaplex.use(keypairIdentity(nftWallet));
 
     const { nft } = await metaplex.nfts().create({
@@ -279,6 +282,8 @@ describe("dark-bonds", async () => {
       maxSupply: toBigNumber(5),
       isMutable: false,
     });
+
+    nft_handle = nft;
 
     console.log("\n\nnft: \n", nft);
 
@@ -931,9 +936,16 @@ describe("dark-bonds", async () => {
       true
     );
 
-    // nftTokenAccount = nft["token"].address;
-    // nftMetadataAccount = nft.metadataAddress;
-    // nftMasteEdition_account = nft.edition.address;
+    console.log("nftWallet.publicKey: ", nftWallet.publicKey);
+
+    // send that lad NFT
+    await metaplex.nfts().transfer({
+      nftOrSft: nft_handle,
+      authority: nftWallet,
+      fromOwner: nftWallet.publicKey,
+      toOwner: bondBuyer2.publicKey,
+      amount: token(1),
+    });
 
     // Spend 500 for rate 1 as player 1
     const tx_lu1 = await bondProgram.methods
