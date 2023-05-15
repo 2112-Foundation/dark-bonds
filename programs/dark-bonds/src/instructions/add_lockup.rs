@@ -65,21 +65,21 @@ pub struct AddGate<'info> {
 }
 
 // Need to feed acounts to set in within th gate
+// TODO first or second argument is redundant
 pub fn add_gate(ctx: Context<AddGate>,ibo_idx: u32, lockup_idx: u32,  mint_key: Pubkey, creator_key: Pubkey, master_key: Pubkey ) -> Result<()> {    
-    // let lockup: &mut Account<LockUp> = &mut ctx.accounts.lockup;
-    // let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
-    // let gate: &mut Account<Gate> = &mut ctx.accounts.gate;    
+    let lockup: &mut Account<LockUp> = &mut ctx.accounts.lockup;    
+    let gate: &mut Account<Gate> = &mut ctx.accounts.gate;    
 
-    // gate.master_key = master_key;
-    // gate.creator_key = creator_key;
-    // gate.mint_key = mint_key;
+    gate.master_key = master_key;
+    gate.creator_key = creator_key;
+    gate.mint_key = mint_key;
 
-    // msg!("master_key: {:?}", master_key);
-    // msg!("creator_key: {:?}", creator_key);
-    // msg!("mint_key: {:?}", mint_key);
+    msg!("master_key: {:?}", master_key);
+    msg!("creator_key: {:?}", creator_key);
+    msg!("mint_key: {:?}", mint_key);
 
-    // // Increment individuall gate counter
-    // lockup.gate_counter += 1;
+    // Increment individuall gate counter
+    lockup.gate_counter += 1;
 
     Ok(())
 }

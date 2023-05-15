@@ -21,7 +21,7 @@ pub struct BuyBond<'info> {
     pub buyer: Signer<'info>,    
     #[account(        
         init,      
-        seeds = ["ticket".as_bytes(), ibo.key().as_ref(),  &ibo.ticket_counter.to_be_bytes()], // TODO add counter
+        seeds = ["ticket".as_bytes(), ibo.key().as_ref(),  &ibo.ticket_counter.to_be_bytes()], 
         bump,      
         payer = buyer, 
         space = 400
@@ -31,7 +31,7 @@ pub struct BuyBond<'info> {
     pub ibo: Account<'info, Ibo>,
     
     #[account(                
-        seeds = ["lockup".as_bytes(), ibo.key().as_ref(),  &lockup_idx.to_be_bytes()], // TODO add counter
+        seeds = ["lockup".as_bytes(), ibo.key().as_ref(),  &lockup_idx.to_be_bytes()], 
         bump,      
         constraint = lockup.gate_counter == 0 @ErrorCode::RestrictedLockup
     )]    
