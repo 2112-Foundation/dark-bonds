@@ -57,9 +57,9 @@ pub struct GatedBuy<'info> {
     #[account(mut, token::authority = ticket)]
     pub ticket_ata: Box<Account<'info, TokenAccount>>,       
 
-    #[account(mut, has_one = mint)]
-    pub nft_account: Box<Account<'info, TokenAccount>>,
-    pub mint: Account<'info, Mint>,
+    // #[account(mut, has_one = mint)]
+    // pub nft_account: Box<Account<'info, TokenAccount>>,
+    // pub mint: Account<'info, Mint>,
 
     pub token_program: Program<'info, Token>,
     pub associated_token_program: Program<'info, AssociatedToken>,
@@ -67,7 +67,8 @@ pub struct GatedBuy<'info> {
     pub system_program: Program<'info, System>, 
 
     // NFT stuff
-    nft_mint: Account<'info, Mint>,
+    mint: Account<'info, Mint>,
+    #[account(mut, has_one = mint)]
     nft_token_account: Account<'info, TokenAccount>,
     /// CHECK:
     nft_metadata_account: AccountInfo<'info>,
@@ -104,7 +105,7 @@ impl<'info> GatedBuy<'info> {
         if self.nft_token_account.owner != self.buyer.key() {
             return Err(ErrorCode::InvalidNFTAccountOwner.into());
         }
-        if self.nft_token_account.mint != self.nft_mint.key() {
+        if self.nft_token_account.mint != self.mint.key() {
             return Err(ErrorCode::InvalidNFTAccountMint.into());
         }
         if self.nft_token_account.amount != 1 {
@@ -123,7 +124,7 @@ impl<'info> GatedBuy<'info> {
 
         // Verify NFT metadata
         let metadata = Metadata::from_account_info(&self.nft_metadata_account)?;
-        if metadata.mint != self.nft_mint.key() {
+        if metadata.mint != self.mint.key() {
             return Err(ErrorCode::InvalidMetadata.into());
         }
 

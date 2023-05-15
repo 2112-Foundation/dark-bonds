@@ -83,6 +83,8 @@ describe("dark-bonds", async () => {
   let bondBuyer2ATA_b;
   let resaleBuyer1ATA_b;
 
+  let bondBuyer2ATA_nft;
+
   let ticket0ATA_b;
   let ticket1ATA_b;
   let ticket2ATA_b;
@@ -141,6 +143,10 @@ describe("dark-bonds", async () => {
   let masterKey: PublicKey;
   let collectionKey: PublicKey;
   let mintKey: PublicKey;
+
+  let nftTokenAccount: PublicKey;
+  let nftMetadataAccount: PublicKey;
+  let nftMasteEdition_account: PublicKey;
 
   before(async () => {
     await Promise.all([
@@ -282,7 +288,16 @@ describe("dark-bonds", async () => {
     console.log("mintKey: ", mintKey.toBase58());
     console.log("masterKey: ", masterKey.toBase58());
 
-    // process.exit();
+    nftTokenAccount = nft["token"].address;
+    nftMetadataAccount = nft.metadataAddress;
+    nftMasteEdition_account = nft.edition.address;
+
+    console.log("nftTokenAccount: ", nftTokenAccount.toBase58());
+    console.log("nftMetadataAccount: ", nftMetadataAccount.toBase58());
+    console.log(
+      "nftMasteEdition_account: ",
+      nftMasteEdition_account.toBase58()
+    );
 
     const { nft: printedNft } = await metaplex.nfts().printNewEdition({
       originalMint: nft.mint.address,
@@ -294,6 +309,16 @@ describe("dark-bonds", async () => {
 
     // masterKey = nft.creators[0].address;
     // collectionKey = nft.creators[0].address;
+
+    // Address for NFT
+    bondBuyer2ATA_nft = await getOrCreateAssociatedTokenAccount(
+      provider.connection,
+      bondBuyer2,
+      mintKey,
+      bondBuyer2.publicKey
+    );
+
+    // Need to transfer the NFT
   });
 
   it("Main register initialised!", async () => {
@@ -906,18 +931,30 @@ describe("dark-bonds", async () => {
       true
     );
 
+    // nftTokenAccount = nft["token"].address;
+    // nftMetadataAccount = nft.metadataAddress;
+    // nftMasteEdition_account = nft.edition.address;
+
     // Spend 500 for rate 1 as player 1
     const tx_lu1 = await bondProgram.methods
-      .buyBonds(3, new anchor.BN(ibo_index), new anchor.BN(10000))
+      .gatedBuy(3, new anchor.BN(ibo_index), new anchor.BN(10000))
       .accounts({
         buyer: bondBuyer2.publicKey,
         ticket: ticket4,
         ibo: ibo0,
         lockup: lockUp3PDA,
+        gate: lockUp3Gate,
         buyerAta: bondBuyer2ATA_sc.address,
         recipientAta: iboAdminATA_sc.address,
         iboAta: ibo0ATA_b.address,
         ticketAta: ticket4ATA_b.address,
+
+        // NFT
+        mint: mintKey,
+        nftTokenAccount: bondBuyer2ATA_nft.address,
+        nftMasterEditionAccount: nftMasteEdition_account,
+        nftMetadataAccount: nftMetadataAccount,
+
         systemProgram: anchor.web3.SystemProgram.programId,
         tokenProgram: TOKEN_PROGRAM_ID,
         associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
