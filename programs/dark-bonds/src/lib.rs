@@ -47,11 +47,20 @@ pub mod dark_bonds {
 
     pub fn add_gate(
         ctx: Context<AddGate>,
+        ibo_idx: u32,
+        lockup_idx: u32,
         mint_key: Pubkey,
         creator_key: Pubkey,
         master_key: Pubkey,
     ) -> Result<()> {
-        instructions::add_lockup::add_gate(ctx, mint_key, creator_key, master_key)
+        instructions::add_lockup::add_gate(
+            ctx,
+            ibo_idx,
+            lockup_idx,
+            mint_key,
+            creator_key,
+            master_key,
+        )
     }
 
     pub fn lock(ctx: Context<Lock>) -> Result<()> {

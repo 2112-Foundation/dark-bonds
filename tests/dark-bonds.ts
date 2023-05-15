@@ -444,18 +444,29 @@ describe("dark-bonds", async () => {
       bondProgram.programId
     );
 
-    let lockUpInstruction = bondProgram.instruction.addLockup(
-      new anchor.BN(lockUp1Period),
-      new anchor.BN(lockUp1Apy),
-      {
-        accounts: {
-          admin: adminIbo0.publicKey,
-          ibo: ibo0,
-          lockup: lockUp3PDA,
-          systemProgram: anchor.web3.SystemProgram.programId,
-        },
-      }
-    );
+    // let lockUpInstruction = bondProgram.instruction.addLockup(
+    //   new anchor.BN(lockUp1Period),
+    //   new anchor.BN(lockUp1Apy),
+    //   {
+    //     accounts: {
+    //       admin: adminIbo0.publicKey,
+    //       ibo: ibo0,
+    //       lockup: lockUp3PDA,
+    //       systemProgram: anchor.web3.SystemProgram.programId,
+    //     },
+    //   }
+    // );
+
+    const tx = await bondProgram.methods
+      .addLockup(new anchor.BN(lockUp3Period), new anchor.BN(lockUp3Apy))
+      .accounts({
+        admin: adminIbo0.publicKey,
+        ibo: ibo0,
+        lockup: lockUp3PDA,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .signers([adminIbo0])
+      .rpc();
 
     // PDA for lockup gating details
     [lockUp3Gate] = await PublicKey.findProgramAddress(
@@ -468,235 +479,247 @@ describe("dark-bonds", async () => {
       bondProgram.programId
     );
 
-    let gateInstruction = bondProgram.instruction.addGate(
-      lockUp1PDA,
-      lockUp1PDA,
-      lockUp1PDA,
-      {
-        accounts: {
-          admin: adminIbo0.publicKey,
-          ibo: ibo0,
-          lockup: lockUp3PDA,
-          gate: lockUp3Gate,
-          systemProgram: anchor.web3.SystemProgram.programId,
-        },
-      }
-    );
+    // let gateInstruction = bondProgram.instruction.addGate(
+    //   lockUp1PDA,
+    //   lockUp1PDA,
+    //   lockUp1PDA,
+    //   {
+    //     accounts: {
+    //       admin: adminIbo0.publicKey,
+    //       ibo: ibo0,
+    //       lockup: lockUp3PDA,
+    //       gate: lockUp3Gate,
+    //       systemProgram: anchor.web3.SystemProgram.programId,
+    //     },
+    //   }
+    // );
 
-    let transaction = new anchor.web3.Transaction();
-    transaction.add(lockUpInstruction);
-    let tx = await anchor.web3.sendAndConfirmTransaction(
-      anchor.getProvider().connection,
-      transaction,
-      [adminIbo0],
-      {
-        skipPreflight: true,
-        preflightCommitment: "single",
-      }
-    );
-
-    let transaction2 = new anchor.web3.Transaction();
-    transaction.add(gateInstruction);
-    let tx2 = await anchor.web3.sendAndConfirmTransaction(
-      anchor.getProvider().connection,
-      transaction2,
-      [adminIbo0],
-      {
-        skipPreflight: true,
-        preflightCommitment: "single",
-      }
-    );
-
-    console.log("gated lock up added");
-  });
-
-  it("Lock further lockups.", async () => {
-    const tx_lu1 = await bondProgram.methods
-      .lock()
+    const tx2 = await bondProgram.methods
+      .addGate(3, 3, lockUp1PDA, lockUp1PDA, lockUp1PDA)
       .accounts({
         admin: adminIbo0.publicKey,
         ibo: ibo0,
+        lockup: lockUp3PDA,
+        gate: lockUp3Gate,
+        systemProgram: anchor.web3.SystemProgram.programId,
       })
       .signers([adminIbo0])
       .rpc();
 
-    // Assert lock changed to true
-    let ibo0_state = await bondProgram.account.ibo.fetch(ibo0);
-    assert(ibo0_state.locked == true);
+    // let transaction = new anchor.web3.Transaction();
+    // transaction.add(lockUpInstruction);
+    // let tx = await anchor.web3.sendAndConfirmTransaction(
+    //   anchor.getProvider().connection,
+    //   transaction,
+    //   [adminIbo0],
+    //   {
+    //     skipPreflight: true,
+    //     preflightCommitment: "single",
+    //   }
+    // );
+
+    // let transaction2 = new anchor.web3.Transaction();
+    // transaction2.add(gateInstruction);
+    // let tx2 = await anchor.web3.sendAndConfirmTransaction(
+    //   anchor.getProvider().connection,
+    //   transaction2,
+    //   [adminIbo0],
+    //   {
+    //     skipPreflight: false,
+    //     preflightCommitment: "single",
+    //   }
+    // );
+
+    console.log("gated lock up added");
   });
 
-  it("Buyer 1 deposits funds at a rate 1", async () => {
-    // Derive ticket from latest counter instance
-    [ticket0] = await PublicKey.findProgramAddress(
-      [
-        Buffer.from("ticket"),
-        Buffer.from(ibo0.toBytes()),
-        new BN(0).toArrayLike(Buffer, "be", 4),
-      ],
-      bondProgram.programId
-    );
+  // it("Lock further lockups.", async () => {
+  //   const tx_lu1 = await bondProgram.methods
+  //     .lock()
+  //     .accounts({
+  //       admin: adminIbo0.publicKey,
+  //       ibo: ibo0,
+  //     })
+  //     .signers([adminIbo0])
+  //     .rpc();
 
-    // Get ATA for ticket0 PDA
-    ticket0ATA_b = await getOrCreateAssociatedTokenAccount(
-      provider.connection,
-      bondBuyer1,
-      mintB,
-      ticket0,
-      true
-    );
+  //   // Assert lock changed to true
+  //   let ibo0_state = await bondProgram.account.ibo.fetch(ibo0);
+  //   assert(ibo0_state.locked == true);
+  // });
 
-    // Spend 500 for rate 1 as player 1
-    const tx_lu1 = await bondProgram.methods
-      .buyBonds(0, new anchor.BN(ibo_index), new anchor.BN(500))
-      .accounts({
-        buyer: bondBuyer1.publicKey,
-        ticket: ticket0,
-        ibo: ibo0,
-        lockup: lockUp0PDA,
-        buyerAta: bondBuyer1ATA_sc.address,
-        recipientAta: iboAdminATA_sc.address,
-        iboAta: ibo0ATA_b.address,
-        ticketAta: ticket0ATA_b.address,
-        systemProgram: anchor.web3.SystemProgram.programId,
-        tokenProgram: TOKEN_PROGRAM_ID,
-        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-      })
-      .signers([bondBuyer1])
-      .rpc();
+  // it("Buyer 1 deposits funds at a rate 1", async () => {
+  //   // Derive ticket from latest counter instance
+  //   [ticket0] = await PublicKey.findProgramAddress(
+  //     [
+  //       Buffer.from("ticket"),
+  //       Buffer.from(ibo0.toBytes()),
+  //       new BN(0).toArrayLike(Buffer, "be", 4),
+  //     ],
+  //     bondProgram.programId
+  //   );
 
-    let ticket0_state = await bondProgram.account.ticket.fetch(ticket0);
-    console.log("ticket0 owner: ", ticket0_state.owner.toBase58());
-    console.log(
-      "ticket0 maturity date: ",
-      ticket0_state.maturityDate.toString()
-    );
-    console.log(
-      "ticket0 total to claim: ",
-      ticket0_state.totalClaimable.toString()
-    );
+  //   // Get ATA for ticket0 PDA
+  //   ticket0ATA_b = await getOrCreateAssociatedTokenAccount(
+  //     provider.connection,
+  //     bondBuyer1,
+  //     mintB,
+  //     ticket0,
+  //     true
+  //   );
 
-    // let ibo0_state = await bondProgram.account.ibo.fetch(ibo0);
-    // console.log("ibo0_state: ", ibo0_state.)
+  //   // Spend 500 for rate 1 as player 1
+  //   const tx_lu1 = await bondProgram.methods
+  //     .buyBonds(0, new anchor.BN(ibo_index), new anchor.BN(500))
+  //     .accounts({
+  //       buyer: bondBuyer1.publicKey,
+  //       ticket: ticket0,
+  //       ibo: ibo0,
+  //       lockup: lockUp0PDA,
+  //       buyerAta: bondBuyer1ATA_sc.address,
+  //       recipientAta: iboAdminATA_sc.address,
+  //       iboAta: ibo0ATA_b.address,
+  //       ticketAta: ticket0ATA_b.address,
+  //       systemProgram: anchor.web3.SystemProgram.programId,
+  //       tokenProgram: TOKEN_PROGRAM_ID,
+  //       associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+  //     })
+  //     .signers([bondBuyer1])
+  //     .rpc();
 
-    // Check that stablecoin balance decresed
-    // Check that buyer set as the owner in the ticket
-    // Check calculation of bond to receive is correct
-  });
+  //   let ticket0_state = await bondProgram.account.ticket.fetch(ticket0);
+  //   console.log("ticket0 owner: ", ticket0_state.owner.toBase58());
+  //   console.log(
+  //     "ticket0 maturity date: ",
+  //     ticket0_state.maturityDate.toString()
+  //   );
+  //   console.log(
+  //     "ticket0 total to claim: ",
+  //     ticket0_state.totalClaimable.toString()
+  //   );
 
-  it("Buyer 2 deposits funds at a rate 2", async () => {
-    // Derive ticket from latest counter instance
-    [ticket1] = await PublicKey.findProgramAddress(
-      [
-        Buffer.from("ticket"),
-        Buffer.from(ibo0.toBytes()),
-        new BN(1).toArrayLike(Buffer, "be", 4),
-      ],
-      bondProgram.programId
-    );
+  //   // let ibo0_state = await bondProgram.account.ibo.fetch(ibo0);
+  //   // console.log("ibo0_state: ", ibo0_state.)
 
-    ticket1ATA_b = await getOrCreateAssociatedTokenAccount(
-      provider.connection,
-      bondBuyer2,
-      mintB,
-      ticket1,
-      true
-    );
+  //   // Check that stablecoin balance decresed
+  //   // Check that buyer set as the owner in the ticket
+  //   // Check calculation of bond to receive is correct
+  // });
 
-    // Spend 500 for rate 1 as player 1
-    const tx_lu1 = await bondProgram.methods
-      .buyBonds(1, new anchor.BN(ibo_index), new anchor.BN(500))
-      .accounts({
-        buyer: bondBuyer2.publicKey,
-        ticket: ticket1,
-        ibo: ibo0,
-        lockup: lockUp1PDA,
-        buyerAta: bondBuyer2ATA_sc.address,
-        recipientAta: iboAdminATA_sc.address,
-        iboAta: ibo0ATA_b.address,
-        ticketAta: ticket1ATA_b.address,
-        systemProgram: anchor.web3.SystemProgram.programId,
-        tokenProgram: TOKEN_PROGRAM_ID,
-        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-      })
-      .signers([bondBuyer2])
-      .rpc();
+  // it("Buyer 2 deposits funds at a rate 2", async () => {
+  //   // Derive ticket from latest counter instance
+  //   [ticket1] = await PublicKey.findProgramAddress(
+  //     [
+  //       Buffer.from("ticket"),
+  //       Buffer.from(ibo0.toBytes()),
+  //       new BN(1).toArrayLike(Buffer, "be", 4),
+  //     ],
+  //     bondProgram.programId
+  //   );
 
-    let ticket1_state = await bondProgram.account.ticket.fetch(ticket1);
-    console.log("ticket0 owner: ", ticket1_state.owner.toBase58());
-    console.log(
-      "ticket0 maturity date: ",
-      ticket1_state.maturityDate.toString()
-    );
-    console.log(
-      "ticket0 total to claim: ",
-      ticket1_state.totalClaimable.toString()
-    );
+  //   ticket1ATA_b = await getOrCreateAssociatedTokenAccount(
+  //     provider.connection,
+  //     bondBuyer2,
+  //     mintB,
+  //     ticket1,
+  //     true
+  //   );
 
-    console.log("stable coin mint: ", mintSC.toBase58());
-    console.log("bond coin mint: ", mintB.toBase58());
+  //   // Spend 500 for rate 1 as player 1
+  //   const tx_lu1 = await bondProgram.methods
+  //     .buyBonds(1, new anchor.BN(ibo_index), new anchor.BN(500))
+  //     .accounts({
+  //       buyer: bondBuyer2.publicKey,
+  //       ticket: ticket1,
+  //       ibo: ibo0,
+  //       lockup: lockUp1PDA,
+  //       buyerAta: bondBuyer2ATA_sc.address,
+  //       recipientAta: iboAdminATA_sc.address,
+  //       iboAta: ibo0ATA_b.address,
+  //       ticketAta: ticket1ATA_b.address,
+  //       systemProgram: anchor.web3.SystemProgram.programId,
+  //       tokenProgram: TOKEN_PROGRAM_ID,
+  //       associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+  //     })
+  //     .signers([bondBuyer2])
+  //     .rpc();
 
-    // Check that stablecoin balance decresed
-    // Check that buyer set as the owner in the ticket
-    // Check calculation of bond to receive is correct
-  });
+  //   let ticket1_state = await bondProgram.account.ticket.fetch(ticket1);
+  //   console.log("ticket0 owner: ", ticket1_state.owner.toBase58());
+  //   console.log(
+  //     "ticket0 maturity date: ",
+  //     ticket1_state.maturityDate.toString()
+  //   );
+  //   console.log(
+  //     "ticket0 total to claim: ",
+  //     ticket1_state.totalClaimable.toString()
+  //   );
 
-  it("Buyer 3 deposits funds at a rate 3", async () => {
-    // Derive ticket from latest counter instance
-    [ticket2] = await PublicKey.findProgramAddress(
-      [
-        Buffer.from("ticket"),
-        Buffer.from(ibo0.toBytes()),
-        new BN(2).toArrayLike(Buffer, "be", 4),
-      ],
-      bondProgram.programId
-    );
+  //   console.log("stable coin mint: ", mintSC.toBase58());
+  //   console.log("bond coin mint: ", mintB.toBase58());
 
-    // Get ATA for ticket0 PDA
-    ticket2ATA_b = await getOrCreateAssociatedTokenAccount(
-      provider.connection,
-      bondBuyer2,
-      mintB,
-      ticket2,
-      true
-    );
+  //   // Check that stablecoin balance decresed
+  //   // Check that buyer set as the owner in the ticket
+  //   // Check calculation of bond to receive is correct
+  // });
 
-    // Spend 500 for rate 1 as player 1
-    const tx_lu1 = await bondProgram.methods
-      .buyBonds(2, new anchor.BN(ibo_index), new anchor.BN(100000000))
-      .accounts({
-        buyer: bondBuyer2.publicKey,
-        ticket: ticket2,
-        ibo: ibo0,
-        lockup: lockUp2PDA,
-        buyerAta: bondBuyer2ATA_sc.address,
-        recipientAta: iboAdminATA_sc.address,
-        iboAta: ibo0ATA_b.address,
-        ticketAta: ticket2ATA_b.address,
-        systemProgram: anchor.web3.SystemProgram.programId,
-        tokenProgram: TOKEN_PROGRAM_ID,
-        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-      })
-      .signers([bondBuyer2])
-      .rpc();
+  // it("Buyer 3 deposits funds at a rate 3", async () => {
+  //   // Derive ticket from latest counter instance
+  //   [ticket2] = await PublicKey.findProgramAddress(
+  //     [
+  //       Buffer.from("ticket"),
+  //       Buffer.from(ibo0.toBytes()),
+  //       new BN(2).toArrayLike(Buffer, "be", 4),
+  //     ],
+  //     bondProgram.programId
+  //   );
 
-    // TODO: ticket substitition attack
-    // can provide any ticket ATA right now
+  //   // Get ATA for ticket0 PDA
+  //   ticket2ATA_b = await getOrCreateAssociatedTokenAccount(
+  //     provider.connection,
+  //     bondBuyer2,
+  //     mintB,
+  //     ticket2,
+  //     true
+  //   );
 
-    let ticket1_state = await bondProgram.account.ticket.fetch(ticket2);
-    console.log("ticket2 owner: ", ticket1_state.owner.toBase58());
-    console.log(
-      "ticket2 maturity date: ",
-      ticket1_state.maturityDate.toString()
-    );
-    console.log(
-      "ticket2 total to claim: ",
-      ticket1_state.totalClaimable.toString()
-    );
+  //   // Spend 500 for rate 1 as player 1
+  //   const tx_lu1 = await bondProgram.methods
+  //     .buyBonds(2, new anchor.BN(ibo_index), new anchor.BN(100000000))
+  //     .accounts({
+  //       buyer: bondBuyer2.publicKey,
+  //       ticket: ticket2,
+  //       ibo: ibo0,
+  //       lockup: lockUp2PDA,
+  //       buyerAta: bondBuyer2ATA_sc.address,
+  //       recipientAta: iboAdminATA_sc.address,
+  //       iboAta: ibo0ATA_b.address,
+  //       ticketAta: ticket2ATA_b.address,
+  //       systemProgram: anchor.web3.SystemProgram.programId,
+  //       tokenProgram: TOKEN_PROGRAM_ID,
+  //       associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+  //     })
+  //     .signers([bondBuyer2])
+  //     .rpc();
 
-    // Check that stablecoin balance decresed
-    // Check that buyer set as the owner in the ticket
-    // Check calculation of bond to receive is correct
-  });
+  //   // TODO: ticket substitition attack
+  //   // can provide any ticket ATA right now
+
+  //   let ticket1_state = await bondProgram.account.ticket.fetch(ticket2);
+  //   console.log("ticket2 owner: ", ticket1_state.owner.toBase58());
+  //   console.log(
+  //     "ticket2 maturity date: ",
+  //     ticket1_state.maturityDate.toString()
+  //   );
+  //   console.log(
+  //     "ticket2 total to claim: ",
+  //     ticket1_state.totalClaimable.toString()
+  //   );
+
+  //   // Check that stablecoin balance decresed
+  //   // Check that buyer set as the owner in the ticket
+  //   // Check calculation of bond to receive is correct
+  // });
 
   // it("Claim test 1", async () => {
   //   console.log("ticket: ", ticket2.toBase58());
@@ -884,24 +907,24 @@ describe("dark-bonds", async () => {
   //   assert(resaleBuyer1.publicKey.toBase58() == ticket1_state.owner.toBase58());
   // });
 
-  it("Buy gated bond offered on ibo", async () => {
-    // Spend 500 for rate 1 as player 1
-    // const tx_lu1 = await bondProgram.methods
-    //   .buyBonds(2, new anchor.BN(0), new anchor.BN(100000000))
-    //   .accounts({
-    //     buyer: bondBuyer2.publicKey,
-    //     ticket: ticket2,
-    //     ibo: ibo0,
-    //     lockup: lockUp2PDA,
-    //     buyerAta: bondBuyer2ATA_sc.address,
-    //     recipientAta: iboAdminATA_sc.address,
-    //     iboAta: ibo0ATA_b.address,
-    //     ticketAta: ticket2ATA_b.address,
-    //     systemProgram: anchor.web3.SystemProgram.programId,
-    //     tokenProgram: TOKEN_PROGRAM_ID,
-    //     associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-    //   })
-    //   .signers([bondBuyer2])
-    //   .rpc();
-  });
+  // it("Buy gated bond offered on ibo", async () => {
+  // Spend 500 for rate 1 as player 1
+  // const tx_lu1 = await bondProgram.methods
+  //   .buyBonds(2, new anchor.BN(0), new anchor.BN(100000000))
+  //   .accounts({
+  //     buyer: bondBuyer2.publicKey,
+  //     ticket: ticket2,
+  //     ibo: ibo0,
+  //     lockup: lockUp2PDA,
+  //     buyerAta: bondBuyer2ATA_sc.address,
+  //     recipientAta: iboAdminATA_sc.address,
+  //     iboAta: ibo0ATA_b.address,
+  //     ticketAta: ticket2ATA_b.address,
+  //     systemProgram: anchor.web3.SystemProgram.programId,
+  //     tokenProgram: TOKEN_PROGRAM_ID,
+  //     associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+  //   })
+  //   .signers([bondBuyer2])
+  //   .rpc();
+  // });
 });
