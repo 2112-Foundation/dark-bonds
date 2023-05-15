@@ -3,10 +3,21 @@ import { Program } from "@project-serum/anchor";
 import { DarkBonds } from "../target/types/dark_bonds";
 import { Connection, Keypair, PublicKey, Signer } from "@solana/web3.js";
 import {
+  keypairIdentity,
+  KeypairIdentityDriver,
+  Metaplex,
+  toBigNumber,
+  token,
+  walletAdapterIdentity,
+} from "@metaplex-foundation/js";
+import {
   createMint,
   createAccount,
   getAccount,
   getOrCreateAssociatedTokenAccount,
+  createAssociatedTokenAccountInstruction,
+  getAssociatedTokenAddress,
+  createInitializeMintInstruction,
   transfer,
   mintTo,
   TOKEN_PROGRAM_ID,
@@ -60,6 +71,7 @@ describe("dark-bonds", async () => {
   const bondBuyer1 = anchor.web3.Keypair.generate();
   const bondBuyer2 = anchor.web3.Keypair.generate();
   const resaleBuyer1 = anchor.web3.Keypair.generate();
+  const nftWallet = anchor.web3.Keypair.generate();
 
   const shortBond = 20;
 
@@ -125,6 +137,7 @@ describe("dark-bonds", async () => {
       topUp(superAdmin.publicKey),
       topUp(adminIbo0.publicKey),
       topUp(resaleBuyer1.publicKey),
+      topUp(nftWallet.publicKey),
     ]);
 
     // Stablecoin mint
@@ -231,6 +244,27 @@ describe("dark-bonds", async () => {
       undefined,
       TOKEN_PROGRAM_ID
     );
+
+    // Pre mint 2 NFTs and give one to buyer 1
+
+    const metaplex = new Metaplex(provider.connection);
+    metaplex.use(keypairIdentity(nftWallet));
+
+    const { nft } = await metaplex.nfts().create({
+      uri: "https://arweave.net/123",
+      name: "CUNT",
+      sellerFeeBasisPoints: 500,
+      maxSupply: toBigNumber(5),
+      isMutable: false,
+    });
+
+    const { nft: printedNft } = await metaplex.nfts().printNewEdition({
+      originalMint: nft.mint.address,
+    });
+
+    console.log(nft);
+
+    nftWallet;
   });
 
   it("Main register initialised!", async () => {
