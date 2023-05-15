@@ -444,15 +444,70 @@ describe("dark-bonds", async () => {
       bondProgram.programId
     );
 
+    let lockUpInstruction = bondProgram.instruction.addLockup(
+      new anchor.BN(lockUp1Period),
+      new anchor.BN(lockUp1Apy),
+      {
+        accounts: {
+          admin: adminIbo0.publicKey,
+          ibo: ibo0,
+          lockup: lockUp3PDA,
+          systemProgram: anchor.web3.SystemProgram.programId,
+        },
+      }
+    );
+
     // PDA for lockup gating details
     [lockUp3Gate] = await PublicKey.findProgramAddress(
       [
-        Buffer.from("lockup"),
+        Buffer.from("gate"),
         Buffer.from(ibo0.toBytes()),
-        new BN(3).toArrayLike(Buffer, "be", 4),
+        Buffer.from(lockUp3PDA.toBytes()),
+        new BN(0).toArrayLike(Buffer, "be", 4),
       ],
       bondProgram.programId
     );
+
+    let gateInstruction = bondProgram.instruction.addGate(
+      lockUp1PDA,
+      lockUp1PDA,
+      lockUp1PDA,
+      {
+        accounts: {
+          admin: adminIbo0.publicKey,
+          ibo: ibo0,
+          lockup: lockUp3PDA,
+          gate: lockUp3Gate,
+          systemProgram: anchor.web3.SystemProgram.programId,
+        },
+      }
+    );
+
+    let transaction = new anchor.web3.Transaction();
+    transaction.add(lockUpInstruction);
+    let tx = await anchor.web3.sendAndConfirmTransaction(
+      anchor.getProvider().connection,
+      transaction,
+      [adminIbo0],
+      {
+        skipPreflight: true,
+        preflightCommitment: "single",
+      }
+    );
+
+    let transaction2 = new anchor.web3.Transaction();
+    transaction.add(gateInstruction);
+    let tx2 = await anchor.web3.sendAndConfirmTransaction(
+      anchor.getProvider().connection,
+      transaction2,
+      [adminIbo0],
+      {
+        skipPreflight: true,
+        preflightCommitment: "single",
+      }
+    );
+
+    console.log("gated lock up added");
   });
 
   it("Lock further lockups.", async () => {

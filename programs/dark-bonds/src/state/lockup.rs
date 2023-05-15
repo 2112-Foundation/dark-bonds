@@ -10,7 +10,7 @@ const SECONDS_YEAR: f64 = 31536000.0;
 pub struct LockUp {
     pub period: i64,       // In seconds
     pub apy: f64,          // yearly gain for that lockup
-    pub gate_counter: u16, // TODO check that is zero for normal buy
+    pub gate_counter: u32, // TODO check that is zero for normal buy
 }
 
 impl LockUp {

@@ -45,6 +45,15 @@ pub mod dark_bonds {
         instructions::add_lockup::add_lockup(ctx, lock_up_duration, lock_up_apy)
     }
 
+    pub fn add_gate(
+        ctx: Context<AddGate>,
+        mint_key: Pubkey,
+        creator_key: Pubkey,
+        master_key: Pubkey,
+    ) -> Result<()> {
+        instructions::add_lockup::add_gate(ctx, mint_key, creator_key, master_key)
+    }
+
     pub fn lock(ctx: Context<Lock>) -> Result<()> {
         instructions::lock::lock(ctx)
     }
