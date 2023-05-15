@@ -90,6 +90,8 @@ describe("dark-bonds", async () => {
 
   let ticket1ResalePrice = 500;
 
+  let ibo_index = 0;
+
   // Stable coin mint
   let mintSC: PublicKey;
   const mintAuthSC = anchor.web3.Keypair.generate();
@@ -247,49 +249,64 @@ describe("dark-bonds", async () => {
 
     // Pre mint 2 NFTs and give one to buyer 1
 
-    const metaplex = new Metaplex(provider.connection);
-    metaplex.use(keypairIdentity(nftWallet));
+    // const metaplex = new Metaplex(provider.connection);
+    // metaplex.use(keypairIdentity(nftWallet));
 
-    const { nft } = await metaplex.nfts().create({
-      uri: "https://arweave.net/123",
-      name: "CUNT",
-      sellerFeeBasisPoints: 500,
-      maxSupply: toBigNumber(5),
-      isMutable: false,
-    });
+    // const { nft } = await metaplex.nfts().create({
+    //   uri: "https://arweave.net/123",
+    //   name: "CUNT",
+    //   sellerFeeBasisPoints: 500,
+    //   maxSupply: toBigNumber(5),
+    //   isMutable: false,
+    // });
 
-    const { nft: printedNft } = await metaplex.nfts().printNewEdition({
-      originalMint: nft.mint.address,
-    });
+    // const { nft: printedNft } = await metaplex.nfts().printNewEdition({
+    //   originalMint: nft.mint.address,
+    // });
 
-    console.log(nft);
+    // console.log(nft);
 
-    nftWallet;
+    // nftWallet;
   });
 
   it("Main register initialised!", async () => {
-    // Derive
     [mainIbo] = await PublicKey.findProgramAddress(
       [Buffer.from("main_register")],
       bondProgram.programId
     );
 
-    const tx = await bondProgram.methods
-      .init()
-      .accounts({
-        mainIbo: mainIbo,
-        superadmin: superAdmin.publicKey,
-        systemProgram: anchor.web3.SystemProgram.programId,
-      })
-      .signers([superAdmin])
-      .rpc();
-    console.log("Your transaction signature", tx);
+    try {
+      let main_state = await bondProgram.account.master.fetch(mainIbo);
+      ibo_index = parseInt(main_state.iboCounter.toString());
+      console.log("\nAlreadyt deployed\n");
+      console.log("ibo_index at ibo make: ", ibo_index);
+    } catch (err) {
+      const tx = await bondProgram.methods
+        .init()
+        .accounts({
+          mainIbo: mainIbo,
+          superadmin: superAdmin.publicKey,
+          systemProgram: anchor.web3.SystemProgram.programId,
+        })
+        .signers([superAdmin])
+        .rpc();
+      console.log("Your transaction signature", tx);
+    }
   });
 
   it("Register bond offering.", async () => {
+    // Get ibo counter for this run
+    let main_state = await bondProgram.account.master.fetch(mainIbo);
+    ibo_index = parseInt(main_state.iboCounter.toString());
+
+    console.log("ibo_index at ibo make: ", ibo_index);
+
     // Derive ibo pda for counter 0
     [ibo0] = await PublicKey.findProgramAddress(
-      [Buffer.from("ibo_instance"), new BN(0).toArrayLike(Buffer, "le", 8)],
+      [
+        Buffer.from("ibo_instance"),
+        new BN(ibo_index).toArrayLike(Buffer, "be", 8),
+      ],
       bondProgram.programId
     );
 
@@ -447,7 +464,7 @@ describe("dark-bonds", async () => {
 
     // Spend 500 for rate 1 as player 1
     const tx_lu1 = await bondProgram.methods
-      .buyBonds(0, new anchor.BN(0), new anchor.BN(500))
+      .buyBonds(0, new anchor.BN(ibo_index), new anchor.BN(500))
       .accounts({
         buyer: bondBuyer1.publicKey,
         ticket: ticket0,
@@ -504,7 +521,7 @@ describe("dark-bonds", async () => {
 
     // Spend 500 for rate 1 as player 1
     const tx_lu1 = await bondProgram.methods
-      .buyBonds(1, new anchor.BN(0), new anchor.BN(500))
+      .buyBonds(1, new anchor.BN(ibo_index), new anchor.BN(500))
       .accounts({
         buyer: bondBuyer2.publicKey,
         ticket: ticket1,
@@ -562,7 +579,7 @@ describe("dark-bonds", async () => {
 
     // Spend 500 for rate 1 as player 1
     const tx_lu1 = await bondProgram.methods
-      .buyBonds(2, new anchor.BN(0), new anchor.BN(100000000))
+      .buyBonds(2, new anchor.BN(ibo_index), new anchor.BN(100000000))
       .accounts({
         buyer: bondBuyer2.publicKey,
         ticket: ticket2,

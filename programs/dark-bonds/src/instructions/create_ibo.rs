@@ -22,7 +22,8 @@ pub struct CreateIBO<'info> {
     pub ibo: Account<'info, Ibo>,
 
     // Checks for correct main account provided
-    #[account(                
+    #[account(               
+        mut, 
         seeds = ["main_register".as_bytes()], 
         bump,       
     )]    
@@ -39,10 +40,7 @@ pub fn create_ibo(
 ) -> Result<()> {
     let admin: &Signer = &mut ctx.accounts.admin;
     let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
-    let main_ibo: &mut Account<Master> = &mut ctx.accounts.main_ibo;
-
-    // Counter is incremebted for Ibo counter
-    main_ibo.ibo_counter += 1;
+    let main_ibo: &mut Account<Master> = &mut ctx.accounts.main_ibo;    
 
     // Fill out details of the new Ibo    
     ibo.live_date = live_date;
@@ -50,5 +48,8 @@ pub fn create_ibo(
     ibo.stablecoin = stablecoin;
     ibo.admin = admin.key();
     ibo.recipient_address = recipient;
+
+    // Counter is incremebted for Ibo counter
+    main_ibo.ibo_counter += 1;
     Ok(())
 }

@@ -119,15 +119,15 @@ describe("mint mate", () => {
     );
     await connection.confirmTransaction(feePayerAirdropSignature);
 
-    const { nft } = await metaplex.nfts().create({
-      uri: "https://arweave.net/123",
-      name: "CUNT",
-      sellerFeeBasisPoints: 500,
-      maxSupply: toBigNumber(5),
-      isMutable: false,
-    });
+    // const { nft } = await metaplex.nfts().create({
+    //   uri: "https://arweave.net/123",
+    //   name: "CUNT",
+    //   sellerFeeBasisPoints: 500,
+    //   maxSupply: toBigNumber(5),
+    //   isMutable: false,
+    // });
 
-    console.log(nft);
+    // console.log(nft);
 
     // console.log("mint address: ", mintNFTResponse.mintAddress.toBase58());
 
@@ -137,34 +137,34 @@ describe("mint mate", () => {
     //   amount: token(1),
     // });
 
-    const { nft: printedNft } = await metaplex.nfts().printNewEdition({
-      originalMint: nft.mint.address,
-    });
-
-    console.log("\n\nprintedNft: ", printedNft);
-
-    console.log("wallet.pubkey :", wallet.publicKey.toBase58());
-    console.log("keypair :", keypair.publicKey.toBase58());
-
-    await metaplex.nfts().transfer({
-      nftOrSft: nft,
-      authority: keypair,
-      fromOwner: keypair.publicKey,
-      toOwner: owner.publicKey,
-      amount: token(1),
-    });
-
-    console.log("Transferred");
-
-    // await metaplex.nfts().update({
-    //   nftOrSft: nft,
-    //   name: "My Updated Name",
+    // const { nft: printedNft } = await metaplex.nfts().printNewEdition({
+    //   originalMint: nft.mint.address,
     // });
 
-    const myNfts = await metaplex.nfts().findAllByOwner({
-      owner: owner.publicKey,
-    });
+    // console.log("\n\nprintedNft: ", printedNft);
 
-    console.log("NFTs owner by: ", myNfts);
+    // console.log("wallet.pubkey :", wallet.publicKey.toBase58());
+    // console.log("keypair :", keypair.publicKey.toBase58());
+
+    // await metaplex.nfts().transfer({
+    //   nftOrSft: nft,
+    //   authority: keypair,
+    //   fromOwner: keypair.publicKey,
+    //   toOwner: owner.publicKey,
+    //   amount: token(1),
+    // });
+
+    // console.log("Transferred");
+
+    // // await metaplex.nfts().update({
+    // //   nftOrSft: nft,
+    // //   name: "My Updated Name",
+    // // });
+
+    // const myNfts = await metaplex.nfts().findAllByOwner({
+    //   owner: owner.publicKey,
+    // });
+
+    // console.log("NFTs owner by: ", myNfts);
   });
 });
