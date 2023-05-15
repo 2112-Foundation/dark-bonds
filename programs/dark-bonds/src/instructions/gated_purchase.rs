@@ -12,8 +12,6 @@ use solana_program::{
 };
 
 use metaplex_token_metadata::state::Metadata;
-// use metaplex_token_metadata::EDITION;
-
 
 const SECONDS_YEAR: f64 = 31536000.0;
 
@@ -100,66 +98,6 @@ impl<'info> GatedBuy<'info> {
         )
     }
 
-    // fn verify(&self, mint_key: Pubkey, master_key: Pubkey, creator_key: Pubkey) -> Result<()> {
-    //     // Verify NFT token account
-    //     if self.nft_token_account.owner != self.buyer.key() {
-    //         return Err(ErrorCode::InvalidNFTAccountOwner.into());
-    //     }
-    //     if self.nft_token_account.mint != self.mint.key() {
-    //         return Err(ErrorCode::InvalidNFTAccountMint.into());
-    //     }
-    //     if self.nft_token_account.amount != 1 {
-    //         return Err(ErrorCode::InvalidNFTAccountAmount.into());
-    //     }
-
-        
-    //     // let expected_master_edition_key = get_master_edition(&self.nft_mint)?;
-    //     // Verify NFT Mint
-    //     // if master_key != self.nft_master_edition_account.key() {
-    //     //     return Err(ErrorCode::InvalidMasterEdition.into());
-    //     // }
-    //     // if self.nft_master_edition_account.data_is_empty() {
-    //     //     return Err(ErrorCode::InvalidMasterEdition.into());
-    //     // }
-
-    //     msg!("master_key: {:?}", master_key);
-    //     msg!("nft_master_edition_account: {:?}", self.nft_master_edition_account.key());
-
-    //     // Verify NFT metadata
-    //     // let metadata = Metadata::from_account_info(&self.nft_metadata_account)?;
-    //     // if metadata.mint != self.mint.key() {
-    //     //     return Err(ErrorCode::InvalidMetadata.into());
-    //     // }
-
-    //     // metadata emptiness check
-    //     // if metadata.data.is_empty() {
-    //     //     return Err(ErrorCode::InvalidMetadata.into());
-    //     // }
-
-    //     // Verify NFT creator
-    //     // let expected_creator_key = get_expected_creator()?; // Replace with your expected creator key
-    //     // if !metadata.data.creators.iter().any(|creator: &Vec<metaplex_token_metadata::state::Creator>| creator.address == master_key && creator.verified) {
-    //     //     return Err(ErrorCode::InvalidCreator.into());
-    //     // }
-
-    //     // if !metadata.data.creators.iter().any(|creator_vec| {
-    //     //     if let Some(creator) = creator_vec.first() {
-    //     //         creator.address == master_key && creator.verified
-    //     //     } else {
-    //     //         false
-    //     //     }
-    //     // }) {
-    //     //     return Err(ErrorCode::InvalidCreator.into());
-    //     // }
-        
-        
-        
-        
-
-    //     Ok(())
-    // }
-
-
     fn verify(&self, mint_key: Pubkey, master_key: Pubkey, creator_key: Pubkey) -> Result<()> {
         // Verify NFT token account
         // Check if the owner of the token account is the buyer
@@ -218,26 +156,6 @@ impl<'info> GatedBuy<'info> {
     
 }
 
-
-// const EDITION: &str = "edition";
-
-// fn get_master_edition(nft_mint: &Account<Mint>) -> Result<Pubkey> {
-//     let seeds = [
-//         metaplex_token_metadata::PREFIX.as_bytes(),
-//         metaplex_token_metadata::program::id().as_ref(),
-//         nft_mint.key.as_ref(),
-//         EDITION.as_bytes(),
-//     ];
-//     let (key, _) = Pubkey::find_program_address(&seeds, &metaplex_token_metadata::program::id());
-//     Ok(key)
-// }
-
-// fn get_expected_creator() -> Result<Pubkey> {
-//     // Replace with the actual pubkey string of your expected creator
-//     let creator_pubkey_string = "HyWarRXn1Wu5wHMhcypLSQ9QRkjiuytfMkazNRuV3caA";
-//     Pubkey::from_str(creator_pubkey_string)
-// }
-
 // PDA for acceptable mints
 // Extra cut for deposit which goes on to make LP in raydium
 
@@ -256,8 +174,6 @@ pub fn gated_buy_bond(ctx: Context<GatedBuy>, _lockup_idx: u32, ibo_idx: u64, st
     ctx.accounts.verify(gate.mint_key, gate.master_key, gate.creator_key)?;
 
     msg!("Fucking passed it");
-
-
     Ok(())
 }
 

@@ -17,8 +17,5 @@ pub fn consolidate(ctx: Context<Consolidate>, sell_price: u64) -> Result<()> {
     let ticket1: &mut Account<Ticket> = &mut ctx.accounts.ticket1;
     let ticket2: &mut Account<Ticket> = &mut ctx.accounts.ticket2;
 
-    // Set price they want this to be sold at
-    // ticket.swap_price = sell_price;
-
     Ok(())
 }
