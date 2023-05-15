@@ -143,6 +143,7 @@ describe("dark-bonds", async () => {
   let masterKey: PublicKey;
   let collectionKey: PublicKey;
   let mintKey: PublicKey;
+  let editionKey: PublicKey;
 
   let nftTokenAccount: PublicKey;
   let nftMetadataAccount: PublicKey;
@@ -289,9 +290,12 @@ describe("dark-bonds", async () => {
 
     mintKey = nft.mint.address;
     masterKey = nft.creators[0].address;
+    editionKey = nft.edition.address;
 
+    console.log("editionKey: ", editionKey.toBase58());
     console.log("mintKey: ", mintKey.toBase58());
     console.log("masterKey: ", masterKey.toBase58());
+    console.log("editionKey: ", editionKey.toBase58());
 
     nftTokenAccount = nft["token"].address;
     nftMetadataAccount = nft.metadataAddress;
@@ -518,7 +522,7 @@ describe("dark-bonds", async () => {
     );
 
     const tx2 = await bondProgram.methods
-      .addGate(3, 3, mintKey, masterKey, masterKey)
+      .addGate(3, 3, mintKey, masterKey, editionKey)
       .accounts({
         admin: adminIbo0.publicKey,
         ibo: ibo0,
