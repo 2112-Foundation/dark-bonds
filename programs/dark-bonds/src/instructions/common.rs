@@ -18,7 +18,39 @@ const SECONDS_YEAR: f64 = 31536000.0;
 
 // TODO hardcode program ID
 
-pub fn buy_common(buyer: &Signer, lockup: &Account<LockUp>, ibo: &mut Account<Ibo>, ticket: &mut Account<Ticket>, ibo_ata: &Account<TokenAccount>, stable_amount_liquidity: u64) -> Result<()> {
+// fn transfer_ctx(&self, recipient_ata: &Account<'info, TokenAccount>) -> CpiContext<'_, '_, '_, 'info, Transfer<'info>>{
+
+// pub fn transfer<'info>(buyer_ata: &Account<'info, TokenAccount>, recipient_ata: &Account<'info, TokenAccount>, buyer: &Signer<'info>, token_program: &Program<'info, Token>) -> CpiContext<'info, 'info, 'info, 'info, Transfer<'info>>{
+//     CpiContext::new(
+//         token_program.to_account_info(),
+//         Transfer {
+//             from: buyer_ata.to_account_info(),
+//             to: recipient_ata.to_account_info(),
+//             authority: buyer.to_account_info(),
+//         },
+//     )
+// }
+
+pub fn buy_common<'info>(
+    buyer: &Signer<'info>, 
+    lockup: &Account<'info, LockUp>, 
+    ibo: &mut Account<'info, Ibo>, 
+    ticket: &mut Account<'info, Ticket>, 
+
+    ibo_ata: &Account<'info, TokenAccount>, 
+    ticket_ata: &Account<'info, TokenAccount>, 
+
+    buyer_ata: &Account<'info, TokenAccount>, 
+    recipient_ata: &Account<'info, TokenAccount>, 
+
+    token_program: &Program<'info, Token>,
+
+
+    program_id: &Pubkey,
+
+    ibo_idx: u64, 
+    stable_amount_liquidity: u64,     
+) -> Result<()> {
 
     // let buyer: &Signer = &ctx.accounts.buyer;
     // let lockup: &Account<LockUp> = &ctx.accounts.lockup;    
@@ -62,24 +94,36 @@ pub fn buy_common(buyer: &Signer, lockup: &Account<LockUp>, ibo: &mut Account<Ib
     msg!("bond_token_left: {:?}", bond_token_left);
     msg!("full bond value: {:?}", total_gains);
 
-    // Transfer liquidity coin to the specified account    
-    // token::transfer(
-    //     ctx.accounts
-    //         .transfer_liquidity(),                 
-    //         stable_amount_liquidity
-    // )?;               
+    // Transfer liquidity coin to the specified account        
+    token::transfer(
+        CpiContext::new(
+            token_program.to_account_info(),
+            Transfer {
+                from: buyer_ata.to_account_info(),
+                to: recipient_ata.to_account_info(),
+                authority: buyer.to_account_info(),
+            },
+        ),
+        stable_amount_liquidity
+    )?;
 
     // Rederive bump
-    // let (_, bump) = anchor_lang::prelude::Pubkey::find_program_address(&["ibo_instance".as_bytes(),  &ibo_idx.to_be_bytes()], &ctx.program_id);
-    // let seeds = &["ibo_instance".as_bytes(), &ibo_idx.to_be_bytes(), &[bump]];  
+    let (_, bump) = anchor_lang::prelude::Pubkey::find_program_address(&["ibo_instance".as_bytes(),  &ibo_idx.to_be_bytes()], program_id);
+    let seeds = &["ibo_instance".as_bytes(), &ibo_idx.to_be_bytes(), &[bump]];  
     
     // Transfer bond to the vested account
-    // token::transfer(
-    //     ctx.accounts
-    //         .transfer_bond()
-    //         .with_signer(&[seeds]),
-    //         total_gains,
-    // )?;
+    token::transfer(
+        CpiContext::new(
+            token_program.to_account_info(),
+            Transfer {
+                from: ibo_ata.to_account_info(),
+                to: ticket_ata.to_account_info(),
+                authority: ibo.to_account_info(),
+            },
+        ).with_signer(&[seeds]),
+        total_gains,
+        
+    )?;
 
     // let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;         
     // let ticket: &mut Account<Ticket> = &mut ctx.accounts.ticket;     

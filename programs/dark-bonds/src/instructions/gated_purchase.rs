@@ -166,15 +166,39 @@ impl<'info> GatedBuy<'info> {
 
 pub fn gated_buy_bond(ctx: Context<GatedBuy>, _lockup_idx: u32, ibo_idx: u64, stable_amount_liquidity: u64) -> Result<()> {    
 
-    let buyer: &Signer = &ctx.accounts.buyer;
-    let lockup: &Account<LockUp> = &ctx.accounts.lockup;
-    let gate: &Account<Gate> = &ctx.accounts.gate;
+  
+    // let gate: &Account<Gate> = &ctx.accounts.gate;
+    let gate = ctx.accounts.gate.clone();
+    
 
     msg!("gate.master_key: {:?}",gate.master_key);
 
+    let mint_key = gate.mint_key;
+    let master_key = gate.master_key;
+    let creator_key = gate.creator_key;
+    
 
-    // Check that the caller is the owner
-    ctx.accounts.verify(gate.mint_key, gate.master_key, gate.creator_key)?;
+
+    // Check that the caller is the owner of the desired NFT
+    ctx.accounts.verify(gate.mint_key.clone(), gate.master_key.clone(), gate.creator_key.clone())?;
+
+
+    let buyer: &Signer = &ctx.accounts.buyer;
+    let lockup: &Account<LockUp> = &ctx.accounts.lockup;
+    let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo; 
+    let ticket: &mut Account<Ticket> = &mut ctx.accounts.ticket;
+
+    let ibo_ata: &mut Account<TokenAccount> = &mut ctx.accounts.ibo_ata;
+    let ticket_ata: &mut Account<TokenAccount> = &mut ctx.accounts.ticket_ata;
+    let buyer_ata: &mut Account<TokenAccount> = &mut ctx.accounts.buyer_ata;
+    let recipient_ata: &mut Account<TokenAccount> = &mut ctx.accounts.recipient_ata;
+    let token_program: &Program<Token> = &ctx.accounts.token_program;
+    let program_id = &ctx.program_id;
+
+
+
+
+    buy_common(buyer, lockup, ibo, ticket, ibo_ata, ticket_ata, buyer_ata, recipient_ata, token_program, program_id, ibo_idx, stable_amount_liquidity)?;
 
     msg!("Fucking passed it");
     Ok(())
