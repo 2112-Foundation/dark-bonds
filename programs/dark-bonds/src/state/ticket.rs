@@ -9,7 +9,7 @@ pub struct Ticket {
     pub owner: Pubkey,
 
     // Swap: if non zero someone can exucte it with a transfer otherwise not for sale
-    pub swap_price: u64,
+    pub swap_price: u64, // in the underlyuing lqiuidity token
 
     // Subdivide
     pub total_claimable: u64, // Fixed
@@ -18,18 +18,21 @@ pub struct Ticket {
     pub maturity_date: i64, // Fixed
     pub last_claimed: i64,
     pub bond_start: i64,
+
+    pub mature_only: bool, // Set based on lockup type
 }
 
 impl Ticket {
     // Move SPL over and
 
     // Create new bond ticket
-    pub fn new(&mut self, owner: Pubkey, maturity_date: i64, total_gains: u64) {
+    pub fn new(&mut self, owner: Pubkey, maturity_date: i64, total_gains: u64, mature_only: bool) {
         self.maturity_date = maturity_date;
         self.owner = owner;
         self.bond_start = Clock::get().unwrap().unix_timestamp;
         self.last_claimed = self.bond_start;
         self.total_claimable = total_gains;
+        self.mature_only = mature_only;
     }
 
     // Update last claimed

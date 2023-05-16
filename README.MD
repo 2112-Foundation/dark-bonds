@@ -27,3 +27,6 @@ Then  you need to:
 - I think `mint_key` in `buy_bond_gated()` and in setting up that gate is redundant
 - Take some SOL for splitting bond/ticket
 - Implement withdraw for liquidity tokens stored at ibo PDA
+- createIBO needs to take some sort of pubkey which represents the desired bond token to purchase
+- need withdraw of leftover bond tokens past some hardcoded date
+- change lock_up to lockup

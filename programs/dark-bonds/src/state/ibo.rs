@@ -2,9 +2,9 @@ use anchor_lang::prelude::*;
 
 #[account]
 pub struct Ibo {
-    pub locked: bool,
+    pub locked: bool, // After being set to true can;t add further lock-ups
 
-    // Fixed rate of conversion between underlying SPL and USDC
+    // Fixed rate of conversion between underlying token and liquidity coin
     // Set by the deployer at the start
     pub fixed_exchange_rate: u64,
 
@@ -12,9 +12,9 @@ pub struct Ibo {
     pub live_date: i64,
 
     // Accepted mint address for purchase
-    pub stablecoin: Pubkey,
+    pub stablecoin: Pubkey, // TODO rename to liqudity something
 
-    // Receives provided liquidity
+    // Receives provided liquidity, can be this PDA or any specified account
     pub recipient_address: Pubkey,
 
     // Admin

@@ -2,10 +2,7 @@ use crate::errors::errors::ErrorCode;
 use crate::state::*;
 use anchor_lang::prelude::*;
 
-use anchor_spl::{
-    associated_token::AssociatedToken,
-    token::{self, Mint, Token, TokenAccount, Transfer},
-};
+use anchor_spl::token::{self, Token, TokenAccount, Transfer};
 
 #[derive(Accounts)]
 pub struct Split<'info> {
@@ -96,7 +93,7 @@ pub fn split(
     let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
     ibo.ticket_counter += 1;
 
-    // TODO check if actual amoutn gets transfered in tests
+    // TODO check if actual amount gets transfered in tests
 
     Ok(())
 }

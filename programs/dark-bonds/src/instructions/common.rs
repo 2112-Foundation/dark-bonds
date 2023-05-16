@@ -43,7 +43,7 @@ pub fn purchase_mechanics<'info>(
     // Total earnings is the total value minus the initial input
     let profit: f64 = total_balance - initial_input;
     msg!("total profit: {:?}", profit);
-    msg!("yearly earnings: {:?}", profit);
+    // msg!("yearly earnings: {:?}", profit);
 
     let total_gains: u64 = profit as u64;
 
@@ -97,7 +97,7 @@ pub fn purchase_mechanics<'info>(
 
     // Create a new bond instance PDA
     let maturity_stamp: i64 = lockup.get_maturity_stamp();
-    ticket.new(buyer.key(), maturity_stamp, total_gains);
+    ticket.new(buyer.key(), maturity_stamp, total_gains, lockup.mature_only);
 
     // Increment counter of all bond tickets issued
     ibo.ticket_counter += 1;
