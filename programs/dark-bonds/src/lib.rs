@@ -101,11 +101,6 @@ pub mod dark_bonds {
         instructions::split::split(ctx, percent_new, ibo_address, ticket_idx)
     }
 
-    // Join several bonds into one
-    pub fn consolidate(ctx: Context<Consolidate>, sell_price: u64) -> Result<()> {
-        instructions::consolidate::consolidate(ctx, sell_price)
-    }
-
     // Mark bond as purchasable
     pub fn set_swap(ctx: Context<SetSwap>, sell_price: u64) -> Result<()> {
         instructions::set_swap::set_swap(ctx, sell_price)
