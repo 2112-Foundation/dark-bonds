@@ -7,11 +7,6 @@ use anchor_spl::{
     token::{self, Mint, Token, TokenAccount, Transfer},
 };
 
-use solana_program::{
-    instruction::{AccountMeta, Instruction},
-    pubkey::Pubkey,
-};
-
 #[derive(Accounts)]
 pub struct Split<'info> {
     #[account(mut)]

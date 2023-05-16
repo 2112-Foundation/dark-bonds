@@ -66,7 +66,7 @@ pub struct AddGate<'info> {
 
 // Need to feed acounts to set in within th gate
 // TODO first or second argument is redundant
-pub fn add_gate(ctx: Context<AddGate>,ibo_idx: u32, lockup_idx: u32,  mint_key: Pubkey, creator_key: Pubkey, master_key: Pubkey ) -> Result<()> {    
+pub fn add_gate(ctx: Context<AddGate>,_ibo_idx: u32, _lockup_idx: u32,  mint_key: Pubkey, creator_key: Pubkey, master_key: Pubkey ) -> Result<()> {    
     let lockup: &mut Account<LockUp> = &mut ctx.accounts.lockup;    
     let gate: &mut Account<Gate> = &mut ctx.accounts.gate;    
 

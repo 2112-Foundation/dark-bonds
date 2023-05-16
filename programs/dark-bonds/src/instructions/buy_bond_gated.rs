@@ -3,20 +3,11 @@ use crate::state::*;
 use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken,
-    token::{self, Mint, Token, TokenAccount, Transfer},
-};
-
-use solana_program::{
-    instruction::{AccountMeta, Instruction},
-    pubkey::Pubkey,
+    token::{ Mint, Token, TokenAccount},
 };
 
 use metaplex_token_metadata::state::Metadata;
-
-
-use super::common::buy_common;
-
-const SECONDS_YEAR: f64 = 31536000.0;
+use super::common::purchase_mechanics;
 
 #[derive(Accounts)]
 #[instruction(lockup_idx: u32)]
@@ -58,9 +49,6 @@ pub struct GatedBuy<'info> {
     #[account(mut, token::authority = ticket)]
     pub ticket_ata: Box<Account<'info, TokenAccount>>,       
 
-    // #[account(mut, has_one = mint)]
-    // pub nft_account: Box<Account<'info, TokenAccount>>,
-    // pub mint: Account<'info, Mint>,
 
     pub token_program: Program<'info, Token>,
     pub associated_token_program: Program<'info, AssociatedToken>,
@@ -78,29 +66,6 @@ pub struct GatedBuy<'info> {
 }
 
 impl<'info> GatedBuy<'info> {
-    // fn transfer_liquidity(&self, from_ata: &Account<'info, TokenAccount>, to_ata: &Account<'info, TokenAccount>, auth: &Signer<'info>) -> CpiContext<'_, '_, '_, 'info, Transfer<'info>>{
-    fn transfer_liquidity(&self) -> CpiContext<'_, '_, '_, 'info, Transfer<'info>>{
-        CpiContext::new(
-            self.token_program.to_account_info(),
-            Transfer {
-                from: self.buyer_ata.to_account_info(),
-                to: self.recipient_ata.to_account_info(),
-                authority: self.buyer.to_account_info(),
-            },
-        )
-    }
-
-    fn transfer_bond(&self) -> CpiContext<'_, '_, '_, 'info, Transfer<'info>>{
-        CpiContext::new(
-            self.token_program.to_account_info(),
-            Transfer {
-                from: self.ibo_ata.to_account_info(),
-                to: self.ticket_ata.to_account_info(),
-                authority: self.ibo.to_account_info(),
-            },
-        )
-    }
-
     fn verify(&self, mint_key: Pubkey, master_key: Pubkey, creator_key: Pubkey) -> Result<()> {
         // Verify NFT token account
         // Check if the owner of the token account is the buyer
@@ -164,43 +129,27 @@ impl<'info> GatedBuy<'info> {
 
 // below reusable code needs to be abstracted away between both purchase types
 
-pub fn gated_buy_bond(ctx: Context<GatedBuy>, _lockup_idx: u32, ibo_idx: u64, stable_amount_liquidity: u64) -> Result<()> {    
-
-  
-    // let gate: &Account<Gate> = &ctx.accounts.gate;
-    let gate = ctx.accounts.gate.clone();
-    
-
-    msg!("gate.master_key: {:?}",gate.master_key);
-
-    let mint_key = gate.mint_key;
-    let master_key = gate.master_key;
-    let creator_key = gate.creator_key;
-    
-
-
+pub fn buy_bond_gated(ctx: Context<GatedBuy>, _lockup_idx: u32, ibo_idx: u64, stable_amount_liquidity: u64) -> Result<()> {    
+       
     // Check that the caller is the owner of the desired NFT
-    ctx.accounts.verify(gate.mint_key.clone(), gate.master_key.clone(), gate.creator_key.clone())?;
+    let gate = ctx.accounts.gate.clone();
+    ctx.accounts.verify(gate.mint_key, gate.master_key, gate.creator_key)?;
 
-
-    let buyer: &Signer = &ctx.accounts.buyer;
-    let lockup: &Account<LockUp> = &ctx.accounts.lockup;
-    let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo; 
-    let ticket: &mut Account<Ticket> = &mut ctx.accounts.ticket;
-
-    let ibo_ata: &mut Account<TokenAccount> = &mut ctx.accounts.ibo_ata;
-    let ticket_ata: &mut Account<TokenAccount> = &mut ctx.accounts.ticket_ata;
-    let buyer_ata: &mut Account<TokenAccount> = &mut ctx.accounts.buyer_ata;
-    let recipient_ata: &mut Account<TokenAccount> = &mut ctx.accounts.recipient_ata;
-    let token_program: &Program<Token> = &ctx.accounts.token_program;
-    let program_id = &ctx.program_id;
-
-
-
-
-    buy_common(buyer, lockup, ibo, ticket, ibo_ata, ticket_ata, buyer_ata, recipient_ata, token_program, program_id, ibo_idx, stable_amount_liquidity)?;
-
-    msg!("Fucking passed it");
+    purchase_mechanics(  
+        &ctx.accounts.buyer,
+        &ctx.accounts.lockup,
+        &mut ctx.accounts.ibo,
+        &mut ctx.accounts.ticket,
+        &mut ctx.accounts.ibo_ata,
+        &mut ctx.accounts.ticket_ata,
+        &mut ctx.accounts.buyer_ata,
+        &mut ctx.accounts.recipient_ata,
+        &ctx.accounts.token_program,
+        &ctx.program_id,
+        ibo_idx,
+        stable_amount_liquidity
+    )?;
+    
     Ok(())
 }
 

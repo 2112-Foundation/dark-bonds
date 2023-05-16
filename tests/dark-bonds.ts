@@ -536,20 +536,20 @@ describe("dark-bonds", async () => {
     console.log("gated lock up added");
   });
 
-  // it("Lock further lockups.", async () => {
-  //   const tx_lu1 = await bondProgram.methods
-  //     .lock()
-  //     .accounts({
-  //       admin: adminIbo0.publicKey,
-  //       ibo: ibo0,
-  //     })
-  //     .signers([adminIbo0])
-  //     .rpc();
+  it("Lock further lockups.", async () => {
+    const tx_lu1 = await bondProgram.methods
+      .lock()
+      .accounts({
+        admin: adminIbo0.publicKey,
+        ibo: ibo0,
+      })
+      .signers([adminIbo0])
+      .rpc();
 
-  //   // Assert lock changed to true
-  //   let ibo0_state = await bondProgram.account.ibo.fetch(ibo0);
-  //   assert(ibo0_state.locked == true);
-  // });
+    // Assert lock changed to true
+    let ibo0_state = await bondProgram.account.ibo.fetch(ibo0);
+    assert(ibo0_state.locked == true);
+  });
 
   it("Buyer 1 deposits funds at a rate 1", async () => {
     // Derive ticket from latest counter instance
@@ -573,7 +573,7 @@ describe("dark-bonds", async () => {
 
     // Spend 500 for rate 1 as player 1
     const tx_lu1 = await bondProgram.methods
-      .buyBonds(0, new anchor.BN(ibo_index), new anchor.BN(500))
+      .buyBond(0, new anchor.BN(ibo_index), new anchor.BN(500))
       .accounts({
         buyer: bondBuyer1.publicKey,
         ticket: ticket0,
@@ -630,7 +630,7 @@ describe("dark-bonds", async () => {
 
     // Spend 500 for rate 1 as player 1
     const tx_lu1 = await bondProgram.methods
-      .buyBonds(1, new anchor.BN(ibo_index), new anchor.BN(500))
+      .buyBond(1, new anchor.BN(ibo_index), new anchor.BN(500))
       .accounts({
         buyer: bondBuyer2.publicKey,
         ticket: ticket1,
@@ -688,7 +688,7 @@ describe("dark-bonds", async () => {
 
     // Spend 500 for rate 1 as player 1
     const tx_lu1 = await bondProgram.methods
-      .buyBonds(2, new anchor.BN(ibo_index), new anchor.BN(100000000))
+      .buyBond(2, new anchor.BN(ibo_index), new anchor.BN(100000000))
       .accounts({
         buyer: bondBuyer2.publicKey,
         ticket: ticket2,
@@ -940,7 +940,7 @@ describe("dark-bonds", async () => {
       true
     );
 
-    console.log("nftWallet.publicKey: ", nftWallet.publicKey);
+    console.log("nftWallet.publicKey: ", nftWallet.publicKey.toBase58());
 
     // send that lad NFT
     await metaplex.nfts().transfer({
@@ -953,7 +953,7 @@ describe("dark-bonds", async () => {
 
     // Spend 500 for rate 1 as player 1
     const tx_lu1 = await bondProgram.methods
-      .gatedBuy(3, new anchor.BN(ibo_index), new anchor.BN(10000))
+      .buyBondGated(3, new anchor.BN(ibo_index), new anchor.BN(10000))
       .accounts({
         buyer: bondBuyer2.publicKey,
         ticket: ticket4,

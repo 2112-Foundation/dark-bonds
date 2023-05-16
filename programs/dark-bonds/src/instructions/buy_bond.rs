@@ -11,9 +11,7 @@ use solana_program::{
     pubkey::Pubkey,
 };
 
-const SECONDS_YEAR: f64 = 31536000.0;
-
-use super::common::buy_common;
+use super::common::purchase_mechanics;
 
 #[derive(Accounts)]
 #[instruction(lockup_idx: u32)]
@@ -59,127 +57,25 @@ pub struct BuyBond<'info> {
     pub system_program: Program<'info, System>, 
 }
 
-impl<'info> BuyBond<'info> {
-    // fn transfer_liquidity(&self, from_ata: &Account<'info, TokenAccount>, to_ata: &Account<'info, TokenAccount>, auth: &Signer<'info>) -> CpiContext<'_, '_, '_, 'info, Transfer<'info>>{
-    fn transfer_liquidity(&self) -> CpiContext<'_, '_, '_, 'info, Transfer<'info>>{
-        CpiContext::new(
-            self.token_program.to_account_info(),
-            Transfer {
-                from: self.buyer_ata.to_account_info(),
-                to: self.recipient_ata.to_account_info(),
-                authority: self.buyer.to_account_info(),
-            },
-        )
-    }
-
-    fn transfer_bond(&self) -> CpiContext<'_, '_, '_, 'info, Transfer<'info>>{
-        CpiContext::new(
-            self.token_program.to_account_info(),
-            Transfer {
-                from: self.ibo_ata.to_account_info(),
-                to: self.ticket_ata.to_account_info(),
-                authority: self.ibo.to_account_info(),
-            },
-        )
-    }
-}
-
 // PDA for acceptable mints
 // Extra cut for deposit which goes on to make LP in raydium
 
 pub fn buy_bond(ctx: Context<BuyBond>, _lockup_idx: u32, ibo_idx: u64, stable_amount_liquidity: u64) -> Result<()> {    
-    // let buyer: &Signer = &ctx.accounts.buyer;
-    // let lockup: &Account<LockUp> = &ctx.accounts.lockup;    
 
-    // // Cacluclate total amount to be netted over the whole lock-up period
-    // // let total_gains: u64 = lockup.get_total_gain(stable_amount_liquidity);
-
-
-    // // Convert APY, time and initial input to f64
-    // // Moved here
-    // // ------------------------------------------------------------------------------------------
-    // let apy: f64 = lockup.apy / 100.0;
-    // let time_in_years: f64 = lockup.period as f64 / SECONDS_YEAR;
-    // let initial_input: f64 = stable_amount_liquidity as f64;
-
-    // msg!("\n\n\tliquidity provided: {:?}", stable_amount_liquidity);
-    // msg!("apy: {:?}", apy);
-    // msg!("time_in_years: {:?}", time_in_years);
-    // msg!("self.period : {:?}", lockup.period);
-    // // msg!("SECONDS_YEAR: {:?}", SECONDS_YEAR);
-
-    // // Calculate total value using compound interest formula
-    // let total_balance: f64 = initial_input * apy.powf(time_in_years);
-    // msg!("total balance: {:?}", total_balance);
-
-    // // Total earnings is the total value minus the initial input
-    // let profit: f64 = total_balance - initial_input;
-    // msg!("total profit: {:?}", profit);
-    // msg!("yearly earnings: {:?}", profit);
- 
-    // let total_gains: u64 = profit as u64;
-
-    // // ------------------------------------------------------------------------------------------
-    // // 
-    // // Get balance within the bond main
-    // let bond_token_left: u64  = ctx.accounts.ibo_ata.amount;    
-
-    // // Ensure there are enough tokens TODO
-    // require!(bond_token_left >= total_gains, ErrorCode::BondsSoldOut);    
-
-    // msg!("bond_token_left: {:?}", bond_token_left);
-    // msg!("full bond value: {:?}", total_gains);
-
-    // // Transfer liquidity coin to the specified account    
-    // token::transfer(
-    //     ctx.accounts
-    //         .transfer_liquidity(),                 
-    //         stable_amount_liquidity
-    // )?;               
-
-    // // Rederive bump
-    // let (_, bump) = anchor_lang::prelude::Pubkey::find_program_address(&["ibo_instance".as_bytes(),  &ibo_idx.to_be_bytes()], &ctx.program_id);
-    // let seeds = &["ibo_instance".as_bytes(), &ibo_idx.to_be_bytes(), &[bump]];  
-    
-    // // Transfer bond to the vested account
-    // token::transfer(
-    //     ctx.accounts
-    //         .transfer_bond()
-    //         .with_signer(&[seeds]),
-    //         total_gains,
-    // )?;
-
-    // let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;         
-    // let ticket: &mut Account<Ticket> = &mut ctx.accounts.ticket;     
-
-    // msg!("desired stable mint: {:?}", ibo.stablecoin);
-    // msg!("provided mint: {:?}", ctx.accounts.recipient_ata.mint);
-
-    // // Create a new bond instance PDA
-    // let maturity_stamp: i64 = lockup.get_maturity_stamp();
-    // ticket.new(buyer.key(), maturity_stamp, total_gains);
-
-    // // Increment counter of all bond tickets issued
-    // ibo.ticket_counter += 1;    
-
-    let buyer: &Signer = &ctx.accounts.buyer;
-    let lockup: &Account<LockUp> = &ctx.accounts.lockup;
-    let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo; 
-    let ticket: &mut Account<Ticket> = &mut ctx.accounts.ticket;
-
-    let ibo_ata: &mut Account<TokenAccount> = &mut ctx.accounts.ibo_ata;
-    let ticket_ata: &mut Account<TokenAccount> = &mut ctx.accounts.ticket_ata;
-    let buyer_ata: &mut Account<TokenAccount> = &mut ctx.accounts.buyer_ata;
-    let recipient_ata: &mut Account<TokenAccount> = &mut ctx.accounts.recipient_ata;
-    let token_program: &Program<Token> = &ctx.accounts.token_program;
-    let program_id = &ctx.program_id;
-
-
-
-
-    buy_common(buyer, lockup, ibo, ticket, ibo_ata, ticket_ata, buyer_ata, recipient_ata, token_program, program_id, ibo_idx, stable_amount_liquidity)?;
-
-    msg!("Fucking passed it");
+    purchase_mechanics(  
+        &ctx.accounts.buyer,
+        &ctx.accounts.lockup,
+        &mut ctx.accounts.ibo,
+        &mut ctx.accounts.ticket,
+        &mut ctx.accounts.ibo_ata,
+        &mut ctx.accounts.ticket_ata,
+        &mut ctx.accounts.buyer_ata,
+        &mut ctx.accounts.recipient_ata,
+        &ctx.accounts.token_program,
+        &ctx.program_id,
+        ibo_idx,
+        stable_amount_liquidity
+    )?;    
 
     Ok(())
 }

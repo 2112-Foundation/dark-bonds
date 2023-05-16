@@ -68,7 +68,7 @@ pub mod dark_bonds {
     }
 
     // Provide liquidity for bonds for a given bond offering
-    pub fn buy_bonds(
+    pub fn buy_bond(
         ctx: Context<BuyBond>,
         lockup_idx: u32,
         ibo_idx: u64,
@@ -77,13 +77,13 @@ pub mod dark_bonds {
         instructions::buy_bond::buy_bond(ctx, lockup_idx, ibo_idx, liquidity_provided)
     }
 
-    pub fn gated_buy(
+    pub fn buy_bond_gated(
         ctx: Context<GatedBuy>,
         lockup_idx: u32,
         ibo_idx: u64,
         liquidity_provided: u64,
     ) -> Result<()> {
-        instructions::gated_purchase::gated_buy_bond(ctx, lockup_idx, ibo_idx, liquidity_provided)
+        instructions::buy_bond_gated::buy_bond_gated(ctx, lockup_idx, ibo_idx, liquidity_provided)
     }
 
     // Claim tokens yielded for that specifc bond ticket

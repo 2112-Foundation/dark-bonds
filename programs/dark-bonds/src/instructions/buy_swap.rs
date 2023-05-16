@@ -60,7 +60,7 @@ pub struct Initialize<'info> {
 }
 
 pub fn buy_swap(ctx: Context<BuySwap>) -> Result<()> {
-    let mut accounts = ctx.accounts;  // Now you borrowed ctx.accounts only once
+    let accounts: &mut BuySwap = ctx.accounts; 
     let buyer: &mut Signer = &mut accounts.buyer;
     let ticket: &mut Account<Ticket> = &mut accounts.ticket;    
 

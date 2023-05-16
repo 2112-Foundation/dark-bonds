@@ -1,5 +1,3 @@
-use crate::errors::errors::ErrorCode;
-use crate::state::*;
 use anchor_lang::prelude::*;
 
 // Set to zero for testing
