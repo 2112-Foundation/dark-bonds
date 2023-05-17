@@ -24,15 +24,15 @@ pub struct AddLockUp<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn add_lockup(ctx: Context<AddLockUp>, lock_up_duration: i64, lock_up_apy: f64) -> Result<()> {    
+pub fn add_lockup(ctx: Context<AddLockUp>, lockup_duration: i64, lockup_apy: f64) -> Result<()> {    
     let lockup: &mut Account<LockUp> = &mut ctx.accounts.lockup;
     let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
 
-    msg!("\nsetting APY of: {:?}", lock_up_apy);
+    msg!("\nsetting APY of: {:?}", lockup_apy);
 
     // Set these lockup values
-    lockup.period = lock_up_duration;
-    lockup.apy = lock_up_apy;
+    lockup.period = lockup_duration;
+    lockup.apy = lockup_apy;
 
     // Increment counter
     ibo.lockup_counter += 1;

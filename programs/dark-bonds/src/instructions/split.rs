@@ -9,7 +9,7 @@ pub struct Split<'info> {
     #[account(mut)]
     pub owner: Signer<'info>,
     // Only owner can split
-    #[account(mut, has_one = owner @ErrorCode::NotTicketOwner)]
+    #[account(mut, has_one = owner @ErrorCode::NotBondOwner)]
     pub bond: Account<'info, Bond>,
     #[account(mut)]
     pub bond_ata_old: Box<Account<'info, TokenAccount>>,
@@ -89,7 +89,7 @@ pub fn split(
         new_balance,
     )?;
 
-    // Increment counter of all bond tickets issued
+    // Increment counter of all bonds issued
     let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
     ibo.bond_counter += 1;
 

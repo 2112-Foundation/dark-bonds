@@ -39,10 +39,10 @@ pub mod dark_bonds {
 
     pub fn add_lockup(
         ctx: Context<AddLockUp>,
-        lock_up_duration: i64,
-        lock_up_apy: f64,
+        lockup_duration: i64,
+        lockup_apy: f64,
     ) -> Result<()> {
-        instructions::add_lockup::add_lockup(ctx, lock_up_duration, lock_up_apy)
+        instructions::add_lockup::add_lockup(ctx, lockup_duration, lockup_apy)
     }
 
     pub fn add_gate(

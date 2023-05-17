@@ -10,7 +10,7 @@ pub enum ErrorCode {
     #[msg("This bond is not for sale")]
     NotForSale,
     #[msg("Signing account is not the owner of this bond")]
-    NotTicketOwner,
+    NotBondOwner,
     #[msg("Signing account is not IBO admin")]
     NotIBOAdmin,
     #[msg("Purchase requires seperate function call with NTF ownership proof")]

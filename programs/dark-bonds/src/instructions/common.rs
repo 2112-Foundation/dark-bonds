@@ -99,7 +99,7 @@ pub fn purchase_mechanics<'info>(
     let maturity_stamp: i64 = lockup.get_maturity_stamp();
     bond.new(buyer.key(), maturity_stamp, total_gains, lockup.mature_only);
 
-    // Increment counter of all bond tickets issued
+    // Increment counter of all bonds issued
     ibo.bond_counter += 1;
 
     Ok(())
