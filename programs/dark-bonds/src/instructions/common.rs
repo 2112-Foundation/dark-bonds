@@ -92,7 +92,7 @@ pub fn purchase_mechanics<'info>(
         total_gains,
     )?;
 
-    // msg!("desired stable mint: {:?}", ibo.stablecoin);
+    // msg!("desired stable mint: {:?}", ibo.liquidity_token);
     // msg!("provided mint: {:?}", ctx.accounts.recipient_ata.mint);
 
     // Create a new bond instance PDA

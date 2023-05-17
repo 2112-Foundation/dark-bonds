@@ -25,14 +25,14 @@ pub mod dark_bonds {
         ctx: Context<CreateIBO>,
         fixed_exchange_rate: u64,
         live_date: i64,
-        stablecoin: Pubkey,
+        liquidity_token: Pubkey,
         recipient: Pubkey,
     ) -> Result<()> {
         instructions::create_ibo::create_ibo(
             ctx,
             fixed_exchange_rate,
             live_date,
-            stablecoin,
+            liquidity_token,
             recipient,
         )
     }

@@ -11,7 +11,7 @@ use solana_program::{
 pub struct AddLockUp<'info> {
     #[account(mut)]
     pub admin: Signer<'info>,
-    #[account(mut, has_one = admin, constraint = ibo.locked == false @ErrorCode::RatesLocked)]
+    #[account(mut, has_one = admin, constraint = ibo.lockups_locked == false @ErrorCode::RatesLocked)]
     pub ibo: Account<'info, Ibo>,
     #[account(        
         init,      
@@ -46,7 +46,7 @@ pub fn add_lockup(ctx: Context<AddLockUp>, lock_up_duration: i64, lock_up_apy: f
 pub struct AddGate<'info> {
     #[account(mut)]
     pub admin: Signer<'info>,
-    #[account(mut, has_one = admin, constraint = ibo.locked == false @ErrorCode::RatesLocked)]
+    #[account(mut, has_one = admin, constraint = ibo.lockups_locked == false @ErrorCode::RatesLocked)]
     pub ibo: Account<'info, Ibo>,
     #[account(                    
         seeds = ["lockup".as_bytes(), ibo.key().as_ref(), &lockup_idx.to_be_bytes()], 

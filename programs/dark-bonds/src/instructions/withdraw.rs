@@ -8,13 +8,17 @@ use anchor_spl::{
 
 #[derive(Accounts)]
 pub struct Withdraw<'info> {
-    // TODO check for caller being admin
     #[account(mut)]
-    pub ibo: Account<'info, Ibo>,
-
-    // purchse token
-    // Provided ATA has to be same mint as the one set in ibo
-    // #[account(mut, token::mint = ibo.stablecoin, token::authority = buyer)]
+    pub admin: Signer<'info>,    
+    #[account(mut, has_one = admin @ErrorCode::NotIBOAdmin)]
+    pub ibo: Account<'info, Ibo>,    
+    #[account(               
+        mut, 
+        seeds = ["main_register".as_bytes()], 
+        bump,       
+    )]    
+    pub main_ibo: Account<'info, Master>,    // TODO do that everwyehre where main_ibo is used
+    
     #[account(mut)]
     pub ibo_ata: Box<Account<'info, TokenAccount>>,
     #[account(mut)]
@@ -29,8 +33,55 @@ pub struct Withdraw<'info> {
 // Liqudity bond can be withdrawn any time
 // Bond token can only be withdrawn after IBO has ended (whatver edned means)
 
-pub fn withdraw_liquidity(ctx: Context<Withdraw>, amount: Pubkey) -> Result<()> {
-    // Check it is defo not the underlying bond (so recompoisers cant steal bond after getting liquidity)
+// Check it is defo not the underlying bond (so recompoisers cant steal bond after getting liquidity)
+// but can be done after the period is over
+
+pub fn withdraw(ctx: Context<Withdraw>, withdraw_amount: u64, ibo_idx: u64) -> Result<()> {
+    let ibo_ata: &mut Account<TokenAccount> = &mut ctx.accounts.ibo_ata;    
+    let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
+    let main_ibo: &mut Account<Master> = &mut ctx.accounts.main_ibo;    
+
+    // If trying to withdraw underlying asset and withdraw for that have been marked as locked
+    if ibo_ata.mint == ibo.underlying_token && ibo.withdraws_locked {
+        // Assert deadline has expired
+        require!(
+            Clock::get().unwrap().unix_timestamp >= ibo.end_date,
+            ErrorCode::WithdrawLocked
+        );
+    }
+
+    let master_ibo_address = main_ibo.key().clone();
+
+    // Get the bump
+    let (_, bump) = anchor_lang::prelude::Pubkey::find_program_address(
+        &[
+            "ibo_instance".as_bytes(),
+            master_ibo_address.clone().as_ref(),
+            &ibo_idx.to_be_bytes(),
+        ],
+        &ctx.program_id,
+    );
+
+    // Get the seeds
+    let seeds = &[
+        "ibo_instance".as_bytes(),
+        master_ibo_address.as_ref(),
+        &ibo_idx.to_be_bytes(),
+        &[bump],
+    ];
+
+    token::transfer(
+        CpiContext::new(
+            ctx.accounts.token_program.to_account_info(),
+            Transfer {
+                from: ibo_ata.to_account_info(),
+                to: ctx.accounts.recipient_ata.to_account_info(),
+                authority: ibo.to_account_info(),
+            },
+        )
+        .with_signer(&[seeds]),
+        withdraw_amount,
+    )?;
 
     Ok(())
 }

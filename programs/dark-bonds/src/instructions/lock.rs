@@ -13,6 +13,6 @@ pub struct Lock<'info> {
 // Any invocation after first time will fail on the PDA seeds macthing
 pub fn lock(ctx: Context<Lock>) -> Result<()> {
     let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
-    ibo.locked = true;
+    ibo.lockups_locked = true;
     Ok(())
 }

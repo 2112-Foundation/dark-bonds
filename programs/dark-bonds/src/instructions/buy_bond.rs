@@ -39,7 +39,7 @@ pub struct BuyBond<'info> {
 
     // purchse token
     // Provided ATA has to be same mint as the one set in ibo
-    #[account(mut, token::mint = ibo.stablecoin, token::authority = buyer)]
+    #[account(mut, token::mint = ibo.liquidity_token, token::authority = buyer)]
     pub buyer_ata: Box<Account<'info, TokenAccount>>,    
     #[account(mut)] 
     pub recipient_ata: Box<Account<'info, TokenAccount>>,

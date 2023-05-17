@@ -18,13 +18,13 @@ pub struct BuySwap<'info> {
     
     pub ibo: Account<'info, Ibo>,    
     #[account(mut,
-        token::mint = ibo.stablecoin,
+        token::mint = ibo.liquidity_token,
         token::authority = buyer,
     )]
     pub buyer_ata: Account<'info, TokenAccount>,
 
     #[account(mut, 
-        token::mint = ibo.stablecoin,
+        token::mint = ibo.liquidity_token,
         token::authority = ticket.owner
     )]
     pub seller_ata: Account<'info, TokenAccount>,

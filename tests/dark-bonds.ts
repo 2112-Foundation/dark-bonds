@@ -166,7 +166,7 @@ describe("dark-bonds", async () => {
       topUp(nftWallet.publicKey),
     ]);
 
-    // Stablecoin mint
+    // liquidity_token mint
     mintSC = await createMint(
       provider.connection,
       mintAuthSC,
@@ -183,7 +183,7 @@ describe("dark-bonds", async () => {
       10
     );
 
-    // Initialise bondBuyer ATAs for the stablecoin
+    // Initialise bondBuyer ATAs for the liquidity_token
     bondBuyer1ATA_sc = await getOrCreateAssociatedTokenAccount(
       provider.connection,
       bondBuyer1,
@@ -548,7 +548,7 @@ describe("dark-bonds", async () => {
 
     // Assert lock changed to true
     let ibo0_state = await bondProgram.account.ibo.fetch(ibo0);
-    assert(ibo0_state.locked == true);
+    assert(ibo0_state.lockupsLocked == true);
   });
 
   it("Buyer 1 deposits funds at a rate 1", async () => {
@@ -604,7 +604,7 @@ describe("dark-bonds", async () => {
     // let ibo0_state = await bondProgram.account.ibo.fetch(ibo0);
     // console.log("ibo0_state: ", ibo0_state.)
 
-    // Check that stablecoin balance decresed
+    // Check that liquidity_token balance decresed
     // Check that buyer set as the owner in the ticket
     // Check calculation of bond to receive is correct
   });
@@ -661,7 +661,7 @@ describe("dark-bonds", async () => {
     console.log("stable coin mint: ", mintSC.toBase58());
     console.log("bond coin mint: ", mintB.toBase58());
 
-    // Check that stablecoin balance decresed
+    // Check that liquidity_token balance decresed
     // Check that buyer set as the owner in the ticket
     // Check calculation of bond to receive is correct
   });
@@ -719,7 +719,7 @@ describe("dark-bonds", async () => {
       ticket1_state.totalClaimable.toString()
     );
 
-    // Check that stablecoin balance decresed
+    // Check that liquidity_token balance decresed
     // Check that buyer set as the owner in the ticket
     // Check calculation of bond to receive is correct
   });

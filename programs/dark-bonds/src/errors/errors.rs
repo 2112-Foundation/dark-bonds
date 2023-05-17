@@ -27,4 +27,6 @@ pub enum ErrorCode {
     InvalidMetadata,
     #[msg("The creator of the NFT is not the expected creator or is not verified")]
     InvalidCreator,
+    #[msg("Can not withdraw until IBO is over")]
+    WithdrawLocked,
 }
