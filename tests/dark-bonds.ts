@@ -538,7 +538,7 @@ describe("dark-bonds", async () => {
 
   it("Lock further lockups.", async () => {
     const tx_lu1 = await bondProgram.methods
-      .lock()
+      .lock(true, true)
       .accounts({
         admin: adminIbo0.publicKey,
         ibo: ibo0,

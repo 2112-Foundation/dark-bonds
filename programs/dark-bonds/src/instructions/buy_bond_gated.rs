@@ -109,9 +109,9 @@ impl<'info> GatedBuy<'info> {
     
         // Verify NFT creator
         // Check if there's any creator in the metadata that matches the provided creator key and is verified
-           if !metadata.data.creators.iter().any(|creator_vec| {
+        if !metadata.data.creators.iter().any(|creator_vec| {
             if let Some(creator) = creator_vec.first() {
-                creator.address == creator_key // && creator.verified
+                creator.address == creator_key && creator.verified
             } else {
                 false
             }

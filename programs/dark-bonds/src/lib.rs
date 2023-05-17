@@ -20,7 +20,6 @@ pub mod dark_bonds {
     }
 
     // Create a bond offering
-    // TODO ADD WITHDRFAW THIS OWN
     pub fn create_ibo(
         ctx: Context<CreateIBO>,
         fixed_exchange_rate: u64,
@@ -31,12 +30,14 @@ pub mod dark_bonds {
         instructions::create_ibo::create_ibo(
             ctx,
             fixed_exchange_rate,
-            live_date,
+            live_date, // TODO make it so you can't buy bonds prior to it
             liquidity_token,
             recipient,
+            // TODO
         )
     }
 
+    // TODO add payout on maturity only
     pub fn add_lockup(
         ctx: Context<AddLockUp>,
         lockup_duration: i64,
@@ -63,8 +64,12 @@ pub mod dark_bonds {
         )
     }
 
-    pub fn lock(ctx: Context<Lock>) -> Result<()> {
-        instructions::lock::lock(ctx)
+    pub fn lock(
+        ctx: Context<Lock>,
+        lock_withdraws: bool,
+        lock_lockup_addition: bool,
+    ) -> Result<()> {
+        instructions::lock::lock(ctx, lock_withdraws, lock_lockup_addition)
     }
 
     // Provide liquidity for bonds for a given bond offering
