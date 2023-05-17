@@ -27,7 +27,7 @@ pub struct CreateIBO<'info> {
         seeds = ["main_register".as_bytes()], 
         bump,       
     )]    
-    pub main_ibo: Account<'info, Master>,    
+    pub main_ibo: Account<'info, Master>,    // TODO do that everwyehre
     pub system_program: Program<'info, System>,
 }
 
@@ -35,7 +35,7 @@ pub fn create_ibo(
     ctx: Context<CreateIBO>,
     fixed_exchange_rate: u64,
     live_date: i64,
-    stablecoin: Pubkey,
+    liquidity_token: Pubkey,
     recipient: Pubkey,
 ) -> Result<()> {
     let admin: &Signer = &mut ctx.accounts.admin;
@@ -45,7 +45,7 @@ pub fn create_ibo(
     // Fill out details of the new Ibo    
     ibo.live_date = live_date;
     ibo.fixed_exchange_rate = fixed_exchange_rate;
-    ibo.stablecoin = stablecoin;
+    ibo.liquidity_token = liquidity_token;
     ibo.admin = admin.key();
     ibo.recipient_address = recipient;
 
