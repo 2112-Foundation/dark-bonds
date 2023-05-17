@@ -86,19 +86,19 @@ pub mod dark_bonds {
         instructions::buy_bond_gated::buy_bond_gated(ctx, lockup_idx, ibo_idx, liquidity_provided)
     }
 
-    // Claim tokens yielded for that specifc bond ticket
+    // Claim tokens yielded for that specifc bond bond
     pub fn claim(ctx: Context<Claim>, ibo_address: Pubkey, ibo_idx: u32) -> Result<()> {
         instructions::claim::claim(ctx, ibo_address, ibo_idx)
     }
 
-    // Split bond ticket into multiples
+    // Split bond bond into multiples
     pub fn split(
         ctx: Context<Split>,
         percent_new: u16,
         ibo_address: Pubkey,
-        ticket_idx: u32,
+        bond_idx: u32,
     ) -> Result<()> {
-        instructions::split::split(ctx, percent_new, ibo_address, ticket_idx)
+        instructions::split::split(ctx, percent_new, ibo_address, bond_idx)
     }
 
     // Mark bond as purchasable

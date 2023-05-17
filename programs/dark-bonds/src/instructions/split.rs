@@ -10,19 +10,19 @@ pub struct Split<'info> {
     pub owner: Signer<'info>,
     // Only owner can split
     #[account(mut, has_one = owner @ErrorCode::NotTicketOwner)]
-    pub ticket: Account<'info, Ticket>,
+    pub bond: Account<'info, Bond>,
     #[account(mut)]
-    pub ticket_ata_old: Box<Account<'info, TokenAccount>>,
+    pub bond_ata_old: Box<Account<'info, TokenAccount>>,
     #[account(mut)]
-    pub ticket_ata_new: Box<Account<'info, TokenAccount>>,
+    pub bond_ata_new: Box<Account<'info, TokenAccount>>,
     #[account(
         init,
-        seeds = ["ticket".as_bytes(), ibo.key().as_ref(),  &ibo.ticket_counter.to_be_bytes()], // TODO add counter
+        seeds = ["bond".as_bytes(), ibo.key().as_ref(),  &ibo.bond_counter.to_be_bytes()], // TODO add counter
         bump,
         payer = owner,
         space = 400
     )]
-    pub new_ticket: Account<'info, Ticket>,
+    pub new_bond: Account<'info, Bond>,
     #[account(mut)]
     pub ibo: Account<'info, Ibo>,
     pub token_program: Program<'info, Token>,
@@ -33,9 +33,9 @@ impl<'info> Split<'info> {
         CpiContext::new(
             self.token_program.to_account_info(),
             Transfer {
-                from: self.ticket_ata_old.to_account_info(),
-                to: self.ticket_ata_new.to_account_info(),
-                authority: self.ticket.to_account_info(),
+                from: self.bond_ata_old.to_account_info(),
+                to: self.bond_ata_new.to_account_info(),
+                authority: self.bond.to_account_info(),
             },
         )
     }
@@ -45,39 +45,39 @@ pub fn split(
     ctx: Context<Split>,
     percent_new: u16,
     ibo_address: Pubkey,
-    ticket_idx: u32,
+    bond_idx: u32,
 ) -> Result<()> {
-    let ticket: &mut Account<Ticket> = &mut ctx.accounts.ticket;
-    let new_ticket: &mut Account<Ticket> = &mut ctx.accounts.new_ticket;
+    let bond: &mut Account<Bond> = &mut ctx.accounts.bond;
+    let new_bond: &mut Account<Bond> = &mut ctx.accounts.new_bond;
 
     let percent_new_fraction: f64 = (percent_new as f64) / 100.0;
 
     // Figure out total claimable
-    let balance_new_ticket: u64 = (ticket.total_claimable as f64 * percent_new_fraction) as u64;
-    let balance_old_ticket: u64 = ticket.total_claimable - balance_new_ticket;
+    let balance_new_bond: u64 = (bond.total_claimable as f64 * percent_new_fraction) as u64;
+    let balance_old_bond: u64 = bond.total_claimable - balance_new_bond;
 
-    // Update existing ticket
-    ticket.total_claimable = balance_old_ticket;
-    new_ticket.total_claimable = balance_new_ticket;
+    // Update existing bond
+    bond.total_claimable = balance_old_bond;
+    new_bond.total_claimable = balance_new_bond;
 
     // Get signing dets
     let (_, bump) = anchor_lang::prelude::Pubkey::find_program_address(
         &[
-            "ticket".as_bytes(),
+            "bond".as_bytes(),
             ibo_address.as_ref(),
-            &ticket_idx.to_be_bytes(),
+            &bond_idx.to_be_bytes(),
         ],
         &ctx.program_id,
     );
     let seeds = &[
-        "ticket".as_bytes(),
+        "bond".as_bytes(),
         ibo_address.as_ref(),
-        &ticket_idx.to_be_bytes(),
+        &bond_idx.to_be_bytes(),
         &[bump],
     ];
 
     // Get balance
-    let current_bond_balance = ctx.accounts.ticket_ata_old.amount as f64;
+    let current_bond_balance = ctx.accounts.bond_ata_old.amount as f64;
     let new_balance: u64 = (current_bond_balance * percent_new_fraction) as u64;
 
     msg!("current_bond_balance: {:?}", current_bond_balance);
@@ -91,7 +91,7 @@ pub fn split(
 
     // Increment counter of all bond tickets issued
     let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
-    ibo.ticket_counter += 1;
+    ibo.bond_counter += 1;
 
     // TODO check if actual amount gets transfered in tests
 

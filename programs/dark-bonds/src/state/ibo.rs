@@ -24,7 +24,7 @@ pub struct Ibo {
     pub admin: Pubkey,
 
     pub lockup_counter: u32, // TODO Can definitaly reduce this one
-    pub ticket_counter: u32,
+    pub bond_counter: u32,
 }
 
 impl Ibo {

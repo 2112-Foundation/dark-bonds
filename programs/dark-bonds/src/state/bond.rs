@@ -4,7 +4,7 @@ use anchor_lang::prelude::*;
 const SECONDS_DAY: i64 = 86_400;
 
 #[account]
-pub struct Ticket {
+pub struct Bond {
     // Owner info
     pub owner: Pubkey,
 
@@ -22,10 +22,10 @@ pub struct Ticket {
     pub mature_only: bool, // Set based on lockup type
 }
 
-impl Ticket {
+impl Bond {
     // Move SPL over and
 
-    // Create new bond ticket
+    // Create new bond bond
     pub fn new(&mut self, owner: Pubkey, maturity_date: i64, total_gains: u64, mature_only: bool) {
         self.maturity_date = maturity_date;
         self.owner = owner;
@@ -40,7 +40,7 @@ impl Ticket {
         self.last_claimed = Clock::get().unwrap().unix_timestamp;
     }
 
-    // A day has passed since last withdraw for this bond ticket
+    // A day has passed since last withdraw for this bond bond
     pub fn time_elapsed(&self) -> bool {
         return Clock::get().unwrap().unix_timestamp > self.last_claimed + SECONDS_DAY;
     }

@@ -13,8 +13,8 @@ pub struct BuySwap<'info> {
     pub buyer: Signer<'info>,
 
     // Can't buy swap that is not listed
-    #[account(mut, constraint = ticket.swap_price > 0 @ErrorCode::NotForSale)]
-    pub ticket: Account<'info, Ticket>,
+    #[account(mut, constraint = bond.swap_price > 0 @ErrorCode::NotForSale)]
+    pub bond: Account<'info, Bond>,
     
     pub ibo: Account<'info, Ibo>,    
     #[account(mut,
@@ -25,7 +25,7 @@ pub struct BuySwap<'info> {
 
     #[account(mut, 
         token::mint = ibo.liquidity_token,
-        token::authority = ticket.owner
+        token::authority = bond.owner
     )]
     pub seller_ata: Account<'info, TokenAccount>,
 
@@ -62,18 +62,18 @@ pub struct Initialize<'info> {
 pub fn buy_swap(ctx: Context<BuySwap>) -> Result<()> {
     let accounts: &mut BuySwap = ctx.accounts; 
     let buyer: &mut Signer = &mut accounts.buyer;
-    let ticket: &mut Account<Ticket> = &mut accounts.ticket;    
+    let bond: &mut Account<Bond> = &mut accounts.bond;    
 
-    // Set as the new ticket owner
-    ticket.owner = buyer.key();
+    // Set as the new bond owner
+    bond.owner = buyer.key();
 
     // Set swap price to zero
-    ticket.swap_price = 0;
+    bond.swap_price = 0;
 
     // Transfer sell price base stable coin to the ATA of the owner
     token::transfer(
         accounts.transfer_liquidity(),  // use accounts here
-        accounts.ticket.swap_price
+        accounts.bond.swap_price
     )?;                   
 
     Ok(())

@@ -17,12 +17,12 @@ pub struct GatedBuy<'info> {
     pub buyer: Signer<'info>,    
     #[account(        
         init,      
-        seeds = ["ticket".as_bytes(), ibo.key().as_ref(),  &ibo.ticket_counter.to_be_bytes()], // TODO add counter
+        seeds = ["bond".as_bytes(), ibo.key().as_ref(),  &ibo.bond_counter.to_be_bytes()], // TODO add counter
         bump,      
         payer = buyer, 
         space = 400
     )]    
-    pub ticket: Account<'info, Ticket>,
+    pub bond: Account<'info, Bond>,
     #[account(mut)]
     pub ibo: Account<'info, Ibo>,
     
@@ -32,11 +32,11 @@ pub struct GatedBuy<'info> {
     )]    
     pub lockup: Account<'info, LockUp>,
 
-    // TODO needs to be derived off the lockup counter
+    // // TODO needs to be derived off the lockup counter
     #[account(mut)]
     pub gate: Account<'info, Gate>,
     // purchse token
-    // Provided ATA has to be same mint as the one set in ibo
+    // Provided ATA has to be same mint as the one set in ibo // TODO need same for normal buy
     #[account(mut, token::mint = ibo.liquidity_token, token::authority = buyer)]
     pub buyer_ata: Box<Account<'info, TokenAccount>>,    
     #[account(mut)] 
@@ -45,14 +45,14 @@ pub struct GatedBuy<'info> {
     // bond token    
     #[account(mut)]
     pub ibo_ata: Box<Account<'info, TokenAccount>>,
-    // Check for ticket substitution attack
-    #[account(mut, token::authority = ticket)]
-    pub ticket_ata: Box<Account<'info, TokenAccount>>,       
+    // Check for bond substitution attack
+    #[account(mut, token::authority = bond)]
+    pub bond_ata: Box<Account<'info, TokenAccount>>,       
 
 
     pub token_program: Program<'info, Token>,
-    pub associated_token_program: Program<'info, AssociatedToken>,
-    pub rent: Sysvar<'info, Rent>,
+    // pub associated_token_program: Program<'info, AssociatedToken>,
+    // pub rent: Sysvar<'info, Rent>,
     pub system_program: Program<'info, System>, 
 
     // NFT stuff
@@ -139,9 +139,9 @@ pub fn buy_bond_gated(ctx: Context<GatedBuy>, _lockup_idx: u32, ibo_idx: u64, st
         &ctx.accounts.buyer,
         &ctx.accounts.lockup,
         &mut ctx.accounts.ibo,
-        &mut ctx.accounts.ticket,
+        &mut ctx.accounts.bond,
         &mut ctx.accounts.ibo_ata,
-        &mut ctx.accounts.ticket_ata,
+        &mut ctx.accounts.bond_ata,
         &mut ctx.accounts.buyer_ata,
         &mut ctx.accounts.recipient_ata,
         &ctx.accounts.token_program,

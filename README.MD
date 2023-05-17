@@ -25,7 +25,7 @@ Then  you need to:
 - Take a cut from bond issuance to us and ibo deployer
 - Take a cut from bond resale to us and ibo deployer
 - I think `mint_key` in `buy_bond_gated()` and in setting up that gate is redundant
-- Take some SOL for splitting bond/ticket
+- Take some SOL for splitting bond/bond
 - Implement withdraw for liquidity tokens stored at ibo PDA
 - createIBO needs to take some sort of pubkey which represents the desired bond token to purchase
 - need withdraw of leftover bond tokens past some hardcoded date

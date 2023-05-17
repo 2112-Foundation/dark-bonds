@@ -21,12 +21,12 @@ pub struct BuyBond<'info> {
     pub buyer: Signer<'info>,    
     #[account(        
         init,      
-        seeds = ["ticket".as_bytes(), ibo.key().as_ref(),  &ibo.ticket_counter.to_be_bytes()], 
+        seeds = ["bond".as_bytes(), ibo.key().as_ref(),  &ibo.bond_counter.to_be_bytes()], 
         bump,      
         payer = buyer, 
         space = 400
     )]    
-    pub ticket: Account<'info, Ticket>,
+    pub bond: Account<'info, Bond>,
     #[account(mut)]
     pub ibo: Account<'info, Ibo>,
     
@@ -47,9 +47,9 @@ pub struct BuyBond<'info> {
     // bond token    
     #[account(mut)]
     pub ibo_ata: Box<Account<'info, TokenAccount>>,
-    // Check for ticket substitution attack
-    #[account(mut, token::authority = ticket)]
-    pub ticket_ata: Box<Account<'info, TokenAccount>>,       
+    // Check for bond substitution attack
+    #[account(mut, token::authority = bond)]
+    pub bond_ata: Box<Account<'info, TokenAccount>>,       
 
     pub token_program: Program<'info, Token>,
     pub associated_token_program: Program<'info, AssociatedToken>,
@@ -66,9 +66,9 @@ pub fn buy_bond(ctx: Context<BuyBond>, _lockup_idx: u32, ibo_idx: u64, stable_am
         &ctx.accounts.buyer,
         &ctx.accounts.lockup,
         &mut ctx.accounts.ibo,
-        &mut ctx.accounts.ticket,
+        &mut ctx.accounts.bond,
         &mut ctx.accounts.ibo_ata,
-        &mut ctx.accounts.ticket_ata,
+        &mut ctx.accounts.bond_ata,
         &mut ctx.accounts.buyer_ata,
         &mut ctx.accounts.recipient_ata,
         &ctx.accounts.token_program,

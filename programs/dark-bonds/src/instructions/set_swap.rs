@@ -7,11 +7,11 @@ pub struct SetSwap<'info> {
     #[account(mut)]
     pub owner: Signer<'info>,
     #[account(mut, has_one = owner @ErrorCode::NotTicketOwner)]
-    pub ticket: Account<'info, Ticket>,
+    pub bond: Account<'info, Bond>,
 }
 
 pub fn set_swap(ctx: Context<SetSwap>, sell_price: u64) -> Result<()> {
-    let ticket: &mut Account<Ticket> = &mut ctx.accounts.ticket;
-    ticket.swap_price = sell_price;
+    let bond: &mut Account<Bond> = &mut ctx.accounts.bond;
+    bond.swap_price = sell_price;
     Ok(())
 }

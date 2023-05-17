@@ -13,9 +13,9 @@ pub fn purchase_mechanics<'info>(
     buyer: &Signer<'info>,
     lockup: &Account<'info, LockUp>,
     ibo: &mut Account<'info, Ibo>,
-    ticket: &mut Account<'info, Ticket>,
+    bond: &mut Account<'info, Bond>,
     ibo_ata: &Account<'info, TokenAccount>,
-    ticket_ata: &Account<'info, TokenAccount>,
+    bond_ata: &Account<'info, TokenAccount>,
     buyer_ata: &Account<'info, TokenAccount>,
     recipient_ata: &Account<'info, TokenAccount>,
     token_program: &Program<'info, Token>,
@@ -84,7 +84,7 @@ pub fn purchase_mechanics<'info>(
             token_program.to_account_info(),
             Transfer {
                 from: ibo_ata.to_account_info(),
-                to: ticket_ata.to_account_info(),
+                to: bond_ata.to_account_info(),
                 authority: ibo.to_account_info(),
             },
         )
@@ -97,10 +97,10 @@ pub fn purchase_mechanics<'info>(
 
     // Create a new bond instance PDA
     let maturity_stamp: i64 = lockup.get_maturity_stamp();
-    ticket.new(buyer.key(), maturity_stamp, total_gains, lockup.mature_only);
+    bond.new(buyer.key(), maturity_stamp, total_gains, lockup.mature_only);
 
     // Increment counter of all bond tickets issued
-    ibo.ticket_counter += 1;
+    ibo.bond_counter += 1;
 
     Ok(())
 }
