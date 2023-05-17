@@ -32,6 +32,7 @@ Then  you need to:
 
 [x] Implement withdraw for liquidity tokens stored at ibo PDA  
 [x] Need to withdraw of leftover bond tokens past some hardcoded date  
+[ ] Ability to remove lockups and gates before it is locked
 
 
 ### Revenue

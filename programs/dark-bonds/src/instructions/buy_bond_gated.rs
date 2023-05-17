@@ -65,27 +65,36 @@ pub struct GatedBuy<'info> {
     nft_master_edition_account: AccountInfo<'info>,
 }
 
+
+// TODO possibly checking data from GATE against an account provided by the user
+// rather then reading it from the metaplex account
+
 impl<'info> GatedBuy<'info> {
     fn verify(&self, mint_key: Pubkey, master_key: Pubkey, creator_key: Pubkey) -> Result<()> {
+
+        let metadata = Metadata::from_account_info(&self.nft_metadata_account)?;
         // Verify NFT token account
         // Check if the owner of the token account is the buyer
-        if self.nft_token_account.owner != self.buyer.key() {
-            return Err(ErrorCode::InvalidNFTAccountOwner.into());
-        }
-        // Check if the mint of the token account is the mint provided
-        if self.nft_token_account.mint != self.mint.key() {
-            return Err(ErrorCode::InvalidNFTAccountMint.into());
-        }
-        // Check if the amount in the token account is exactly 1 (as expected for an NFT)
-        if self.nft_token_account.amount != 1 {
-            return Err(ErrorCode::InvalidNFTAccountAmount.into());
-        }
+        // if self.nft_token_account.owner != self.buyer.key() {
+        //     return Err(ErrorCode::InvalidNFTAccountOwner.into());
+        // }
+        // // Check if the mint of the token account is the mint provided
+        // if self.nft_token_account.mint != self.mint.key() {
+        //     return Err(ErrorCode::InvalidNFTAccountMint.into());
+        // }
+        // // Check if the amount in the token account is exactly 1 (as expected for an NFT)
+        // if self.nft_token_account.amount != 1 {
+        //     return Err(ErrorCode::InvalidNFTAccountAmount.into());
+        // }
     
         // Verify NFT Mint
         // Check if the master edition account key matches the provided master key
         if master_key != self.nft_master_edition_account.key() {
             return Err(ErrorCode::InvalidMasterEdition.into());
         }
+
+        // metadata.data.
+
         // Check if the master edition account contains any data
         if self.nft_master_edition_account.data_is_empty() {
             return Err(ErrorCode::InvalidMasterEdition.into());
@@ -97,7 +106,7 @@ impl<'info> GatedBuy<'info> {
     
         // Verify NFT metadata
         // Extract the metadata from the metadata account and check if its mint matches the provided mint
-        let metadata = Metadata::from_account_info(&self.nft_metadata_account)?;
+        // let metadata = Metadata::from_account_info(&self.nft_metadata_account)?;
         if metadata.mint != self.mint.key() {
             return Err(ErrorCode::InvalidMetadata.into());
         }
