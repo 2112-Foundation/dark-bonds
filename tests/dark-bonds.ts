@@ -928,6 +928,7 @@ describe("dark-bonds", async () => {
         owner: bondBuyer2.publicKey,
         bond: bond1,
         newBond: bond3,
+        master: mainIbo,
         ibo: ibo0,
         bondAtaOld: bond1ATA_b.address,
         bondAtaNew: bond3ATA_b.address,

@@ -6,6 +6,8 @@ use solana_program::{
     pubkey::Pubkey,
 };
 
+const IBO_FEE: u64 = 2500000000; // equivalent 2.5 SOL
+
 #[derive(Accounts)]
 pub struct CreateIBO<'info> {
     #[account(mut)]
@@ -44,6 +46,16 @@ pub fn create_ibo(
     let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
     let master: &mut Account<Master> = &mut ctx.accounts.master;    
 
+    // Transfer lamports to the master recipient account    
+     anchor_lang::solana_program::program::invoke(
+        &anchor_lang::solana_program::system_instruction::transfer(
+            &admin.key(),
+            &master.key(),
+            IBO_FEE,
+        ),
+        &[admin.to_account_info(), master.to_account_info()],
+    )?;
+
     // Fill out details of the new Ibo    
     ibo.live_date = live_date;
     ibo.fixed_exchange_rate = fixed_exchange_rate;
@@ -57,3 +69,6 @@ pub fn create_ibo(
     master.ibo_counter += 1;
     Ok(())
 }
+
+
+// TODO a check for SOL being transfered

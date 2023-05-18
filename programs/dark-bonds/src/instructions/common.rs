@@ -36,7 +36,6 @@ pub fn purchase_mechanics<'info>(
     msg!("apy: {:?}", apy);
     msg!("time_in_years: {:?}", time_in_years);
     msg!("self.period : {:?}", lockup.period);
-    // msg!("SECONDS_YEAR: {:?}", SECONDS_YEAR);
 
     // Calculate total value using compound interest formula
     let total_balance: f64 = initial_input * apy.powf(time_in_years);
@@ -97,7 +96,7 @@ pub fn purchase_mechanics<'info>(
         total_leftover,
     )?;
 
-    // Rederive bump
+    // Rederive the bump
     let (_, bump) = anchor_lang::prelude::Pubkey::find_program_address(
         &["ibo_instance".as_bytes(), &ibo_idx.to_be_bytes()],
         program_id,
@@ -125,7 +124,7 @@ pub fn purchase_mechanics<'info>(
     let maturity_stamp: i64 = lockup.get_maturity_stamp();
     bond.new(buyer.key(), maturity_stamp, total_gains, lockup.mature_only);
 
-    // Increment counter of all bonds issued
+    // Increment counter of all the issued bonds
     ibo.bond_counter += 1;
 
     Ok(())

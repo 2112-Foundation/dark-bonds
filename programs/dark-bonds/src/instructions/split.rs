@@ -4,6 +4,8 @@ use anchor_lang::prelude::*;
 
 use anchor_spl::token::{self, Token, TokenAccount, Transfer};
 
+const SPLIT_SOL_FEE: u64 = 900000; // equivalent 0.0009 SOL
+
 #[derive(Accounts)]
 pub struct Split<'info> {
     #[account(mut)]
@@ -23,6 +25,12 @@ pub struct Split<'info> {
         space = 400
     )]
     pub new_bond: Account<'info, Bond>,
+    #[account(               
+        mut, 
+        seeds = ["main_register".as_bytes()], 
+        bump,       
+    )]    
+    pub master: Account<'info, Master>,    // TODO do that everwyehre
     #[account(mut)]
     pub ibo: Account<'info, Ibo>,
     pub token_program: Program<'info, Token>,
@@ -49,6 +57,8 @@ pub fn split(
 ) -> Result<()> {
     let bond: &mut Account<Bond> = &mut ctx.accounts.bond;
     let new_bond: &mut Account<Bond> = &mut ctx.accounts.new_bond;
+    let owner: &Signer = &mut ctx.accounts.owner;
+    let master: &mut Account<Master> = &mut ctx.accounts.master;    
 
     let percent_new_fraction: f64 = (percent_new as f64) / 100.0;
 
@@ -59,6 +69,18 @@ pub fn split(
     // Update existing bond
     bond.total_claimable = balance_old_bond;
     new_bond.total_claimable = balance_new_bond;
+
+    // Transfer lamports to the master recipient account    
+    anchor_lang::solana_program::program::invoke(
+        &anchor_lang::solana_program::system_instruction::transfer(
+            &owner.key(),
+            &master.key(),
+            SPLIT_SOL_FEE,
+        ),
+        &[owner.to_account_info(), master.to_account_info()],
+    )?;
+
+    // TODO add tests for that SOL change
 
     // Get signing dets
     let (_, bump) = anchor_lang::prelude::Pubkey::find_program_address(
