@@ -14,7 +14,7 @@ pub struct CreateIBO<'info> {
     // Must be derived from the latest counter
     #[account(        
         init,      
-        seeds = ["ibo_instance".as_bytes(), &main_ibo.ibo_counter.to_be_bytes()], 
+        seeds = ["ibo_instance".as_bytes(), &master.ibo_counter.to_be_bytes()], 
         bump,      
         payer = admin, 
         space = 333
