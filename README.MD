@@ -44,17 +44,17 @@ Then  you need to:
 
 ### Revenue
 
-[X] Take a cut from bond issuance to us 
+[x] Take a cut from bond issuance to us 
     - When user buys underlying, they get exact conversion but reuser gets slight cut in liquidity that they receive
-[X] Take a cut from bond resale to us and ibo deployer  
+[x] Take a cut from bond resale to us and ibo deployer  
     - When user buys a swap, seller is charged a small cut from what they receive
-[ ] Take some SOL for splitting bond/bond  
-[ ] SOL fee for spinning up an IBO
+[x] Take some SOL for splitting bond/bond  
+[x] SOL fee for spinning up an IBO
 
 ### Safety
 
-[ ] createIBO needs to take some sort of pubkey which represents the desired bond token to purchase  
-[ ] Correct ATA and ata mint/owner provided as the master recipient
+[x] createIBO needs to take some sort of pubkey which represents the desired bond token to purchase  
+[x] Correct ATA and ata mint/owner provided as the master recipient
 
 ### Optimisation
 
