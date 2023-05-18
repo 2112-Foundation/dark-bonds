@@ -9,8 +9,11 @@ pub struct Master {
     pub ibo_counter: u64,
 
     // Applied to non-dark IBOs
-    pub master_cut: u64, // Could be just hardcoded
+    pub master_cut: u64, // Could be just hardcoded it is
 
     // Admin not sure if needed
     pub admin: Pubkey,
+
+    // Admin not sure if needed
+    pub master_recipient: Pubkey,
 }

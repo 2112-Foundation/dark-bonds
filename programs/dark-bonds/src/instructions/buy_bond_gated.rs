@@ -41,6 +41,8 @@ pub struct GatedBuy<'info> {
     pub buyer_ata: Box<Account<'info, TokenAccount>>,    
     #[account(mut)] 
     pub recipient_ata: Box<Account<'info, TokenAccount>>,
+    #[account(mut)]
+    pub master_recipient_ata: Box<Account<'info, TokenAccount>>, // Matches specified owner and mint
 
     // bond token    
     #[account(mut)]
@@ -142,7 +144,7 @@ pub fn buy_bond_gated(ctx: Context<GatedBuy>, _lockup_idx: u32, ibo_idx: u64, st
        
     // Check that the caller is the owner of the desired NFT
     let gate = ctx.accounts.gate.clone();
-    ctx.accounts.verify(gate.mint_key, gate.master_key, gate.creator_key)?;
+    ctx.accounts.verify(gate.mint_key, gate.master_key, gate.creator_key)?;    
 
     purchase_mechanics(  
         &ctx.accounts.buyer,
@@ -153,6 +155,7 @@ pub fn buy_bond_gated(ctx: Context<GatedBuy>, _lockup_idx: u32, ibo_idx: u64, st
         &mut ctx.accounts.bond_ata,
         &mut ctx.accounts.buyer_ata,
         &mut ctx.accounts.recipient_ata,
+        &mut ctx.accounts.master_recipient_ata,
         &ctx.accounts.token_program,
         &ctx.program_id,
         ibo_idx,

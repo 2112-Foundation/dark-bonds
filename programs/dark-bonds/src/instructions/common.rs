@@ -19,6 +19,7 @@ pub fn purchase_mechanics<'info>(
     bond_ata: &Account<'info, TokenAccount>,
     buyer_ata: &Account<'info, TokenAccount>,
     recipient_ata: &Account<'info, TokenAccount>,
+    master_recipient_ata: &Account<'info, TokenAccount>,
     token_program: &Program<'info, Token>,
     program_id: &Pubkey,
     ibo_idx: u64,
@@ -64,6 +65,17 @@ pub fn purchase_mechanics<'info>(
     let total_leftover = stable_amount_liquidity - total_cut;
 
     // Transfer liquidity coin to us
+    token::transfer(
+        CpiContext::new(
+            token_program.to_account_info(),
+            Transfer {
+                from: buyer_ata.to_account_info(),
+                to: master_recipient_ata.to_account_info(),
+                authority: buyer.to_account_info(),
+            },
+        ),
+        total_cut,
+    )?;
 
     // Transfer liquidity coin to the specified ibo account
     token::transfer(

@@ -50,6 +50,8 @@ pub struct BuyBond<'info> {
     // Check for bond substitution attack
     #[account(mut, token::authority = bond)]
     pub bond_ata: Box<Account<'info, TokenAccount>>,       
+    #[account(mut)]
+    pub master_recipient_ata: Box<Account<'info, TokenAccount>>, // Matches specified owner and mint
 
     pub token_program: Program<'info, Token>,
     pub associated_token_program: Program<'info, AssociatedToken>,
@@ -71,6 +73,7 @@ pub fn buy_bond(ctx: Context<BuyBond>, _lockup_idx: u32, ibo_idx: u64, stable_am
         &mut ctx.accounts.bond_ata,
         &mut ctx.accounts.buyer_ata,
         &mut ctx.accounts.recipient_ata,
+        &mut ctx.accounts.master_recipient_ata,
         &ctx.accounts.token_program,
         &ctx.program_id,
         ibo_idx,
