@@ -46,7 +46,7 @@ Then  you need to:
 
 [X] Take a cut from bond issuance to us 
     - When user buys underlying, they get exact conversion but reuser gets slight cut in liquidity that they receive
-[ ] Take a cut from bond resale to us and ibo deployer  
+[X] Take a cut from bond resale to us and ibo deployer  
     - When user buys a swap, seller is charged a small cut from what they receive
 [ ] Take some SOL for splitting bond/bond  
 [ ] SOL fee for spinning up an IBO
