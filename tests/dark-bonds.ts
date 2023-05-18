@@ -122,6 +122,9 @@ describe("dark-bonds", async () => {
   let bond3: PublicKey; // TODO never gets made yet tests pass
   let bond4: PublicKey;
 
+  let purchaseAmount = 500;
+  let megaPurchase = 100000000;
+
   // Lock ups
   let lockUp0PDA: PublicKey;
   let lockUp0Period: number = 31536000;
@@ -156,6 +159,7 @@ describe("dark-bonds", async () => {
   // testing
   let bond_counter = 0;
   let lockup_counter = 0;
+  let masterBalance = 0;
 
   before(async () => {
     await Promise.all([
@@ -564,8 +568,7 @@ describe("dark-bonds", async () => {
   });
 
   it("Buyer 1 deposits funds at a rate 1", async () => {
-    let masterBalanceStart = await getTokenBalance(masterRecipientATA_sc);
-    console.log("masterBalanceStart: ", masterBalanceStart);
+    masterBalance = await getTokenBalance(masterRecipientATA_sc);
 
     // Derive bond from latest counter instance
     [bond0] = await PublicKey.findProgramAddress(
@@ -588,7 +591,7 @@ describe("dark-bonds", async () => {
 
     // Spend 500 for rate 1 as player 1
     const tx_lu1 = await bondProgram.methods
-      .buyBond(0, new anchor.BN(ibo_index), new anchor.BN(500))
+      .buyBond(0, new anchor.BN(ibo_index), new anchor.BN(purchaseAmount))
       .accounts({
         buyer: bondBuyer1.publicKey,
         bond: bond0,
@@ -621,126 +624,155 @@ describe("dark-bonds", async () => {
 
     let masterBalanceEnd = await getTokenBalance(masterRecipientATA_sc);
     console.log("masterBalanceEnd: ", masterBalanceEnd);
+    assert(
+      purchaseAmount * 0.05 == masterBalanceEnd,
+      "take a cut of exactly 5%"
+    );
+
+    masterBalance += masterBalanceEnd;
 
     // Check that liquidity_token balance decresed
     // Check that buyer set as the owner in the bond
     // Check calculation of bond to receive is correct
   });
 
-  // it("Buyer 2 deposits funds at a rate 2", async () => {
-  //   // Derive bond from latest counter instance
-  //   [bond1] = await PublicKey.findProgramAddress(
-  //     [
-  //       Buffer.from("bond"),
-  //       Buffer.from(ibo0.toBytes()),
-  //       new BN(bond_counter).toArrayLike(Buffer, "be", 4),
-  //     ],
-  //     bondProgram.programId
-  //   );
+  it("Buyer 2 deposits funds at a rate 2", async () => {
+    // Derive bond from latest counter instance
+    [bond1] = await PublicKey.findProgramAddress(
+      [
+        Buffer.from("bond"),
+        Buffer.from(ibo0.toBytes()),
+        new BN(bond_counter).toArrayLike(Buffer, "be", 4),
+      ],
+      bondProgram.programId
+    );
 
-  //   bond1ATA_b = await getOrCreateAssociatedTokenAccount(
-  //     provider.connection,
-  //     bondBuyer2,
-  //     mintB,
-  //     bond1,
-  //     true
-  //   );
+    bond1ATA_b = await getOrCreateAssociatedTokenAccount(
+      provider.connection,
+      bondBuyer2,
+      mintB,
+      bond1,
+      true
+    );
 
-  //   // Spend 500 for rate 1 as player 1
-  //   const tx_lu1 = await bondProgram.methods
-  //     .buyBond(1, new anchor.BN(ibo_index), new anchor.BN(500))
-  //     .accounts({
-  //       buyer: bondBuyer2.publicKey,
-  //       bond: bond1,
-  //       ibo: ibo0,
-  //       lockup: lockUp1PDA,
-  //       buyerAta: bondBuyer2ATA_sc.address,
-  //       recipientAta: iboAdminATA_sc.address,
-  //       masterRecipientAta: masterRecipientATA_sc.address,
-  //       iboAta: ibo0ATA_b.address,
-  //       bondAta: bond1ATA_b.address,
-  //       systemProgram: anchor.web3.SystemProgram.programId,
-  //       tokenProgram: TOKEN_PROGRAM_ID,
-  //       associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-  //     })
-  //     .signers([bondBuyer2])
-  //     .rpc();
+    // Spend 500 for rate 1 as player 1
+    const tx_lu1 = await bondProgram.methods
+      .buyBond(1, new anchor.BN(ibo_index), new anchor.BN(purchaseAmount))
+      .accounts({
+        buyer: bondBuyer2.publicKey,
+        bond: bond1,
+        ibo: ibo0,
+        lockup: lockUp1PDA,
+        buyerAta: bondBuyer2ATA_sc.address,
+        recipientAta: iboAdminATA_sc.address,
+        masterRecipientAta: masterRecipientATA_sc.address,
+        iboAta: ibo0ATA_b.address,
+        bondAta: bond1ATA_b.address,
+        systemProgram: anchor.web3.SystemProgram.programId,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+      })
+      .signers([bondBuyer2])
+      .rpc();
 
-  //   bond_counter += 1;
+    bond_counter += 1;
 
-  //   let bond1_state = await bondProgram.account.bond.fetch(bond1);
-  //   console.log("bond0 owner: ", bond1_state.owner.toBase58());
-  //   console.log("bond0 maturity date: ", bond1_state.maturityDate.toString());
-  //   console.log(
-  //     "bond0 total to claim: ",
-  //     bond1_state.totalClaimable.toString()
-  //   );
+    let bond1_state = await bondProgram.account.bond.fetch(bond1);
+    console.log("bond0 owner: ", bond1_state.owner.toBase58());
+    console.log("bond0 maturity date: ", bond1_state.maturityDate.toString());
+    console.log(
+      "bond0 total to claim: ",
+      bond1_state.totalClaimable.toString()
+    );
 
-  //   console.log("stable coin mint: ", mintSC.toBase58());
-  //   console.log("bond coin mint: ", mintB.toBase58());
+    console.log("stable coin mint: ", mintSC.toBase58());
+    console.log("bond coin mint: ", mintB.toBase58());
 
-  //   // Check that liquidity_token balance decresed
-  //   // Check that buyer set as the owner in the bond
-  //   // Check calculation of bond to receive is correct
-  // });
+    let masterBalanceEnd = await getTokenBalance(masterRecipientATA_sc);
+    console.log("masterBalanceEnd: ", masterBalanceEnd);
+    assert(
+      purchaseAmount * 0.05 == masterBalanceEnd - masterBalance,
+      "take a cut of exactly 5%"
+    );
 
-  // it("Buyer 3 deposits funds at a rate 3", async () => {
-  //   // Derive bond from latest counter instance
-  //   [bond2] = await PublicKey.findProgramAddress(
-  //     [
-  //       Buffer.from("bond"),
-  //       Buffer.from(ibo0.toBytes()),
-  //       new BN(bond_counter).toArrayLike(Buffer, "be", 4),
-  //     ],
-  //     bondProgram.programId
-  //   );
+    masterBalance += masterBalanceEnd;
 
-  //   // Get ATA for bond0 PDA
-  //   bond2ATA_b = await getOrCreateAssociatedTokenAccount(
-  //     provider.connection,
-  //     bondBuyer2,
-  //     mintB,
-  //     bond2,
-  //     true
-  //   );
+    // Check that liquidity_token balance decresed
+    // Check that buyer set as the owner in the bond
+    // Check calculation of bond to receive is correct
+  });
 
-  //   // Spend 500 for rate 1 as player 1
-  //   const tx_lu1 = await bondProgram.methods
-  //     .buyBond(2, new anchor.BN(ibo_index), new anchor.BN(100000000))
-  //     .accounts({
-  //       buyer: bondBuyer2.publicKey,
-  //       bond: bond2,
-  //       ibo: ibo0,
-  //       lockup: lockUp2PDA,
-  //       buyerAta: bondBuyer2ATA_sc.address,
-  //       recipientAta: iboAdminATA_sc.address,
-  //       masterRecipientAta: masterRecipientATA_sc.address,
-  //       iboAta: ibo0ATA_b.address,
-  //       bondAta: bond2ATA_b.address,
-  //       systemProgram: anchor.web3.SystemProgram.programId,
-  //       tokenProgram: TOKEN_PROGRAM_ID,
-  //       associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-  //     })
-  //     .signers([bondBuyer2])
-  //     .rpc();
+  it("Buyer 3 deposits funds at a rate 3", async () => {
+    // Derive bond from latest counter instance
+    [bond2] = await PublicKey.findProgramAddress(
+      [
+        Buffer.from("bond"),
+        Buffer.from(ibo0.toBytes()),
+        new BN(bond_counter).toArrayLike(Buffer, "be", 4),
+      ],
+      bondProgram.programId
+    );
 
-  //   bond_counter += 1;
+    // Get ATA for bond0 PDA
+    bond2ATA_b = await getOrCreateAssociatedTokenAccount(
+      provider.connection,
+      bondBuyer2,
+      mintB,
+      bond2,
+      true
+    );
 
-  //   // TODO: bond substitition attack
-  //   // can provide any bond ATA right now
+    // Spend 500 for rate 1 as player 1
+    const tx_lu1 = await bondProgram.methods
+      .buyBond(2, new anchor.BN(ibo_index), new anchor.BN(megaPurchase))
+      .accounts({
+        buyer: bondBuyer2.publicKey,
+        bond: bond2,
+        ibo: ibo0,
+        lockup: lockUp2PDA,
+        buyerAta: bondBuyer2ATA_sc.address,
+        recipientAta: iboAdminATA_sc.address,
+        masterRecipientAta: masterRecipientATA_sc.address,
+        iboAta: ibo0ATA_b.address,
+        bondAta: bond2ATA_b.address,
+        systemProgram: anchor.web3.SystemProgram.programId,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+      })
+      .signers([bondBuyer2])
+      .rpc();
 
-  //   let bond1_state = await bondProgram.account.bond.fetch(bond2);
-  //   console.log("bond2 owner: ", bond1_state.owner.toBase58());
-  //   console.log("bond2 maturity date: ", bond1_state.maturityDate.toString());
-  //   console.log(
-  //     "bond2 total to claim: ",
-  //     bond1_state.totalClaimable.toString()
-  //   );
+    bond_counter += 1;
 
-  //   // Check that liquidity_token balance decresed
-  //   // Check that buyer set as the owner in the bond
-  //   // Check calculation of bond to receive is correct
-  // });
+    // TODO: bond substitition attack
+    // can provide any bond ATA right now
+
+    let bond1_state = await bondProgram.account.bond.fetch(bond2);
+    console.log("bond2 owner: ", bond1_state.owner.toBase58());
+    console.log("bond2 maturity date: ", bond1_state.maturityDate.toString());
+    console.log(
+      "bond2 total to claim: ",
+      bond1_state.totalClaimable.toString()
+    );
+
+    let masterBalanceEnd = await getTokenBalance(masterRecipientATA_sc);
+    console.log("masterBalanceEnd:       ", masterBalanceEnd);
+    console.log("megaPurchase * 0.05:    ", megaPurchase * 0.05);
+    console.log(
+      "masterBalanceEnd - masterBalance: ",
+      masterBalanceEnd - masterBalance
+    );
+    assert(
+      megaPurchase * 0.05 == masterBalanceEnd - masterBalance,
+      "take a cut of exactly 5%"
+    );
+
+    masterBalance += masterBalanceEnd;
+
+    // Check that liquidity_token balance decresed
+    // Check that buyer set as the owner in the bond
+    // Check calculation of bond to receive is correct
+  });
 
   // it("Claim test 1", async () => {
   //   console.log("bond: ", bond2.toBase58());
@@ -759,7 +791,6 @@ describe("dark-bonds", async () => {
 
   //   await delay(shortBond / 2 - time_elapsed);
 
-  //   // Spend 500 for rate 1 as player 1
   //   const tx_lu1 = await bondProgram.methods
   //     .claim(ibo0, 2)
   //     .accounts({
