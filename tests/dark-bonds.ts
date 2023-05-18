@@ -629,7 +629,7 @@ describe("dark-bonds", async () => {
       "take a cut of exactly 5%"
     );
 
-    masterBalance += masterBalanceEnd;
+    masterBalance += purchaseAmount * 0.05;
 
     // Check that liquidity_token balance decresed
     // Check that buyer set as the owner in the bond
@@ -695,7 +695,7 @@ describe("dark-bonds", async () => {
       "take a cut of exactly 5%"
     );
 
-    masterBalance += masterBalanceEnd;
+    masterBalance += purchaseAmount * 0.05;
 
     // Check that liquidity_token balance decresed
     // Check that buyer set as the owner in the bond
@@ -756,7 +756,9 @@ describe("dark-bonds", async () => {
     );
 
     let masterBalanceEnd = await getTokenBalance(masterRecipientATA_sc);
+    console.log("masterBalance:          ", masterBalance);
     console.log("masterBalanceEnd:       ", masterBalanceEnd);
+    console.log("megaPurchase:           ", megaPurchase);
     console.log("megaPurchase * 0.05:    ", megaPurchase * 0.05);
     console.log(
       "masterBalanceEnd - masterBalance: ",
