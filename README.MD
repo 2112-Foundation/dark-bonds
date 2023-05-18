@@ -49,9 +49,9 @@ Then  you need to:
 [x] change lockup to lockup  
 [x] change ticket to bond  
 [ ] Remove `msg!`  
-[X] In the diagram change:
-    - Bond counter to Bond offering counter
-    - Ticket to Bond
+[X] In the diagram change:  
+    - Bond counter to Bond offering counter  
+    - Ticket to Bond  
 [ ] Remove any fucking american spelling
 
 ### Functionality
@@ -70,28 +70,28 @@ Then  you need to:
 
 ### Revenue
 
-[x] Take a cut from bond issuance to us 
-    - When user buys underlying, they get exact conversion but reuser gets slight cut in liquidity that they receive
-[x] Take a cut from bond resale to us and ibo deployer  
-    - When user buys a swap, seller is charged a small cut from what they receive
-[x] Take some SOL for splitting bond/bond  
-[x] SOL fee for spinning up an IBO
+[x] Take a cut from bond issuance to us   
+    - When user buys underlying, they get exact conversion but reuser gets slight cut in liquidity that they receive  
+[x] Take a cut from bond resale to us and ibo deployer    
+    - When user buys a swap, seller is charged a small cut from what they receive  
+[x] Take some SOL for splitting bond/bond    
+[x] SOL fee for spinning up an IBO  
 
 ### Safety
 
-[x] createIBO needs to take some sort of pubkey which represents the desired bond token to purchase  
-[x] Correct ATA and ata mint/owner provided as the master recipient
+[x] createIBO needs to take some sort of pubkey which represents the desired bond token to purchase    
+[x] Correct ATA and ata mint/owner provided as the master recipient   
 
 ### Optimisation
 
-[ ] Make accounts as small as possible to save costs  
-[ ] Inputs to functions can be smaller (as for percent input)  
-[ ] Before deployment hardcode program ID  
-[ ] I think `mint_key` in `buy_bond_gated()` and in setting up that gate is redundant  
+[ ] Make accounts as small as possible to save costs    
+[ ] Inputs to functions can be smaller (as for percent input)    
+[ ] Before deployment hardcode program ID    
+[ ] I think `mint_key` in `buy_bond_gated()` and in setting up that gate is redundant    
 
 ### Testing
 
-[ ] Multiple files and/or `describe()` so that deployment can happen once, but can skip doing same thing or a reptetive set-up  
-[x] Test kept invocation counter incremented at the end of a function
-[ ] Tests for removing rate and gate
-[x] Test for taking cut to us on bond purchase
+[ ] Multiple files and/or `describe()` so that deployment can happen once, but can skip doing same thing or a reptetive set-up    
+[x] Test kept invocation counter incremented at the end of a function   
+[ ] Tests for removing rate and gate  
+[x] Test for taking cut to us on bond purchase   
