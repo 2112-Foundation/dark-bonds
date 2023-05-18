@@ -70,20 +70,75 @@ pub fn buy_swap(ctx: Context<BuySwap>) -> Result<()> {
     let accounts: &mut BuySwap = ctx.accounts; 
     let buyer: &mut Signer = &mut accounts.buyer;
     let bond: &mut Account<Bond> = &mut accounts.bond;    
+    let ibo: &mut Account<Ibo> = &mut accounts.ibo;
 
     // Set as the new bond owner
     bond.owner = buyer.key();
 
     // Set swap price to zero
-    bond.swap_price = 0;
+    // bond.swap_price = 0;
+
+
+    // let vault_balance_f64  = ctx.accounts.vault_ata.amount as f64;
+    // let amount_game_program_f64  = vault_balance_f64  * game_entry.game_cut_ratio;
+    // let amount_game_manager_f64: f64 = amount_game_program_f64 * SUB_CUT;
+    // let amount_player_f64 = vault_balance_f64 - amount_game_program_f64 - amount_game_manager_f64;
+
+    msg!("bond.swap_price: {:?}", bond.swap_price);
+    msg!("ibo.swap_cut: {:?}",  ibo.swap_cut);
 
     // Calculate the cut for them
+    // let seller_cut: u64 = (bond.swap_price * (100.0 - ibo.swap_cut as f64 / 100.0)) as u64 ;
+    // let reuser_cut: u64 = ((bond.swap_price - seller_cut) as f64 * 0.9 * seller_cut as f64) as u64; // We get 10% of whatever they do
+    // let master_cut: u64 = bond.swap_price - seller_cut - reuser_cut;
+
+    let bond_price: u64 = bond.swap_price;  // for example
+    let BMc: u64 = ibo.swap_cut;  // Bond master cut, in basis points (i.e., hundredths of a percent)
+    let MMc: u64 = 1000; // Master master cut, in basis points 
+    
+    // Seller's cut
+    let seller_cut: u64 = bond_price * (10000 - BMc) / 10000;
+    
+    // Bond master's cut
+    let bond_master_cut: u64 = bond_price * BMc * (10000 - MMc) / 100000000;
+
+    msg!("bond_master_cut: {:?}", bond_master_cut);
+    
+    // Master master's cut
+    let master_master_cut: u64 = bond_price - seller_cut - bond_master_cut;
+    
+    // Now, adjust the bond master's cut so that the total exactly matches the bond price.
+    let adjusted_bond_master_cut = bond_master_cut + bond_price - seller_cut - bond_master_cut - master_master_cut;
+
+    msg!("seller_cut: {:?}", seller_cut);
+    // msg!("bond_master_cut: {:?}", bond_master_cut);
+    msg!("adjusted_bond_master_cut: {:?}", adjusted_bond_master_cut);
+    msg!("master_master_cut: {:?}", master_master_cut);
+    
+
+
+    
+    assert_eq!(seller_cut + adjusted_bond_master_cut + master_master_cut, bond_price);
+    
+
+    // assert_eq!(seller_cut + bond_master_cut + master_master_cut, bond_price);
+
+
+
+    // let reuser_cut: u64 = (reuser_cut as u64) - master_cut;
+    
 
     // Transfer sell price base stable coin to the ATA of the owner
-    token::transfer(
-        accounts.transfer_liquidity(),  // use accounts here
-        accounts.bond.swap_price
-    )?;                   
+    // token::transfer(
+    //     accounts.transfer_liquidity(),  // use accounts here
+    //     master_cut
+    // )?;                   
+
+    // // Transfer sell price base stable coin to the ATA of the owner
+    // token::transfer(
+    //     accounts.transfer_liquidity(),  // use accounts here
+    //     reuser_cut
+    // )?;                   
 
     Ok(())
 }

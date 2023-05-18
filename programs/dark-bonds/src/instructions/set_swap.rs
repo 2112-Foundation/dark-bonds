@@ -12,6 +12,6 @@ pub struct SetSwap<'info> {
 
 pub fn set_swap(ctx: Context<SetSwap>, sell_price: u64) -> Result<()> {
     let bond: &mut Account<Bond> = &mut ctx.accounts.bond;
-    bond.swap_price = sell_price;
+    bond.swap_price = sell_price; // as f64; // can i run out of resolution this way?
     Ok(())
 }

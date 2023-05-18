@@ -6,7 +6,7 @@ use anchor_spl::token::{self, Token, TokenAccount, Transfer};
 use solana_program::pubkey::Pubkey;
 
 const SECONDS_YEAR: f64 = 31536000.0;
-const PURCHASE_CUT: f64 = 0.05;
+const PURCHASE_CUT: u64 = 500; // equivalent to 5%
 
 // TODO hardcode program ID as it doesn't need to be passed as an account
 
@@ -59,10 +59,17 @@ pub fn purchase_mechanics<'info>(
 
     msg!("bond_token_left: {:?}", bond_token_left);
     msg!("full bond value: {:?}", total_gains);
+    msg!(
+        "full bond stable_amount_liquidity: {:?}",
+        stable_amount_liquidity
+    );
 
     // Work out split ratio
-    let total_cut = (stable_amount_liquidity as f64 * PURCHASE_CUT) as u64;
-    let total_leftover = stable_amount_liquidity - total_cut;
+    let total_leftover = stable_amount_liquidity * (10000 - PURCHASE_CUT) / 10000;
+    let total_cut = stable_amount_liquidity - total_leftover;
+
+    msg!("total_cut: {:?}", total_cut);
+    msg!("total_leftover: {:?}", total_leftover);
 
     // Transfer liquidity coin to us
     token::transfer(

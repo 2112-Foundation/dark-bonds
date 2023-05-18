@@ -50,7 +50,7 @@ pub fn create_ibo(
     ibo.liquidity_token = liquidity_token;
     ibo.admin = admin.key();
     ibo.recipient_address = recipient;
-    ibo.swap_cut = swap_cut;
+    ibo.swap_cut = swap_cut as u64;
     ibo.end_date = end_date;
 
     // Counter is incremebted for Ibo counter
