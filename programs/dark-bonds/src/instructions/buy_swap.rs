@@ -77,6 +77,8 @@ pub fn buy_swap(ctx: Context<BuySwap>) -> Result<()> {
     // Set swap price to zero
     bond.swap_price = 0;
 
+    // Calculate the cut for them
+
     // Transfer sell price base stable coin to the ATA of the owner
     token::transfer(
         accounts.transfer_liquidity(),  // use accounts here

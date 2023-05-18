@@ -35,8 +35,10 @@ pub fn create_ibo(
     ctx: Context<CreateIBO>,
     fixed_exchange_rate: u64,
     live_date: i64,
+    end_date: i64,
+    swap_cut: u32,
     liquidity_token: Pubkey,
-    recipient: Pubkey,
+    recipient: Pubkey,    
 ) -> Result<()> {
     let admin: &Signer = &mut ctx.accounts.admin;
     let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
@@ -48,6 +50,8 @@ pub fn create_ibo(
     ibo.liquidity_token = liquidity_token;
     ibo.admin = admin.key();
     ibo.recipient_address = recipient;
+    ibo.swap_cut = swap_cut;
+    ibo.end_date = end_date;
 
     // Counter is incremebted for Ibo counter
     master.ibo_counter += 1;

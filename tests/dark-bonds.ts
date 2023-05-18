@@ -115,6 +115,8 @@ describe("dark-bonds", async () => {
   let liveDate: number = 1683718579;
   let ibo0ATA_b;
 
+  let swapCut = 150; // aka 1.5 %
+
   // bonds
   let bond0: PublicKey;
   let bond1: PublicKey;
@@ -411,6 +413,8 @@ describe("dark-bonds", async () => {
       .createIbo(
         new anchor.BN(exchangeRate),
         new anchor.BN(liveDate),
+        new anchor.BN(liveDate + 100000), // Can buy bonds until that point in the future
+        swapCut,
         mintSC,
         adminIbo0.publicKey
       )

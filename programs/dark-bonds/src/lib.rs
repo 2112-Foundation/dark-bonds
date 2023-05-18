@@ -24,6 +24,8 @@ pub mod dark_bonds {
         ctx: Context<CreateIBO>,
         fixed_exchange_rate: u64,
         live_date: i64,
+        end_date: i64,
+        swap_cut: u32,
         liquidity_token: Pubkey,
         recipient: Pubkey,
     ) -> Result<()> {
@@ -31,9 +33,10 @@ pub mod dark_bonds {
             ctx,
             fixed_exchange_rate,
             live_date, // TODO make it so you can't buy bonds prior to it
+            end_date,
+            swap_cut,
             liquidity_token,
             recipient,
-            // TODO
         )
     }
 

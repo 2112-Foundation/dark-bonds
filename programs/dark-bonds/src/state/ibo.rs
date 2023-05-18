@@ -9,6 +9,9 @@ pub struct Ibo {
     // Set by the deployer at the start
     pub fixed_exchange_rate: u64,
 
+    // TODO option nto to enable swaps at all?
+    pub swap_cut: u32, // in % x 100
+
     // Can be purchased after this date
     pub live_date: i64,
     pub end_date: i64, // needs to be set
