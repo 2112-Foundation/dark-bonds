@@ -6,6 +6,7 @@ use anchor_spl::token::{self, Token, TokenAccount, Transfer};
 use solana_program::pubkey::Pubkey;
 
 const SECONDS_YEAR: f64 = 31536000.0;
+const PURCHASE_CUT: f64 = 0.05;
 
 // TODO hardcode program ID as it doesn't need to be passed as an account
 
@@ -58,7 +59,13 @@ pub fn purchase_mechanics<'info>(
     msg!("bond_token_left: {:?}", bond_token_left);
     msg!("full bond value: {:?}", total_gains);
 
-    // Transfer liquidity coin to the specified account
+    // Work out split ratio
+    let total_cut = (stable_amount_liquidity as f64 * PURCHASE_CUT) as u64;
+    let total_leftover = stable_amount_liquidity - total_cut;
+
+    // Transfer liquidity coin to us
+
+    // Transfer liquidity coin to the specified ibo account
     token::transfer(
         CpiContext::new(
             token_program.to_account_info(),
@@ -68,7 +75,7 @@ pub fn purchase_mechanics<'info>(
                 authority: buyer.to_account_info(),
             },
         ),
-        stable_amount_liquidity,
+        total_leftover,
     )?;
 
     // Rederive bump
