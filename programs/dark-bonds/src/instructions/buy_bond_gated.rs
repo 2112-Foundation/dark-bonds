@@ -30,7 +30,7 @@ pub struct GatedBuy<'info> {
         seeds = ["lockup".as_bytes(), ibo.key().as_ref(),  &lockup_idx.to_be_bytes()], // TODO add counter
         bump,              
     )]    
-    pub lockup: Account<'info, LockUp>,
+    pub lockup: Account<'info, Lockup>,
 
     // // TODO needs to be derived off the lockup counter
     #[account(mut)]

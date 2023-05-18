@@ -1,3 +1,4 @@
+pub mod add_gate;
 pub mod add_lockup;
 pub mod buy_bond;
 pub mod buy_bond_gated;
@@ -7,10 +8,13 @@ pub mod common;
 pub mod create_ibo;
 pub mod init;
 pub mod lock;
+pub mod remove_gate;
+pub mod remove_lockup;
 pub mod set_swap;
 pub mod split;
 pub mod withdraw;
 
+pub use add_gate::*;
 pub use add_lockup::*;
 pub use buy_bond::*;
 pub use buy_bond_gated::*;
@@ -20,6 +24,8 @@ pub use common::*;
 pub use create_ibo::*;
 pub use init::*;
 pub use lock::*;
+pub use remove_gate::*;
+pub use remove_lockup::*;
 pub use set_swap::*;
 pub use split::*;
 pub use withdraw::*;

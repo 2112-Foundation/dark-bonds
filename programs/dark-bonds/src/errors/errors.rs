@@ -3,8 +3,10 @@ use anchor_lang::prelude::*;
 pub enum ErrorCode {
     #[msg("Need 24h between withdraws")]
     WithdrawTooEarly,
-    #[msg("Can not add new lockup type")]
+    #[msg("Can not add or remove lockup type")]
     RatesLocked,
+    #[msg("Can not add or remove gate type")]
+    GatesLocked,
     #[msg("There aren't enought tokens left for this bond allocation. Try again with a smaller amount")]
     BondsSoldOut,
     #[msg("This bond is not for sale")]

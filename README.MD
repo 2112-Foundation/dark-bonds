@@ -32,14 +32,17 @@ Then  you need to:
 
 [x] Implement withdraw for liquidity tokens stored at ibo PDA  
 [x] Need to withdraw of leftover bond tokens past some hardcoded date  
-[ ] Ability to remove lockups and gates before it is locked
+[x] Ability to remove lockups and gates before it is locked
 
 
 ### Revenue
 
-[ ] Take a cut from bond issuance to us and ibo deployer  
+[ ] Take a cut from bond issuance to us 
+    - When user buys underlying, they get exact conversion but reuser gets slight cut in liquidity that they receive
 [ ] Take a cut from bond resale to us and ibo deployer  
+    - When user buys a swap, seller is charged a small cut from what they receive
 [ ] Take some SOL for splitting bond/bond  
+[ ] SOL fee for spinning up an IBO
 
 ### Safety
 
@@ -55,4 +58,5 @@ Then  you need to:
 ### Testing
 
 [ ] Multiple files and/or `describe()` so that deployment can happen once, but can skip doing same thing or a reptetive set-up  
-[ ] Test kept invocation counter incremented at the end of a function
+[x] Test kept invocation counter incremented at the end of a function
+[ ] Tests for removing rate and gate

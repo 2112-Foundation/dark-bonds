@@ -11,7 +11,7 @@ const SECONDS_YEAR: f64 = 31536000.0;
 
 pub fn purchase_mechanics<'info>(
     buyer: &Signer<'info>,
-    lockup: &Account<'info, LockUp>,
+    lockup: &Account<'info, Lockup>,
     ibo: &mut Account<'info, Ibo>,
     bond: &mut Account<'info, Bond>,
     ibo_ata: &Account<'info, TokenAccount>,

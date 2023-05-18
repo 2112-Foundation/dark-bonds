@@ -46,6 +46,10 @@ pub mod dark_bonds {
         instructions::add_lockup::add_lockup(ctx, lockup_duration, lockup_apy)
     }
 
+    pub fn remove_lockup(ctx: Context<RemoveLockup>) -> Result<()> {
+        instructions::remove_lockup::remove_lockup(ctx)
+    }
+
     pub fn add_gate(
         ctx: Context<AddGate>,
         ibo_idx: u32,
@@ -54,7 +58,7 @@ pub mod dark_bonds {
         creator_key: Pubkey,
         master_key: Pubkey,
     ) -> Result<()> {
-        instructions::add_lockup::add_gate(
+        instructions::add_gate::add_gate(
             ctx,
             ibo_idx,
             lockup_idx,
@@ -62,6 +66,10 @@ pub mod dark_bonds {
             creator_key,
             master_key,
         )
+    }
+
+    pub fn remove_gate(ctx: Context<RemoveGate>, ibo_idx: u32, lockup_idx: u32) -> Result<()> {
+        instructions::remove_gate::remove_gate(ctx, ibo_idx, lockup_idx)
     }
 
     pub fn lock(

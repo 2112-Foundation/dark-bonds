@@ -152,6 +152,10 @@ describe("dark-bonds", async () => {
   let metaplex;
   let nft_handle;
 
+  // testing
+  let bond_counter = 0;
+  let lockup_counter = 0;
+
   before(async () => {
     await Promise.all([
       topUp(bondBuyer1.publicKey),
@@ -414,32 +418,34 @@ describe("dark-bonds", async () => {
       [
         Buffer.from("lockup"),
         Buffer.from(ibo0.toBytes()),
-        new BN(0).toArrayLike(Buffer, "be", 4),
+        new BN(lockup_counter).toArrayLike(Buffer, "be", 4),
       ],
       bondProgram.programId
     );
+    lockup_counter += 1;
     [lockUp1PDA] = await PublicKey.findProgramAddress(
       [
         Buffer.from("lockup"),
         Buffer.from(ibo0.toBytes()),
-        new BN(1).toArrayLike(Buffer, "be", 4),
+        new BN(lockup_counter).toArrayLike(Buffer, "be", 4),
       ],
       bondProgram.programId
     );
+    lockup_counter += 1;
     [lockUp2PDA] = await PublicKey.findProgramAddress(
       [
         Buffer.from("lockup"),
         Buffer.from(ibo0.toBytes()),
-        new BN(2).toArrayLike(Buffer, "be", 4),
+        new BN(lockup_counter).toArrayLike(Buffer, "be", 4),
       ],
       bondProgram.programId
     );
+    lockup_counter += 1;
     let lockUp0Instruction = bondProgram.instruction.addLockup(
       new anchor.BN(lockUp0Period),
       new anchor.BN(lockUp0Apy),
       {
         accounts: {
-          // mainIbo: mainIbo,
           admin: adminIbo0.publicKey,
           ibo: ibo0,
           lockup: lockUp0PDA,
@@ -452,7 +458,6 @@ describe("dark-bonds", async () => {
       new anchor.BN(lockUp1Apy),
       {
         accounts: {
-          // mainIbo: mainIbo,
           admin: adminIbo0.publicKey,
           ibo: ibo0,
           lockup: lockUp1PDA,
@@ -465,7 +470,6 @@ describe("dark-bonds", async () => {
       new anchor.BN(lockUp2Apy),
       {
         accounts: {
-          // mainIbo: mainIbo,
           admin: adminIbo0.publicKey,
           ibo: ibo0,
           lockup: lockUp2PDA,
@@ -510,6 +514,8 @@ describe("dark-bonds", async () => {
       .signers([adminIbo0])
       .rpc();
 
+    lockup_counter += 1;
+
     // ADdd PDA for gating details
     [lockUp3Gate] = await PublicKey.findProgramAddress(
       [
@@ -532,8 +538,6 @@ describe("dark-bonds", async () => {
       })
       .signers([adminIbo0])
       .rpc();
-
-    console.log("gated lock up added");
   });
 
   it("Lock further lockups.", async () => {
@@ -557,7 +561,7 @@ describe("dark-bonds", async () => {
       [
         Buffer.from("bond"),
         Buffer.from(ibo0.toBytes()),
-        new BN(0).toArrayLike(Buffer, "be", 4),
+        new BN(bond_counter).toArrayLike(Buffer, "be", 4),
       ],
       bondProgram.programId
     );
@@ -590,6 +594,8 @@ describe("dark-bonds", async () => {
       .signers([bondBuyer1])
       .rpc();
 
+    bond_counter += 1;
+
     let bond0_state = await bondProgram.account.bond.fetch(bond0);
     console.log("bond0 owner: ", bond0_state.owner.toBase58());
     console.log("bond0 maturity date: ", bond0_state.maturityDate.toString());
@@ -612,7 +618,7 @@ describe("dark-bonds", async () => {
       [
         Buffer.from("bond"),
         Buffer.from(ibo0.toBytes()),
-        new BN(1).toArrayLike(Buffer, "be", 4),
+        new BN(bond_counter).toArrayLike(Buffer, "be", 4),
       ],
       bondProgram.programId
     );
@@ -644,6 +650,8 @@ describe("dark-bonds", async () => {
       .signers([bondBuyer2])
       .rpc();
 
+    bond_counter += 1;
+
     let bond1_state = await bondProgram.account.bond.fetch(bond1);
     console.log("bond0 owner: ", bond1_state.owner.toBase58());
     console.log("bond0 maturity date: ", bond1_state.maturityDate.toString());
@@ -666,7 +674,7 @@ describe("dark-bonds", async () => {
       [
         Buffer.from("bond"),
         Buffer.from(ibo0.toBytes()),
-        new BN(2).toArrayLike(Buffer, "be", 4),
+        new BN(bond_counter).toArrayLike(Buffer, "be", 4),
       ],
       bondProgram.programId
     );
@@ -698,6 +706,8 @@ describe("dark-bonds", async () => {
       })
       .signers([bondBuyer2])
       .rpc();
+
+    bond_counter += 1;
 
     // TODO: bond substitition attack
     // can provide any bond ATA right now

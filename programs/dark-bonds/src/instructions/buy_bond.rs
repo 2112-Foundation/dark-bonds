@@ -35,7 +35,7 @@ pub struct BuyBond<'info> {
         bump,      
         constraint = lockup.gate_counter == 0 @ErrorCode::RestrictedLockup
     )]    
-    pub lockup: Account<'info, LockUp>,
+    pub lockup: Account<'info, Lockup>,
 
     // purchse token
     // Provided ATA has to be same mint as the one set in ibo
