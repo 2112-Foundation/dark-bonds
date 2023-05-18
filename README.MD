@@ -32,7 +32,14 @@ Then  you need to:
 
 [x] Implement withdraw for liquidity tokens stored at ibo PDA  
 [x] Need to withdraw of leftover bond tokens past some hardcoded date  
-[x] Ability to remove lockups and gates before it is locked
+[x] Ability to remove lockups and gates before it is locked  
+[ ] Reuse functionality for NFTs:   
+    NFTs owned by the ibo account.   
+    Above NFT purchase specific tokens released linearly to the given bond for a user.  
+    Bond tokens can be used to claim NFT at a set price level.  
+    Or they can be resold. On purchase they are burned, and two step invocation for a VRF is made.  
+    Based on that a random NFT is selected and can be withdrawn. Would need a wheel to iterate over all of the remaining NFTs using the obtained randomness.  
+[ ] Option for a price look-up. Rather than having a fixed price, instead need a call to an oracle to fetch   latest price and use that
 
 
 ### Revenue
