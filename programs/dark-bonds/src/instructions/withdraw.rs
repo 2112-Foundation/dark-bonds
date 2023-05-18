@@ -3,22 +3,22 @@ use crate::state::*;
 use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken,
-    token::{self, Mint, Token, TokenAccount, Transfer},
+    token::{ self, Token, TokenAccount, Transfer },
 };
 
 #[derive(Accounts)]
 pub struct Withdraw<'info> {
     #[account(mut)]
-    pub admin: Signer<'info>,    
+    pub admin: Signer<'info>,
     #[account(mut, has_one = admin @ErrorCode::NotIBOAdmin)]
-    pub ibo: Account<'info, Ibo>,    
+    pub ibo: Account<'info, Ibo>,
     #[account(               
         mut, 
         seeds = ["main_register".as_bytes()], 
         bump,       
-    )]    
-    pub master: Account<'info, Master>,    // TODO do that everwyehre where master is used
-    
+    )]
+    pub master: Account<'info, Master>, // TODO do that everwyehre where master is used
+
     #[account(mut)]
     pub ibo_ata: Box<Account<'info, TokenAccount>>,
     #[account(mut)]
@@ -37,29 +37,22 @@ pub struct Withdraw<'info> {
 // but can be done after the period is over
 
 pub fn withdraw(ctx: Context<Withdraw>, withdraw_amount: u64, ibo_idx: u64) -> Result<()> {
-    let ibo_ata: &mut Account<TokenAccount> = &mut ctx.accounts.ibo_ata;    
+    let ibo_ata: &mut Account<TokenAccount> = &mut ctx.accounts.ibo_ata;
     let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
-    let master: &mut Account<Master> = &mut ctx.accounts.master;    
+    let master: &mut Account<Master> = &mut ctx.accounts.master;
 
     // If trying to withdraw underlying asset and withdraw for that have been marked as locked
     if ibo_ata.mint == ibo.underlying_token && ibo.withdraws_locked {
         // Assert deadline has expired
-        require!(
-            Clock::get().unwrap().unix_timestamp >= ibo.end_date,
-            ErrorCode::WithdrawLocked
-        );
+        require!(Clock::get().unwrap().unix_timestamp >= ibo.end_date, ErrorCode::WithdrawLocked);
     }
 
     let master_ibo_address = master.key().clone();
 
     // Get the bump
     let (_, bump) = anchor_lang::prelude::Pubkey::find_program_address(
-        &[
-            "ibo_instance".as_bytes(),
-            master_ibo_address.clone().as_ref(),
-            &ibo_idx.to_be_bytes(),
-        ],
-        &ctx.program_id,
+        &["ibo_instance".as_bytes(), master_ibo_address.clone().as_ref(), &ibo_idx.to_be_bytes()],
+        &ctx.program_id
     );
 
     // Get the seeds
@@ -71,16 +64,12 @@ pub fn withdraw(ctx: Context<Withdraw>, withdraw_amount: u64, ibo_idx: u64) -> R
     ];
 
     token::transfer(
-        CpiContext::new(
-            ctx.accounts.token_program.to_account_info(),
-            Transfer {
-                from: ibo_ata.to_account_info(),
-                to: ctx.accounts.recipient_ata.to_account_info(),
-                authority: ibo.to_account_info(),
-            },
-        )
-        .with_signer(&[seeds]),
-        withdraw_amount,
+        CpiContext::new(ctx.accounts.token_program.to_account_info(), Transfer {
+            from: ibo_ata.to_account_info(),
+            to: ctx.accounts.recipient_ata.to_account_info(),
+            authority: ibo.to_account_info(),
+        }).with_signer(&[seeds]),
+        withdraw_amount
     )?;
 
     Ok(())

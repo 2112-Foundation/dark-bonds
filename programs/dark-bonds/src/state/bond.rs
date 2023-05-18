@@ -57,17 +57,14 @@ impl Bond {
         msg!("total_time: {:?}", total_time);
 
         // Need work out the ratio of total time
-        let ratio: f64 = time_elapsed as f64 / total_time as f64;
+        let ratio: f64 = (time_elapsed as f64) / (total_time as f64);
         msg!("ratio: {:?}", ratio);
 
         msg!("total_claimable: {:?}", self.total_claimable);
-        msg!(
-            "claiming this time: {:?}",
-            ratio * self.total_claimable as f64
-        );
+        msg!("claiming this time: {:?}", ratio * (self.total_claimable as f64));
 
         // Multiplly ratio by total that is to gain
-        return (ratio * self.total_claimable as f64) as u64;
+        return (ratio * (self.total_claimable as f64)) as u64;
     }
 }
 

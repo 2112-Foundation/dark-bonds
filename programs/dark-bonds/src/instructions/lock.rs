@@ -15,11 +15,11 @@ pub fn lock(ctx: Context<Lock>, lock_withdraws: bool, lock_lockup_addition: bool
     let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
     if lock_withdraws {
         msg!("locking lockup");
-        ibo.lockups_locked = true
+        ibo.lockups_locked = true;
     }
     if lock_lockup_addition {
         msg!("locking withdraws");
-        ibo.withdraws_locked = true
+        ibo.withdraws_locked = true;
     }
     Ok(())
 }

@@ -1,7 +1,7 @@
 use crate::errors::errors::ErrorCode;
 use crate::state::*;
 use anchor_lang::prelude::*;
-use anchor_spl::token::{self, Token, TokenAccount, Transfer};
+use anchor_spl::token::{ self, Token, TokenAccount, Transfer };
 
 use solana_program::pubkey::Pubkey;
 
@@ -23,13 +23,13 @@ pub fn purchase_mechanics<'info>(
     token_program: &Program<'info, Token>,
     program_id: &Pubkey,
     ibo_idx: u64,
-    stable_amount_liquidity: u64,
+    stable_amount_liquidity: u64
 ) -> Result<()> {
     // Convert APY, time and initial input to f64
     // Moved here
     // ------------------------------------------------------------------------------------------
     let apy: f64 = lockup.apy / 100.0;
-    let time_in_years: f64 = lockup.period as f64 / SECONDS_YEAR;
+    let time_in_years: f64 = (lockup.period as f64) / SECONDS_YEAR;
     let initial_input: f64 = stable_amount_liquidity as f64;
 
     msg!("\n\n\tliquidity provided: {:?}", stable_amount_liquidity);
@@ -58,13 +58,10 @@ pub fn purchase_mechanics<'info>(
 
     msg!("bond_token_left: {:?}", bond_token_left);
     msg!("full bond value: {:?}", total_gains);
-    msg!(
-        "full bond stable_amount_liquidity: {:?}",
-        stable_amount_liquidity
-    );
+    msg!("full bond stable_amount_liquidity: {:?}", stable_amount_liquidity);
 
     // Work out split ratio
-    let total_leftover = stable_amount_liquidity * (10000 - PURCHASE_CUT) / 10000;
+    let total_leftover = (stable_amount_liquidity * (10000 - PURCHASE_CUT)) / 10000;
     let total_cut = stable_amount_liquidity - total_leftover;
 
     msg!("total_cut: {:?}", total_cut);
@@ -72,49 +69,39 @@ pub fn purchase_mechanics<'info>(
 
     // Transfer liquidity coin to us
     token::transfer(
-        CpiContext::new(
-            token_program.to_account_info(),
-            Transfer {
-                from: buyer_ata.to_account_info(),
-                to: master_recipient_ata.to_account_info(),
-                authority: buyer.to_account_info(),
-            },
-        ),
-        total_cut,
+        CpiContext::new(token_program.to_account_info(), Transfer {
+            from: buyer_ata.to_account_info(),
+            to: master_recipient_ata.to_account_info(),
+            authority: buyer.to_account_info(),
+        }),
+        total_cut
     )?;
 
     // Transfer liquidity coin to the specified ibo account
     token::transfer(
-        CpiContext::new(
-            token_program.to_account_info(),
-            Transfer {
-                from: buyer_ata.to_account_info(),
-                to: recipient_ata.to_account_info(),
-                authority: buyer.to_account_info(),
-            },
-        ),
-        total_leftover,
+        CpiContext::new(token_program.to_account_info(), Transfer {
+            from: buyer_ata.to_account_info(),
+            to: recipient_ata.to_account_info(),
+            authority: buyer.to_account_info(),
+        }),
+        total_leftover
     )?;
 
     // Rederive the bump
     let (_, bump) = anchor_lang::prelude::Pubkey::find_program_address(
         &["ibo_instance".as_bytes(), &ibo_idx.to_be_bytes()],
-        program_id,
+        program_id
     );
     let seeds = &["ibo_instance".as_bytes(), &ibo_idx.to_be_bytes(), &[bump]];
 
     // Transfer bond to the vested account
     token::transfer(
-        CpiContext::new(
-            token_program.to_account_info(),
-            Transfer {
-                from: ibo_ata.to_account_info(),
-                to: bond_ata.to_account_info(),
-                authority: ibo.to_account_info(),
-            },
-        )
-        .with_signer(&[seeds]),
-        total_gains,
+        CpiContext::new(token_program.to_account_info(), Transfer {
+            from: ibo_ata.to_account_info(),
+            to: bond_ata.to_account_info(),
+            authority: ibo.to_account_info(),
+        }).with_signer(&[seeds]),
+        total_gains
     )?;
 
     // msg!("desired stable mint: {:?}", ibo.liquidity_token);

@@ -2,10 +2,7 @@ use crate::errors::errors::ErrorCode;
 use crate::state::*;
 use anchor_lang::prelude::*;
 
-use solana_program::{
-    instruction::{AccountMeta, Instruction},
-    pubkey::Pubkey,
-};
+use solana_program::pubkey::Pubkey;
 
 #[derive(Accounts)]
 pub struct RemoveLockup<'info> {
@@ -18,15 +15,11 @@ pub struct RemoveLockup<'info> {
         close = admin,      
         seeds = ["lockup".as_bytes(), ibo.key().as_ref(), &ibo.lockup_counter.to_be_bytes()],         
         bump
-    )]    
-    pub lockup: Account<'info, Lockup>,        
+    )]
+    pub lockup: Account<'info, Lockup>,
     pub system_program: Program<'info, System>,
 }
 
-pub fn remove_lockup(_ctx: Context<RemoveLockup>) -> Result<()> {    
+pub fn remove_lockup(_ctx: Context<RemoveLockup>) -> Result<()> {
     Ok(())
 }
-
-
-
-

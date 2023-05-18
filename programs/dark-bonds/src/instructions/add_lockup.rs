@@ -2,10 +2,7 @@ use crate::errors::errors::ErrorCode;
 use crate::state::*;
 use anchor_lang::prelude::*;
 
-use solana_program::{
-    instruction::{AccountMeta, Instruction},
-    pubkey::Pubkey,
-};
+use solana_program::pubkey::Pubkey;
 
 #[derive(Accounts)]
 pub struct AddLockUp<'info> {
@@ -13,18 +10,18 @@ pub struct AddLockUp<'info> {
     pub admin: Signer<'info>,
     #[account(mut, has_one = admin, constraint = ibo.lockups_locked == false @ErrorCode::RatesLocked)]
     pub ibo: Account<'info, Ibo>,
-    #[account(        
-        init,      
-        seeds = ["lockup".as_bytes(), ibo.key().as_ref(), &ibo.lockup_counter.to_be_bytes()], 
-        bump,      
-        payer = admin, 
+    #[account(
+        init,
+        seeds = ["lockup".as_bytes(), ibo.key().as_ref(), &ibo.lockup_counter.to_be_bytes()],
+        bump,
+        payer = admin,
         space = 400
-    )]    
-    pub lockup: Account<'info, Lockup>,        
+    )]
+    pub lockup: Account<'info, Lockup>,
     pub system_program: Program<'info, System>,
 }
 
-pub fn add_lockup(ctx: Context<AddLockUp>, lockup_duration: i64, lockup_apy: f64) -> Result<()> {    
+pub fn add_lockup(ctx: Context<AddLockUp>, lockup_duration: i64, lockup_apy: f64) -> Result<()> {
     let lockup: &mut Account<Lockup> = &mut ctx.accounts.lockup;
     let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
 
@@ -38,7 +35,3 @@ pub fn add_lockup(ctx: Context<AddLockUp>, lockup_duration: i64, lockup_apy: f64
     ibo.lockup_counter += 1;
     Ok(())
 }
-
-
-
-

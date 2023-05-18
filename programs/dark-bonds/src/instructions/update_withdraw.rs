@@ -11,7 +11,7 @@ pub struct UpdateMasterWithdraw<'info> {
         seeds = ["main_register".as_bytes()], 
         bump,              
         constraint
-    )]    
+    )]
     pub master: Account<'info, Master>,
     pub system_program: Program<'info, System>,
 }
@@ -22,7 +22,7 @@ pub fn update_withdraw(ctx: Context<UpdateMasterWithdraw>, master_recipient: Pub
     let master: &mut Account<Master> = &mut ctx.accounts.master;
 
     // TODO not sure if admin is needed tbh at all
-    
+
     master.master_recipient = superadmin.key(); // TODO option for this to be different
 
     Ok(())

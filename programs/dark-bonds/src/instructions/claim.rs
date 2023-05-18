@@ -1,7 +1,6 @@
-use crate::errors::errors::ErrorCode;
 use crate::state::*;
 use anchor_lang::prelude::*;
-use anchor_spl::token::{self, Mint, Token, TokenAccount, Transfer};
+use anchor_spl::token::{ self, Token, TokenAccount, Transfer };
 
 #[derive(Accounts)]
 pub struct Claim<'info> {
@@ -20,14 +19,11 @@ pub struct Claim<'info> {
 
 impl<'info> Claim<'info> {
     fn transfer_bond(&self) -> CpiContext<'_, '_, '_, 'info, Transfer<'info>> {
-        CpiContext::new(
-            self.token_program.to_account_info(),
-            Transfer {
-                from: self.bond_ata.to_account_info(),
-                to: self.bond_owner_ata.to_account_info(),
-                authority: self.bond.to_account_info(),
-            },
-        )
+        CpiContext::new(self.token_program.to_account_info(), Transfer {
+            from: self.bond_ata.to_account_info(),
+            to: self.bond_owner_ata.to_account_info(),
+            authority: self.bond.to_account_info(),
+        })
     }
 }
 
@@ -53,28 +49,16 @@ pub fn claim(ctx: Context<Claim>, ibo_address: Pubkey, bond_idx: u32) -> Result<
     bond.update_claim_date();
 
     let (_, bump) = anchor_lang::prelude::Pubkey::find_program_address(
-        &[
-            "bond".as_bytes(),
-            ibo_address.as_ref(),
-            &bond_idx.to_be_bytes(),
-        ],
-        &ctx.program_id,
+        &["bond".as_bytes(), ibo_address.as_ref(), &bond_idx.to_be_bytes()],
+        &ctx.program_id
     );
-    let seeds = &[
-        "bond".as_bytes(),
-        ibo_address.as_ref(),
-        &bond_idx.to_be_bytes(),
-        &[bump],
-    ];
+    let seeds = &["bond".as_bytes(), ibo_address.as_ref(), &bond_idx.to_be_bytes(), &[bump]];
 
     msg!("total claimable_now: {:?}", bond.total_claimable);
     msg!("claimable_now: {:?}", claimable_now);
 
     // Transfer SPL balance calculated
-    token::transfer(
-        ctx.accounts.transfer_bond().with_signer(&[seeds]),
-        claimable_now,
-    )?;
+    token::transfer(ctx.accounts.transfer_bond().with_signer(&[seeds]), claimable_now)?;
 
     // Invoke SPL to transfer
     Ok(())

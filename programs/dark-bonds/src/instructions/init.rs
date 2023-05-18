@@ -6,13 +6,7 @@ pub struct Init<'info> {
     #[account(mut)]
     pub superadmin: Signer<'info>,
     // Need PDA of the to be derived of some shared register which is incremented
-    #[account(        
-        init,      
-        seeds = ["main_register".as_bytes()], 
-        bump,      
-        payer = superadmin, 
-        space = 400
-    )]    
+    #[account(init, seeds = ["main_register".as_bytes()], bump, payer = superadmin, space = 400)]
     pub master: Account<'info, Master>,
     pub system_program: Program<'info, System>,
 }
