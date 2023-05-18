@@ -17,7 +17,7 @@ pub struct Withdraw<'info> {
         seeds = ["main_register".as_bytes()], 
         bump,       
     )]    
-    pub main_ibo: Account<'info, Master>,    // TODO do that everwyehre where main_ibo is used
+    pub master: Account<'info, Master>,    // TODO do that everwyehre where master is used
     
     #[account(mut)]
     pub ibo_ata: Box<Account<'info, TokenAccount>>,
@@ -39,7 +39,7 @@ pub struct Withdraw<'info> {
 pub fn withdraw(ctx: Context<Withdraw>, withdraw_amount: u64, ibo_idx: u64) -> Result<()> {
     let ibo_ata: &mut Account<TokenAccount> = &mut ctx.accounts.ibo_ata;    
     let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
-    let main_ibo: &mut Account<Master> = &mut ctx.accounts.main_ibo;    
+    let master: &mut Account<Master> = &mut ctx.accounts.master;    
 
     // If trying to withdraw underlying asset and withdraw for that have been marked as locked
     if ibo_ata.mint == ibo.underlying_token && ibo.withdraws_locked {
@@ -50,7 +50,7 @@ pub fn withdraw(ctx: Context<Withdraw>, withdraw_amount: u64, ibo_idx: u64) -> R
         );
     }
 
-    let master_ibo_address = main_ibo.key().clone();
+    let master_ibo_address = master.key().clone();
 
     // Get the bump
     let (_, bump) = anchor_lang::prelude::Pubkey::find_program_address(

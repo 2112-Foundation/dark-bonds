@@ -15,6 +15,11 @@ pub struct BuySwap<'info> {
     // Can't buy swap that is not listed
     #[account(mut, constraint = bond.swap_price > 0 @ErrorCode::NotForSale)]
     pub bond: Account<'info, Bond>,
+    #[account(              
+        seeds = ["main_register".as_bytes()], 
+        bump,         
+    )]    
+    pub master: Account<'info, Master>,
     
     pub ibo: Account<'info, Ibo>,    
     #[account(mut,
@@ -28,6 +33,8 @@ pub struct BuySwap<'info> {
         token::authority = bond.owner
     )]
     pub seller_ata: Account<'info, TokenAccount>,
+    #[account(mut, token::mint = ibo.liquidity_token, token::authority = master.master_recipient)]        
+    pub master_recipient_ata: Box<Account<'info, TokenAccount>>, // Matches specified owner and mint   
 
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_program: Program<'info, Token>,

@@ -29,6 +29,11 @@ pub struct BuyBond<'info> {
     pub bond: Account<'info, Bond>,
     #[account(mut)]
     pub ibo: Account<'info, Ibo>,
+    #[account(              
+        seeds = ["main_register".as_bytes()], 
+        bump,         
+    )]    
+    pub master: Account<'info, Master>,
     
     #[account(                
         seeds = ["lockup".as_bytes(), ibo.key().as_ref(),  &lockup_idx.to_be_bytes()], 
@@ -50,7 +55,7 @@ pub struct BuyBond<'info> {
     // Check for bond substitution attack
     #[account(mut, token::authority = bond)]
     pub bond_ata: Box<Account<'info, TokenAccount>>,       
-    #[account(mut)]
+    #[account(mut, token::mint = ibo.liquidity_token, token::authority = master.master_recipient)]    
     pub master_recipient_ata: Box<Account<'info, TokenAccount>>, // Matches specified owner and mint
 
     pub token_program: Program<'info, Token>,
@@ -63,6 +68,9 @@ pub struct BuyBond<'info> {
 // Extra cut for deposit which goes on to make LP in raydium
 
 pub fn buy_bond(ctx: Context<BuyBond>, _lockup_idx: u32, ibo_idx: u64, stable_amount_liquidity: u64) -> Result<()> {    
+    let master: &mut Account<Master> = &mut ctx.accounts.master;
+
+    msg!(" master.master_recipient: {:?}",  master.master_recipient);
 
     purchase_mechanics(  
         &ctx.accounts.buyer,

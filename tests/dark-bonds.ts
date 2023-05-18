@@ -10,6 +10,7 @@ import {
   token,
   walletAdapterIdentity,
 } from "@metaplex-foundation/js";
+import { loadKeypairFromFile } from "./helper";
 import {
   createMint,
   createAccount,
@@ -65,8 +66,7 @@ describe("dark-bonds", async () => {
   }
 
   const bondProgram = anchor.workspace.DarkBonds as Program<DarkBonds>;
-
-  const superAdmin = anchor.web3.Keypair.generate();
+  const superAdmin = loadKeypairFromFile("./master-keypair.json"); // reused so that ATA are
   const adminIbo0 = anchor.web3.Keypair.generate();
   const bondBuyer1 = anchor.web3.Keypair.generate();
   const bondBuyer2 = anchor.web3.Keypair.generate();
@@ -221,6 +221,13 @@ describe("dark-bonds", async () => {
       adminIbo0.publicKey
     );
 
+    masterRecipientATA_sc = await getOrCreateAssociatedTokenAccount(
+      provider.connection,
+      superAdmin,
+      mintSC,
+      superAdmin.publicKey
+    );
+
     // Initialise  ATAs for the bond token
     bondBuyer1ATA_b = await getOrCreateAssociatedTokenAccount(
       provider.connection,
@@ -241,13 +248,6 @@ describe("dark-bonds", async () => {
       resaleBuyer1,
       mintB,
       resaleBuyer1.publicKey
-    );
-
-    masterRecipientATA_sc = await getOrCreateAssociatedTokenAccount(
-      provider.connection,
-      superAdmin,
-      mintSC,
-      superAdmin.publicKey
     );
 
     // Airdrop liquditi token to the accounts
@@ -361,7 +361,7 @@ describe("dark-bonds", async () => {
       const tx = await bondProgram.methods
         .init()
         .accounts({
-          mainIbo: mainIbo,
+          master: mainIbo,
           superadmin: superAdmin.publicKey,
           systemProgram: anchor.web3.SystemProgram.programId,
         })
@@ -415,7 +415,7 @@ describe("dark-bonds", async () => {
         adminIbo0.publicKey
       )
       .accounts({
-        mainIbo: mainIbo,
+        master: mainIbo,
         admin: adminIbo0.publicKey,
         ibo: ibo0,
         systemProgram: anchor.web3.SystemProgram.programId,
@@ -589,6 +589,8 @@ describe("dark-bonds", async () => {
       true
     );
 
+    console.log("superAdmin: ", superAdmin.publicKey.toBase58());
+
     // Spend 500 for rate 1 as player 1
     const tx_lu1 = await bondProgram.methods
       .buyBond(0, new anchor.BN(ibo_index), new anchor.BN(purchaseAmount))
@@ -599,6 +601,7 @@ describe("dark-bonds", async () => {
         lockup: lockUp0PDA,
         buyerAta: bondBuyer1ATA_sc.address,
         recipientAta: iboAdminATA_sc.address,
+        master: mainIbo,
         masterRecipientAta: masterRecipientATA_sc.address,
         iboAta: ibo0ATA_b.address,
         bondAta: bond0ATA_b.address,
@@ -655,7 +658,7 @@ describe("dark-bonds", async () => {
       true
     );
 
-    // Spend 500 for rate 1 as player 1
+    // Spend 500 for rate 2 as player 2
     const tx_lu1 = await bondProgram.methods
       .buyBond(1, new anchor.BN(ibo_index), new anchor.BN(purchaseAmount))
       .accounts({
@@ -663,6 +666,7 @@ describe("dark-bonds", async () => {
         bond: bond1,
         ibo: ibo0,
         lockup: lockUp1PDA,
+        master: mainIbo,
         buyerAta: bondBuyer2ATA_sc.address,
         recipientAta: iboAdminATA_sc.address,
         masterRecipientAta: masterRecipientATA_sc.address,
@@ -722,7 +726,7 @@ describe("dark-bonds", async () => {
       true
     );
 
-    // Spend 500 for rate 1 as player 1
+    // Spend mega amount for rate 3 as player 3
     const tx_lu1 = await bondProgram.methods
       .buyBond(2, new anchor.BN(ibo_index), new anchor.BN(megaPurchase))
       .accounts({
@@ -730,6 +734,7 @@ describe("dark-bonds", async () => {
         bond: bond2,
         ibo: ibo0,
         lockup: lockUp2PDA,
+        master: mainIbo,
         buyerAta: bondBuyer2ATA_sc.address,
         recipientAta: iboAdminATA_sc.address,
         masterRecipientAta: masterRecipientATA_sc.address,
@@ -963,6 +968,8 @@ describe("dark-bonds", async () => {
         buyer: resaleBuyer1.publicKey,
         bond: bond1,
         buyerAta: resaleBuyer1ATA_sc.address,
+        master: mainIbo,
+        masterRecipientAta: masterRecipientATA_sc.address,
         sellerAta: bondBuyer2ATA_sc.address,
         ibo: ibo0,
         tokenProgram: TOKEN_PROGRAM_ID,
@@ -1022,6 +1029,7 @@ describe("dark-bonds", async () => {
         ibo: ibo0,
         lockup: lockUp3PDA,
         gate: lockUp3Gate,
+        master: mainIbo,
         buyerAta: bondBuyer2ATA_sc.address,
         recipientAta: iboAdminATA_sc.address,
         iboAta: ibo0ATA_b.address,

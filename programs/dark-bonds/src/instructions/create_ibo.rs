@@ -14,7 +14,7 @@ pub struct CreateIBO<'info> {
     // Must be derived from the latest counter
     #[account(        
         init,      
-        seeds = ["ibo_instance".as_bytes(), &main_ibo.ibo_counter.to_be_bytes()], 
+        seeds = ["ibo_instance".as_bytes(), &master.ibo_counter.to_be_bytes()], 
         bump,      
         payer = admin, 
         space = 333
@@ -27,7 +27,7 @@ pub struct CreateIBO<'info> {
         seeds = ["main_register".as_bytes()], 
         bump,       
     )]    
-    pub main_ibo: Account<'info, Master>,    // TODO do that everwyehre
+    pub master: Account<'info, Master>,    // TODO do that everwyehre
     pub system_program: Program<'info, System>,
 }
 
@@ -40,7 +40,7 @@ pub fn create_ibo(
 ) -> Result<()> {
     let admin: &Signer = &mut ctx.accounts.admin;
     let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
-    let main_ibo: &mut Account<Master> = &mut ctx.accounts.main_ibo;    
+    let master: &mut Account<Master> = &mut ctx.accounts.master;    
 
     // Fill out details of the new Ibo    
     ibo.live_date = live_date;
@@ -50,6 +50,6 @@ pub fn create_ibo(
     ibo.recipient_address = recipient;
 
     // Counter is incremebted for Ibo counter
-    main_ibo.ibo_counter += 1;
+    master.ibo_counter += 1;
     Ok(())
 }

@@ -13,16 +13,18 @@ pub struct Init<'info> {
         payer = superadmin, 
         space = 400
     )]    
-    pub main_ibo: Account<'info, Master>,
+    pub master: Account<'info, Master>,
     pub system_program: Program<'info, System>,
 }
 
 // Any invocation after first time will fail on the PDA seeds macthing
 pub fn init(ctx: Context<Init>) -> Result<()> {
     let superadmin: &Signer = &mut ctx.accounts.superadmin;
-    let main_ibo: &mut Account<Master> = &mut ctx.accounts.main_ibo;
+    let master: &mut Account<Master> = &mut ctx.accounts.master;
 
     // TODO not sure if admin is needed tbh at all
-    main_ibo.admin = superadmin.key();
+    master.admin = superadmin.key();
+    master.master_recipient = superadmin.key(); // TODO option for this to be different
+
     Ok(())
 }

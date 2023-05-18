@@ -15,6 +15,11 @@ pub struct GatedBuy<'info> {
     
     #[account(mut)]
     pub buyer: Signer<'info>,    
+    #[account(              
+        seeds = ["main_register".as_bytes()], 
+        bump,         
+    )]    
+    pub master: Account<'info, Master>,
     #[account(        
         init,      
         seeds = ["bond".as_bytes(), ibo.key().as_ref(),  &ibo.bond_counter.to_be_bytes()], // TODO add counter
@@ -41,7 +46,7 @@ pub struct GatedBuy<'info> {
     pub buyer_ata: Box<Account<'info, TokenAccount>>,    
     #[account(mut)] 
     pub recipient_ata: Box<Account<'info, TokenAccount>>,
-    #[account(mut)]
+    #[account(mut, token::mint = ibo.liquidity_token, token::authority = master.master_recipient)]
     pub master_recipient_ata: Box<Account<'info, TokenAccount>>, // Matches specified owner and mint
 
     // bond token    
@@ -60,7 +65,7 @@ pub struct GatedBuy<'info> {
     // NFT stuff
     mint: Account<'info, Mint>,
     #[account(mut, has_one = mint)]
-    nft_token_account: Account<'info, TokenAccount>,
+    nft_token_account: Box<Account<'info, TokenAccount>>,
     /// CHECK:
     nft_metadata_account: AccountInfo<'info>,
     /// CHECK:
