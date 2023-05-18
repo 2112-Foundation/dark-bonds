@@ -776,268 +776,268 @@ describe("dark-bonds", async () => {
     // Check calculation of bond to receive is correct
   });
 
-  // it("Claim test 1", async () => {
-  //   console.log("bond: ", bond2.toBase58());
+  it("Claim test 1", async () => {
+    console.log("bond: ", bond2.toBase58());
 
-  //   let bondBalanceStart = await getTokenBalance(bond2ATA_b);
-  //   let bond1_state = await bondProgram.account.bond.fetch(bond2);
-  //   let bondStartTime = parseInt(bond1_state.bondStart.toString());
+    let bondBalanceStart = await getTokenBalance(bond2ATA_b);
+    let bond1_state = await bondProgram.account.bond.fetch(bond2);
+    let bondStartTime = parseInt(bond1_state.bondStart.toString());
 
-  //   let time_now_s = new Date().getTime() / 1000;
+    let time_now_s = new Date().getTime() / 1000;
 
-  //   console.log("bond started: ", bondStartTime);
-  //   console.log("bond end at:  ", bondStartTime + shortBond);
-  //   console.log("time now:     ", time_now_s);
-  //   let time_elapsed = time_now_s - bondStartTime;
-  //   console.log("time elapsed: ", time_elapsed);
+    console.log("bond started: ", bondStartTime);
+    console.log("bond end at:  ", bondStartTime + shortBond);
+    console.log("time now:     ", time_now_s);
+    let time_elapsed = time_now_s - bondStartTime;
+    console.log("time elapsed: ", time_elapsed);
 
-  //   await delay(shortBond / 2 - time_elapsed);
+    await delay(shortBond / 2 - time_elapsed);
 
-  //   const tx_lu1 = await bondProgram.methods
-  //     .claim(ibo0, 2)
-  //     .accounts({
-  //       bondOwner: bondBuyer2.publicKey,
-  //       bond: bond2,
-  //       bondOwnerAta: bondBuyer2ATA_b.address,
-  //       bondAta: bond2ATA_b.address,
-  //       systemProgram: anchor.web3.SystemProgram.programId,
-  //     })
-  //     .signers([bondBuyer2])
-  //     .rpc();
+    const tx_lu1 = await bondProgram.methods
+      .claim(ibo0, 2)
+      .accounts({
+        bondOwner: bondBuyer2.publicKey,
+        bond: bond2,
+        bondOwnerAta: bondBuyer2ATA_b.address,
+        bondAta: bond2ATA_b.address,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .signers([bondBuyer2])
+      .rpc();
 
-  //   // Get bond amounts
-  //   let balanceBuyer = await getTokenBalance(bondBuyer2ATA_b);
-  //   let bondBalance = await getTokenBalance(bond2ATA_b);
+    // Get bond amounts
+    let balanceBuyer = await getTokenBalance(bondBuyer2ATA_b);
+    let bondBalance = await getTokenBalance(bond2ATA_b);
 
-  //   console.log("balanceBuyer: ", balanceBuyer);
-  //   console.log("bond: ", bondBalance);
+    console.log("balanceBuyer: ", balanceBuyer);
+    console.log("bond: ", bondBalance);
 
-  //   assert(roughlyEqual(0.5, balanceBuyer / bondBalanceStart, 15));
-  // });
+    assert(roughlyEqual(0.5, balanceBuyer / bondBalanceStart, 15));
+  });
 
-  // it("Claim test 1, almost full amount", async () => {
-  //   console.log("bond: ", bond2.toBase58());
+  it("Claim test 1, almost full amount", async () => {
+    console.log("bond: ", bond2.toBase58());
 
-  //   let bondBalanceStart = await getTokenBalance(bond2ATA_b);
+    let bondBalanceStart = await getTokenBalance(bond2ATA_b);
 
-  //   await delay(8);
+    await delay(8);
 
-  //   // Spend 500 for rate 1 as player 1
-  //   const tx_lu1 = await bondProgram.methods
-  //     .claim(ibo0, 2)
-  //     .accounts({
-  //       bondOwner: bondBuyer2.publicKey,
-  //       bond: bond2,
-  //       bondOwnerAta: bondBuyer2ATA_b.address,
-  //       bondAta: bond2ATA_b.address,
-  //       systemProgram: anchor.web3.SystemProgram.programId,
-  //     })
-  //     .signers([bondBuyer2])
-  //     .rpc();
+    // Spend 500 for rate 1 as player 1
+    const tx_lu1 = await bondProgram.methods
+      .claim(ibo0, 2)
+      .accounts({
+        bondOwner: bondBuyer2.publicKey,
+        bond: bond2,
+        bondOwnerAta: bondBuyer2ATA_b.address,
+        bondAta: bond2ATA_b.address,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .signers([bondBuyer2])
+      .rpc();
 
-  //   // Get bond amounts
-  //   let balanceBuyer = await getTokenBalance(bondBuyer2ATA_b);
-  //   let bondBalance = await getTokenBalance(bond2ATA_b);
+    // Get bond amounts
+    let balanceBuyer = await getTokenBalance(bondBuyer2ATA_b);
+    let bondBalance = await getTokenBalance(bond2ATA_b);
 
-  //   console.log("balanceBuyer: ", balanceBuyer);
-  //   console.log("bond: ", bondBalance);
+    console.log("balanceBuyer: ", balanceBuyer);
+    console.log("bond: ", bondBalance);
 
-  //   // assert(roughlyEqual(0.5, balanceBuyer / bondBalanceStart, 10));
-  // });
+    // assert(roughlyEqual(0.5, balanceBuyer / bondBalanceStart, 10));
+  });
 
-  // it("Claim test 1, full", async () => {
-  //   console.log("bond: ", bond2.toBase58());
+  it("Claim test 1, full", async () => {
+    console.log("bond: ", bond2.toBase58());
 
-  //   let bondBalanceStart = await getTokenBalance(bond2ATA_b);
-  //   let bond2_state = await bondProgram.account.bond.fetch(bond2);
+    let bondBalanceStart = await getTokenBalance(bond2ATA_b);
+    let bond2_state = await bondProgram.account.bond.fetch(bond2);
 
-  //   await delay(8);
+    await delay(8);
 
-  //   // Spend 500 for rate 1 as player 1
-  //   const tx_lu1 = await bondProgram.methods
-  //     .claim(ibo0, 2)
-  //     .accounts({
-  //       bondOwner: bondBuyer2.publicKey,
-  //       bond: bond2,
-  //       bondOwnerAta: bondBuyer2ATA_b.address,
-  //       bondAta: bond2ATA_b.address,
-  //       systemProgram: anchor.web3.SystemProgram.programId,
-  //     })
-  //     .signers([bondBuyer2])
-  //     .rpc();
+    // Spend 500 for rate 1 as player 1
+    const tx_lu1 = await bondProgram.methods
+      .claim(ibo0, 2)
+      .accounts({
+        bondOwner: bondBuyer2.publicKey,
+        bond: bond2,
+        bondOwnerAta: bondBuyer2ATA_b.address,
+        bondAta: bond2ATA_b.address,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .signers([bondBuyer2])
+      .rpc();
 
-  //   // Get bond amounts
-  //   let balanceBuyer = await getTokenBalance(bondBuyer2ATA_b);
-  //   let bondBalance = await getTokenBalance(bond2ATA_b);
+    // Get bond amounts
+    let balanceBuyer = await getTokenBalance(bondBuyer2ATA_b);
+    let bondBalance = await getTokenBalance(bond2ATA_b);
 
-  //   console.log("balanceBuyer: ", balanceBuyer);
-  //   console.log("bond: ", bondBalance);
+    console.log("balanceBuyer: ", balanceBuyer);
+    console.log("bond: ", bondBalance);
 
-  //   assert(bondBalance == 0);
-  //   assert(balanceBuyer.toString() == bond2_state.totalClaimable.toString());
-  // });
+    assert(bondBalance == 0);
+    assert(balanceBuyer.toString() == bond2_state.totalClaimable.toString());
+  });
 
-  // it("Split bond bond 50%", async () => {
-  //   console.log("bond: ", bond2.toBase58());
+  it("Split bond bond 50%", async () => {
+    console.log("bond: ", bond2.toBase58());
 
-  //   let bondBalanceStart = await getTokenBalance(bond2ATA_b);
-  //   let bond2_state = await bondProgram.account.bond.fetch(bond2);
+    let bondBalanceStart = await getTokenBalance(bond2ATA_b);
+    let bond2_state = await bondProgram.account.bond.fetch(bond2);
 
-  //   let ibo0_state = await bondProgram.account.ibo.fetch(ibo0);
-  //   console.log("\n\n\nibo0_state start: ", ibo0_state.bondCounter.toString());
+    let ibo0_state = await bondProgram.account.ibo.fetch(ibo0);
+    console.log("\n\n\nibo0_state start: ", ibo0_state.bondCounter.toString());
 
-  //   // derive a new bond
-  //   [bond3] = await PublicKey.findProgramAddress(
-  //     [
-  //       Buffer.from("bond"),
-  //       Buffer.from(ibo0.toBytes()),
-  //       new BN(3).toArrayLike(Buffer, "be", 4),
-  //     ],
-  //     bondProgram.programId
-  //   );
+    // derive a new bond
+    [bond3] = await PublicKey.findProgramAddress(
+      [
+        Buffer.from("bond"),
+        Buffer.from(ibo0.toBytes()),
+        new BN(3).toArrayLike(Buffer, "be", 4),
+      ],
+      bondProgram.programId
+    );
 
-  //   // Get ATA for bond0 PDA
-  //   bond3ATA_b = await getOrCreateAssociatedTokenAccount(
-  //     provider.connection,
-  //     bondBuyer2,
-  //     mintB,
-  //     bond3,
-  //     true
-  //   );
+    // Get ATA for bond0 PDA
+    bond3ATA_b = await getOrCreateAssociatedTokenAccount(
+      provider.connection,
+      bondBuyer2,
+      mintB,
+      bond3,
+      true
+    );
 
-  //   // Spend 500 for rate 1 as player 1
-  //   const tx_lu1 = await bondProgram.methods
-  //     .split(50, ibo0, 1)
-  //     .accounts({
-  //       owner: bondBuyer2.publicKey,
-  //       bond: bond1,
-  //       newBond: bond3,
-  //       ibo: ibo0,
-  //       bondAtaOld: bond1ATA_b.address,
-  //       bondAtaNew: bond3ATA_b.address,
-  //       systemProgram: anchor.web3.SystemProgram.programId,
-  //     })
-  //     .signers([bondBuyer2])
-  //     .rpc();
+    // Spend 500 for rate 1 as player 1
+    const tx_lu1 = await bondProgram.methods
+      .split(50, ibo0, 1)
+      .accounts({
+        owner: bondBuyer2.publicKey,
+        bond: bond1,
+        newBond: bond3,
+        ibo: ibo0,
+        bondAtaOld: bond1ATA_b.address,
+        bondAtaNew: bond3ATA_b.address,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .signers([bondBuyer2])
+      .rpc();
 
-  //   let bond1_balance = await getTokenBalance(bond1ATA_b);
-  //   let bond3_balance = await getTokenBalance(bond1ATA_b);
-  //   // Equal amount of tokens split
-  //   assert(bond1_balance - bond3_balance == 0);
+    let bond1_balance = await getTokenBalance(bond1ATA_b);
+    let bond3_balance = await getTokenBalance(bond1ATA_b);
+    // Equal amount of tokens split
+    assert(bond1_balance - bond3_balance == 0);
 
-  //   let ibo0_state_end = await bondProgram.account.ibo.fetch(ibo0);
-  //   console.log(
-  //     "\n\n\nibo0_state end: ",
-  //     ibo0_state_end.bondCounter.toString()
-  //   );
-  // });
+    let ibo0_state_end = await bondProgram.account.ibo.fetch(ibo0);
+    console.log(
+      "\n\n\nibo0_state end: ",
+      ibo0_state_end.bondCounter.toString()
+    );
+  });
 
-  // it("Set swap on the split new bond", async () => {
-  //   const tx_lu1 = await bondProgram.methods
-  //     .setSwap(new BN(bond1ResalePrice))
-  //     .accounts({
-  //       owner: bondBuyer2.publicKey,
-  //       bond: bond1,
-  //     })
-  //     .signers([bondBuyer2])
-  //     .rpc();
+  it("Set swap on the split new bond", async () => {
+    const tx_lu1 = await bondProgram.methods
+      .setSwap(new BN(bond1ResalePrice))
+      .accounts({
+        owner: bondBuyer2.publicKey,
+        bond: bond1,
+      })
+      .signers([bondBuyer2])
+      .rpc();
 
-  //   let bond1_state = await bondProgram.account.bond.fetch(bond1);
+    let bond1_state = await bondProgram.account.bond.fetch(bond1);
 
-  //   console.log("bond1_state.sell_price: ", bond1_state.swapPrice.toString());
+    console.log("bond1_state.sell_price: ", bond1_state.swapPrice.toString());
 
-  //   assert(bond1ResalePrice.toString() == bond1_state.swapPrice.toString());
-  // });
+    assert(bond1ResalePrice.toString() == bond1_state.swapPrice.toString());
+  });
 
-  // it("Buy bond offered on swap", async () => {
-  //   let bond1_state_start = await bondProgram.account.bond.fetch(bond1);
-  //   console.log(
-  //     "bond1_state_start.owner: ",
-  //     bond1_state_start.owner.toBase58()
-  //   );
-  //   console.log("buyer: ", resaleBuyer1.publicKey.toBase58());
+  it("Buy bond offered on swap", async () => {
+    let bond1_state_start = await bondProgram.account.bond.fetch(bond1);
+    console.log(
+      "bond1_state_start.owner: ",
+      bond1_state_start.owner.toBase58()
+    );
+    console.log("buyer: ", resaleBuyer1.publicKey.toBase58());
 
-  //   const tx_lu1 = await bondProgram.methods
-  //     .buySwap()
-  //     .accounts({
-  //       buyer: resaleBuyer1.publicKey,
-  //       bond: bond1,
-  //       buyerAta: resaleBuyer1ATA_sc.address,
-  //       sellerAta: bondBuyer2ATA_sc.address,
-  //       ibo: ibo0,
-  //       tokenProgram: TOKEN_PROGRAM_ID,
-  //       associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-  //     })
-  //     .signers([resaleBuyer1])
-  //     .rpc();
+    const tx_lu1 = await bondProgram.methods
+      .buySwap()
+      .accounts({
+        buyer: resaleBuyer1.publicKey,
+        bond: bond1,
+        buyerAta: resaleBuyer1ATA_sc.address,
+        sellerAta: bondBuyer2ATA_sc.address,
+        ibo: ibo0,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+      })
+      .signers([resaleBuyer1])
+      .rpc();
 
-  //   let bond1_state = await bondProgram.account.bond.fetch(bond1);
+    let bond1_state = await bondProgram.account.bond.fetch(bond1);
 
-  //   // New owner set
-  //   assert(resaleBuyer1.publicKey.toBase58() == bond1_state.owner.toBase58());
-  // });
+    // New owner set
+    assert(resaleBuyer1.publicKey.toBase58() == bond1_state.owner.toBase58());
+  });
 
-  // it("Buy gated bond offered on ibo", async () => {
-  //   let ibo0_state = await bondProgram.account.ibo.fetch(ibo0);
-  //   // assert(ibo0_state.lockupsLocked == true);
+  it("Buy gated bond offered on ibo", async () => {
+    let ibo0_state = await bondProgram.account.ibo.fetch(ibo0);
+    // assert(ibo0_state.lockupsLocked == true);
 
-  //   console.log("bond counter: ", ibo0_state.bondCounter);
+    console.log("bond counter: ", ibo0_state.bondCounter);
 
-  //   [bond4] = await PublicKey.findProgramAddress(
-  //     [
-  //       Buffer.from("bond"),
-  //       Buffer.from(ibo0.toBytes()),
-  //       new BN(4).toArrayLike(Buffer, "be", 4),
-  //     ],
-  //     bondProgram.programId
-  //   );
+    [bond4] = await PublicKey.findProgramAddress(
+      [
+        Buffer.from("bond"),
+        Buffer.from(ibo0.toBytes()),
+        new BN(4).toArrayLike(Buffer, "be", 4),
+      ],
+      bondProgram.programId
+    );
 
-  //   console.log("bond4 pda address: ", bond4.toBase58());
+    console.log("bond4 pda address: ", bond4.toBase58());
 
-  //   bond4ATA_b = await getOrCreateAssociatedTokenAccount(
-  //     provider.connection,
-  //     bondBuyer2,
-  //     mintB,
-  //     bond4,
-  //     true
-  //   );
+    bond4ATA_b = await getOrCreateAssociatedTokenAccount(
+      provider.connection,
+      bondBuyer2,
+      mintB,
+      bond4,
+      true
+    );
 
-  //   console.log("nftWallet.publicKey: ", nftWallet.publicKey.toBase58());
+    console.log("nftWallet.publicKey: ", nftWallet.publicKey.toBase58());
 
-  //   // send that lad NFT
-  //   await metaplex.nfts().transfer({
-  //     nftOrSft: nft_handle,
-  //     authority: nftWallet,
-  //     fromOwner: nftWallet.publicKey,
-  //     toOwner: bondBuyer2.publicKey,
-  //     amount: token(1),
-  //   });
+    // send that lad NFT
+    await metaplex.nfts().transfer({
+      nftOrSft: nft_handle,
+      authority: nftWallet,
+      fromOwner: nftWallet.publicKey,
+      toOwner: bondBuyer2.publicKey,
+      amount: token(1),
+    });
 
-  //   // Spend 500 for rate 1 as player 1
-  //   const tx_lu1 = await bondProgram.methods
-  //     .buyBondGated(3, new anchor.BN(ibo_index), new anchor.BN(10000))
-  //     .accounts({
-  //       buyer: bondBuyer2.publicKey,
-  //       bond: bond4,
-  //       ibo: ibo0,
-  //       lockup: lockUp3PDA,
-  //       gate: lockUp3Gate,
-  //       buyerAta: bondBuyer2ATA_sc.address,
-  //       recipientAta: iboAdminATA_sc.address,
-  //       iboAta: ibo0ATA_b.address,
-  //       bondAta: bond4ATA_b.address,
-  //       masterRecipientAta: masterRecipientATA_sc.address,
+    // Spend 500 for rate 1 as player 1
+    const tx_lu1 = await bondProgram.methods
+      .buyBondGated(3, new anchor.BN(ibo_index), new anchor.BN(10000))
+      .accounts({
+        buyer: bondBuyer2.publicKey,
+        bond: bond4,
+        ibo: ibo0,
+        lockup: lockUp3PDA,
+        gate: lockUp3Gate,
+        buyerAta: bondBuyer2ATA_sc.address,
+        recipientAta: iboAdminATA_sc.address,
+        iboAta: ibo0ATA_b.address,
+        bondAta: bond4ATA_b.address,
+        masterRecipientAta: masterRecipientATA_sc.address,
 
-  //       // NFT
-  //       mint: mintKey,
-  //       nftTokenAccount: bondBuyer2ATA_nft.address,
-  //       nftMasterEditionAccount: nftMasteEdition_account,
-  //       nftMetadataAccount: nftMetadataAccount,
+        // NFT
+        mint: mintKey,
+        nftTokenAccount: bondBuyer2ATA_nft.address,
+        nftMasterEditionAccount: nftMasteEdition_account,
+        nftMetadataAccount: nftMetadataAccount,
 
-  //       systemProgram: anchor.web3.SystemProgram.programId,
-  //       tokenProgram: TOKEN_PROGRAM_ID,
-  //     })
-  //     .signers([bondBuyer2])
-  //     .rpc();
-  // });
+        systemProgram: anchor.web3.SystemProgram.programId,
+        tokenProgram: TOKEN_PROGRAM_ID,
+      })
+      .signers([bondBuyer2])
+      .rpc();
+  });
 });

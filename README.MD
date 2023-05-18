@@ -44,7 +44,7 @@ Then  you need to:
 
 ### Revenue
 
-[ ] Take a cut from bond issuance to us 
+[X] Take a cut from bond issuance to us 
     - When user buys underlying, they get exact conversion but reuser gets slight cut in liquidity that they receive
 [ ] Take a cut from bond resale to us and ibo deployer  
     - When user buys a swap, seller is charged a small cut from what they receive
@@ -54,6 +54,7 @@ Then  you need to:
 ### Safety
 
 [ ] createIBO needs to take some sort of pubkey which represents the desired bond token to purchase  
+[ ] Correct ATA and ata mint/owner provided as the master recipient
 
 ### Optimisation
 
@@ -67,3 +68,4 @@ Then  you need to:
 [ ] Multiple files and/or `describe()` so that deployment can happen once, but can skip doing same thing or a reptetive set-up  
 [x] Test kept invocation counter incremented at the end of a function
 [ ] Tests for removing rate and gate
+[x] Test for taking cut to us on bond purchase
