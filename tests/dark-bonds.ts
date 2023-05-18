@@ -79,6 +79,7 @@ describe("dark-bonds", async () => {
   let bondBuyer2ATA_sc;
   let resaleBuyer1ATA_sc;
   let masterRecipientATA_sc;
+  let adminIbo0ATA_sc;
   let iboAdminATA_sc;
   let bondBuyer1ATA_b;
   let bondBuyer2ATA_b;
@@ -216,6 +217,13 @@ describe("dark-bonds", async () => {
     );
 
     iboAdminATA_sc = await getOrCreateAssociatedTokenAccount(
+      provider.connection,
+      adminIbo0,
+      mintSC,
+      adminIbo0.publicKey
+    );
+
+    adminIbo0ATA_sc = await getOrCreateAssociatedTokenAccount(
       provider.connection,
       adminIbo0,
       mintSC,
@@ -975,6 +983,7 @@ describe("dark-bonds", async () => {
         masterRecipientAta: masterRecipientATA_sc.address,
         sellerAta: bondBuyer2ATA_sc.address,
         ibo: ibo0,
+        iboAdminAta: adminIbo0ATA_sc.address,
         tokenProgram: TOKEN_PROGRAM_ID,
         associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
       })

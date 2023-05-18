@@ -29,9 +29,3 @@ pub struct Ibo {
     pub lockup_counter: u32, // TODO Can definitaly reduce this one
     pub bond_counter: u32,
 }
-
-impl Ibo {
-    pub fn correct_mint(&self, provided_mint: &Pubkey) -> bool {
-        return &self.liquidity_token == provided_mint;
-    }
-}

@@ -36,22 +36,43 @@ pub struct BuySwap<'info> {
     #[account(mut, token::mint = ibo.liquidity_token, token::authority = master.master_recipient)]        
     pub master_recipient_ata: Box<Account<'info, TokenAccount>>, // Matches specified owner and mint   
 
+    #[account(mut)] //, token::mint = ibo.liquidity_token, token::authority = ibo.recipient_address)]        
+    pub ibo_admin_ata: Box<Account<'info, TokenAccount>>, // Matches specified owner and mint   
+
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_program: Program<'info, Token>,
 }
 
-impl<'info> BuySwap<'info> {    
-    fn transfer_liquidity(&self) -> CpiContext<'_, '_, '_, 'info, Transfer<'info>>{
+impl<'info> BuySwap<'info> {
+    fn transfer_liquidity(
+        &self,
+        recipient_ata: &Account<'info, TokenAccount>,
+    ) -> CpiContext<'_, '_, '_, 'info, Transfer<'info>> {
         CpiContext::new(
             self.token_program.to_account_info(),
             Transfer {
                 from: self.buyer_ata.to_account_info(),
-                to: self.seller_ata.to_account_info(),
+                to: recipient_ata.to_account_info(),
                 authority: self.buyer.to_account_info(),
             },
         )
     }
 }
+
+
+// impl<'info> BuySwap<'info> {    
+//     fn transfer_liquidity(&self) -> CpiContext<'_, '_, '_, 'info, Transfer<'info>>{
+//         CpiContext::new(
+//             self.token_program.to_account_info(),
+//             Transfer {
+//                 from: self.buyer_ata.to_account_info(),
+//                 to: self.seller_ata.to_account_info(),
+//                 authority: self.buyer.to_account_info(),
+//             },
+//         )
+//     }
+// }
+
 
 #[derive(Accounts)]
 pub struct Initialize<'info> {
@@ -113,32 +134,30 @@ pub fn buy_swap(ctx: Context<BuySwap>) -> Result<()> {
     msg!("seller_cut: {:?}", seller_cut);
     // msg!("bond_master_cut: {:?}", bond_master_cut);
     msg!("adjusted_bond_master_cut: {:?}", adjusted_bond_master_cut);
-    msg!("master_master_cut: {:?}", master_master_cut);
-    
-
+    msg!("master_master_cut: {:?}", master_master_cut);  
 
     
-    assert_eq!(seller_cut + adjusted_bond_master_cut + master_master_cut, bond_price);
+    assert_eq!(seller_cut + adjusted_bond_master_cut + master_master_cut, bond_price);   
+
     
 
-    // assert_eq!(seller_cut + bond_master_cut + master_master_cut, bond_price);
+    // Transfer liquidity coin cut to the ATA of the seller
+    token::transfer(
+        accounts.transfer_liquidity(&accounts.seller_ata),  
+        seller_cut
+    )?;                   
 
+    // Transfer liquidity coin cut to the ATA of the IBO admin
+    token::transfer(
+        accounts.transfer_liquidity(&accounts.ibo_admin_ata),
+        bond_master_cut
+    )?;                   
 
-
-    // let reuser_cut: u64 = (reuser_cut as u64) - master_cut;
-    
-
-    // Transfer sell price base stable coin to the ATA of the owner
-    // token::transfer(
-    //     accounts.transfer_liquidity(),  // use accounts here
-    //     master_cut
-    // )?;                   
-
-    // // Transfer sell price base stable coin to the ATA of the owner
-    // token::transfer(
-    //     accounts.transfer_liquidity(),  // use accounts here
-    //     reuser_cut
-    // )?;                   
+    // Transfer liquidity coin cut to the ATA of the master admin
+    token::transfer(
+        accounts.transfer_liquidity(&accounts.master_recipient_ata),  
+        master_master_cut
+    )?;                   
 
     Ok(())
 }
