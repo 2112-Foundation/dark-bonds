@@ -13,7 +13,7 @@ export function loadKeypairFromFile(fileName) {
   }
   const secretKey = Uint8Array.from(JSON.parse(secretKeyString));
 
-  let keypair;
+  let keypair: anchor.web3.Keypair;
   try {
     keypair = anchor.web3.Keypair.fromSeed(
       Uint8Array.from(Buffer.from(secretKey).slice(0, 32))
@@ -23,4 +23,22 @@ export function loadKeypairFromFile(fileName) {
   }
 
   return keypair;
+}
+export function delay(seconds: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
+}
+export function roughlyEqual(
+  desired: number,
+  actual: number,
+  deviation: number
+) {
+  const lowerBound = desired - desired * (deviation / 100);
+  const upperBound = desired + desired * (deviation / 100);
+
+  console.log("lowerBound: ", lowerBound);
+  console.log("upperBound: ", upperBound);
+  console.log("desired: ", desired);
+  console.log("actual: ", actual);
+
+  return actual >= lowerBound && actual <= upperBound;
 }

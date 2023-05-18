@@ -1,17 +1,5 @@
-import {
-  keypairIdentity,
-  KeypairIdentityDriver,
-  Metaplex,
-  toBigNumber,
-  token,
-  walletAdapterIdentity,
-} from "@metaplex-foundation/js";
-import {
-  Connection,
-  clusterApiUrl,
-  Keypair,
-  LAMPORTS_PER_SOL,
-} from "@solana/web3.js";
+import { keypairIdentity, Metaplex } from "@metaplex-foundation/js";
+import { Connection, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import * as anchor from "@project-serum/anchor";
 import { Program, Wallet } from "@project-serum/anchor";
 // import { MetaplexAnchorNft } from "../target/types/metaplex_anchor_nft";

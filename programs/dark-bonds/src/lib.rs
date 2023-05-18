@@ -27,7 +27,7 @@ pub mod dark_bonds {
         end_date: i64,
         swap_cut: u32,
         liquidity_token: Pubkey,
-        recipient: Pubkey,
+        recipient: Pubkey
     ) -> Result<()> {
         instructions::create_ibo::create_ibo(
             ctx,
@@ -36,7 +36,7 @@ pub mod dark_bonds {
             end_date,
             swap_cut,
             liquidity_token,
-            recipient,
+            recipient
         )
     }
 
@@ -44,7 +44,7 @@ pub mod dark_bonds {
     pub fn add_lockup(
         ctx: Context<AddLockUp>,
         lockup_duration: i64,
-        lockup_apy: f64,
+        lockup_apy: f64
     ) -> Result<()> {
         instructions::add_lockup::add_lockup(ctx, lockup_duration, lockup_apy)
     }
@@ -59,7 +59,7 @@ pub mod dark_bonds {
         lockup_idx: u32,
         mint_key: Pubkey,
         creator_key: Pubkey,
-        master_key: Pubkey,
+        master_key: Pubkey
     ) -> Result<()> {
         instructions::add_gate::add_gate(
             ctx,
@@ -67,7 +67,7 @@ pub mod dark_bonds {
             lockup_idx,
             mint_key,
             creator_key,
-            master_key,
+            master_key
         )
     }
 
@@ -78,7 +78,7 @@ pub mod dark_bonds {
     pub fn lock(
         ctx: Context<Lock>,
         lock_withdraws: bool,
-        lock_lockup_addition: bool,
+        lock_lockup_addition: bool
     ) -> Result<()> {
         instructions::lock::lock(ctx, lock_withdraws, lock_lockup_addition)
     }
@@ -88,7 +88,7 @@ pub mod dark_bonds {
         ctx: Context<BuyBond>,
         lockup_idx: u32,
         ibo_idx: u64,
-        liquidity_provided: u64,
+        liquidity_provided: u64
     ) -> Result<()> {
         instructions::buy_bond::buy_bond(ctx, lockup_idx, ibo_idx, liquidity_provided)
     }
@@ -97,7 +97,7 @@ pub mod dark_bonds {
         ctx: Context<GatedBuy>,
         lockup_idx: u32,
         ibo_idx: u64,
-        liquidity_provided: u64,
+        liquidity_provided: u64
     ) -> Result<()> {
         instructions::buy_bond_gated::buy_bond_gated(ctx, lockup_idx, ibo_idx, liquidity_provided)
     }
@@ -112,7 +112,7 @@ pub mod dark_bonds {
         ctx: Context<Split>,
         percent_new: u16,
         ibo_address: Pubkey,
-        bond_idx: u32,
+        bond_idx: u32
     ) -> Result<()> {
         instructions::split::split(ctx, percent_new, ibo_address, bond_idx)
     }

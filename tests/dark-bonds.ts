@@ -1,97 +1,83 @@
 import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
 import { DarkBonds } from "../target/types/dark_bonds";
-import { Connection, Keypair, PublicKey, Signer } from "@solana/web3.js";
+import { PublicKey } from "@solana/web3.js";
 import {
   keypairIdentity,
-  KeypairIdentityDriver,
   Metaplex,
   toBigNumber,
   token,
-  walletAdapterIdentity,
+  Nft,
 } from "@metaplex-foundation/js";
-import { loadKeypairFromFile } from "./helper";
+import { loadKeypairFromFile, delay, roughlyEqual } from "./helpers";
 import {
   createMint,
-  createAccount,
   getAccount,
   getOrCreateAssociatedTokenAccount,
-  createAssociatedTokenAccountInstruction,
-  getAssociatedTokenAddress,
-  createInitializeMintInstruction,
-  transfer,
   mintTo,
   TOKEN_PROGRAM_ID,
   ASSOCIATED_TOKEN_PROGRAM_ID,
+  Account,
 } from "@solana/spl-token";
-import { BN } from "bn.js";
-import { assert, expect } from "chai";
+import { assert } from "chai";
+
+const BN = anchor.BN;
 
 describe("dark-bonds", async () => {
   // Configure the client to use the local cluster.
   anchor.setProvider(anchor.AnchorProvider.env());
   const provider = anchor.getProvider();
+  const connection = provider.connection;
 
   const LAMPORTS_PER_SOL = 1000000000;
 
-  function delay(seconds: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
+  async function getTokenBalance(ata: Account) {
+    return Number((await getAccount(connection, ata.address)).amount);
   }
-
-  async function getTokenBalance(ata) {
-    return Number((await getAccount(provider.connection, ata.address)).amount);
-  }
-
-  function roughlyEqual(desired: number, actual: number, deviation: number) {
-    const lowerBound = desired - desired * (deviation / 100);
-    const upperBound = desired + desired * (deviation / 100);
-
-    console.log("lowerBound: ", lowerBound);
-    console.log("upperBound: ", upperBound);
-    console.log("desired: ", desired);
-    console.log("actual: ", actual);
-
-    return actual >= lowerBound && actual <= upperBound;
-  }
-
   async function topUp(topUpAcc: PublicKey) {
-    {
-      await provider.connection.confirmTransaction(
-        await provider.connection.requestAirdrop(
-          topUpAcc,
-          200 * LAMPORTS_PER_SOL
-        )
+    try {
+      const airdropSignature = await connection.requestAirdrop(
+        topUpAcc,
+        200 * LAMPORTS_PER_SOL
       );
+      const latestBlockHash = await connection.getLatestBlockhash();
+      await connection.confirmTransaction({
+        blockhash: latestBlockHash.blockhash,
+        lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+        signature: airdropSignature,
+      });
+    } catch (error) {
+      console.error(error);
     }
   }
-
   const bondProgram = anchor.workspace.DarkBonds as Program<DarkBonds>;
   const superAdmin = loadKeypairFromFile("./master-keypair.json"); // reused so that ATA are
+
+  //TODO move that stuff to special class allowing to access keypair and it's ATA if created.
   const adminIbo0 = anchor.web3.Keypair.generate();
   const bondBuyer1 = anchor.web3.Keypair.generate();
   const bondBuyer2 = anchor.web3.Keypair.generate();
   const resaleBuyer1 = anchor.web3.Keypair.generate();
   const nftWallet = anchor.web3.Keypair.generate();
 
-  const shortBond = 20;
+  const shortBond = 16;
 
-  let bondBuyer1ATA_sc;
-  let bondBuyer2ATA_sc;
-  let resaleBuyer1ATA_sc;
-  let masterRecipientATA_sc;
-  let adminIbo0ATA_sc;
-  let iboAdminATA_sc;
-  let bondBuyer1ATA_b;
-  let bondBuyer2ATA_b;
-  let resaleBuyer1ATA_b;
+  let bondBuyer1ATA_sc: Account;
+  let bondBuyer2ATA_sc: Account;
+  let resaleBuyer1ATA_sc: Account;
+  let masterRecipientATA_sc: Account;
+  let iboAdminATA_sc: Account;
+  let bondBuyer1ATA_b: Account;
+  let bondBuyer2ATA_b: Account;
+  let resaleBuyer1ATA_b: Account;
 
-  let bondBuyer2ATA_nft;
+  let bondBuyer2ATA_nft: Account;
 
-  let bond0ATA_b;
-  let bond1ATA_b;
-  let bond2ATA_b;
-  let bond3ATA_b;
-  let bond4ATA_b;
+  let bond0ATA_b: Account;
+  let bond1ATA_b: Account;
+  let bond2ATA_b: Account;
+  let bond3ATA_b: Account;
+  let bond4ATA_b: Account;
 
   let ibo_index = 0;
 
@@ -112,7 +98,7 @@ describe("dark-bonds", async () => {
   let ibo0: PublicKey;
   let exchangeRate: number = 40;
   let liveDate: number = 1683718579;
-  let ibo0ATA_b;
+  let ibo0ATA_b: Account;
 
   let swapCut = 200; // aka 2.0 %
 
@@ -129,10 +115,10 @@ describe("dark-bonds", async () => {
 
   // Lock ups
   let lockUp0PDA: PublicKey;
-  let lockUp0Period: number = 31536000;
+  let lockUp0Period: number = 31536000; // 1 year
   let lockUp0Apy: number = 1.2 * 100;
   let lockUp1PDA: PublicKey;
-  let lockUp1Period: number = 63072000;
+  let lockUp1Period: number = 63072000; // 2 years
   let lockUp1Apy: number = 1.2 * 100;
   let lockUp2PDA: PublicKey;
   let lockUp2Period: number = shortBond;
@@ -155,8 +141,9 @@ describe("dark-bonds", async () => {
   let nftMetadataAccount: PublicKey;
   let nftMasteEdition_account: PublicKey;
 
-  let metaplex;
-  let nft_handle;
+  let metaplex = new Metaplex(connection);
+  metaplex.use(keypairIdentity(nftWallet));
+  let nft_handle: Nft;
 
   // testing
   let bond_counter = 0;
@@ -177,133 +164,127 @@ describe("dark-bonds", async () => {
       topUp(nftWallet.publicKey),
     ]);
 
-    // liquidity_token mint
-    mintSC = await createMint(
-      provider.connection,
-      mintAuthSC,
-      mintAuthSC.publicKey,
-      mintAuthSC.publicKey,
-      10
-    );
+    [mintSC, mintB] = await Promise.all([
+      // liquidity_token mint
+      createMint(
+        connection,
+        mintAuthSC,
+        mintAuthSC.publicKey,
+        mintAuthSC.publicKey,
+        10
+      ),
+      createMint(
+        connection,
+        mintAuthB,
+        mintAuthB.publicKey,
+        mintAuthB.publicKey,
+        10
+      ),
+    ]);
 
-    mintB = await createMint(
-      provider.connection,
-      mintAuthB,
-      mintAuthB.publicKey,
-      mintAuthB.publicKey,
-      10
-    );
+    [
+      bondBuyer1ATA_sc, // Initialise bondBuyer ATAs for the liquidity_token
+      bondBuyer2ATA_sc,
+      resaleBuyer1ATA_sc,
+      iboAdminATA_sc,
+      masterRecipientATA_sc,
+      bondBuyer1ATA_b, // Initialise  ATAs for the bond token
+      bondBuyer2ATA_b,
+      resaleBuyer1ATA_b,
+    ] = await Promise.all([
+      getOrCreateAssociatedTokenAccount(
+        connection,
+        bondBuyer1,
+        mintSC,
+        bondBuyer1.publicKey
+      ),
+      getOrCreateAssociatedTokenAccount(
+        connection,
+        bondBuyer2,
+        mintSC,
+        bondBuyer2.publicKey
+      ),
+      getOrCreateAssociatedTokenAccount(
+        connection,
+        resaleBuyer1,
+        mintSC,
+        resaleBuyer1.publicKey
+      ),
+      getOrCreateAssociatedTokenAccount(
+        connection,
+        adminIbo0,
+        mintSC,
+        adminIbo0.publicKey
+      ),
+      getOrCreateAssociatedTokenAccount(
+        connection,
+        superAdmin,
+        mintSC,
+        superAdmin.publicKey
+      ),
+      getOrCreateAssociatedTokenAccount(
+        connection,
+        bondBuyer1,
+        mintB,
+        bondBuyer1.publicKey
+      ),
+      getOrCreateAssociatedTokenAccount(
+        connection,
+        bondBuyer2,
+        mintB,
+        bondBuyer2.publicKey
+      ),
+      getOrCreateAssociatedTokenAccount(
+        connection,
+        resaleBuyer1,
+        mintB,
+        resaleBuyer1.publicKey
+      ),
+    ]);
+    await Promise.all([
+      // Airdrop liquditi token to the accounts
+      mintTo(
+        connection,
+        mintAuthSC,
+        mintSC,
+        bondBuyer1ATA_sc.address,
+        mintAuthSC,
+        8888888,
+        [],
+        undefined,
+        TOKEN_PROGRAM_ID
+      ),
 
-    // Initialise bondBuyer ATAs for the liquidity_token
-    bondBuyer1ATA_sc = await getOrCreateAssociatedTokenAccount(
-      provider.connection,
-      bondBuyer1,
-      mintSC,
-      bondBuyer1.publicKey
-    );
+      mintTo(
+        connection,
+        mintAuthSC,
+        mintSC,
+        bondBuyer2ATA_sc.address,
+        mintAuthSC,
+        10000000000000,
+        [],
+        undefined,
+        TOKEN_PROGRAM_ID
+      ),
 
-    bondBuyer2ATA_sc = await getOrCreateAssociatedTokenAccount(
-      provider.connection,
-      bondBuyer2,
-      mintSC,
-      bondBuyer2.publicKey
-    );
-
-    resaleBuyer1ATA_sc = await getOrCreateAssociatedTokenAccount(
-      provider.connection,
-      resaleBuyer1,
-      mintSC,
-      resaleBuyer1.publicKey
-    );
-
-    iboAdminATA_sc = await getOrCreateAssociatedTokenAccount(
-      provider.connection,
-      adminIbo0,
-      mintSC,
-      adminIbo0.publicKey
-    );
-
-    adminIbo0ATA_sc = await getOrCreateAssociatedTokenAccount(
-      provider.connection,
-      adminIbo0,
-      mintSC,
-      adminIbo0.publicKey
-    );
-
-    masterRecipientATA_sc = await getOrCreateAssociatedTokenAccount(
-      provider.connection,
-      superAdmin,
-      mintSC,
-      superAdmin.publicKey
-    );
-
-    // Initialise  ATAs for the bond token
-    bondBuyer1ATA_b = await getOrCreateAssociatedTokenAccount(
-      provider.connection,
-      bondBuyer1,
-      mintB,
-      bondBuyer1.publicKey
-    );
-
-    bondBuyer2ATA_b = await getOrCreateAssociatedTokenAccount(
-      provider.connection,
-      bondBuyer2,
-      mintB,
-      bondBuyer2.publicKey
-    );
-
-    resaleBuyer1ATA_b = await getOrCreateAssociatedTokenAccount(
-      provider.connection,
-      resaleBuyer1,
-      mintB,
-      resaleBuyer1.publicKey
-    );
-
-    // Airdrop liquditi token to the accounts
-    await mintTo(
-      provider.connection,
-      mintAuthSC,
-      mintSC,
-      bondBuyer1ATA_sc.address,
-      mintAuthSC,
-      8888888,
-      [],
-      undefined,
-      TOKEN_PROGRAM_ID
-    );
-
-    await mintTo(
-      provider.connection,
-      mintAuthSC,
-      mintSC,
-      bondBuyer2ATA_sc.address,
-      mintAuthSC,
-      10000000000000,
-      [],
-      undefined,
-      TOKEN_PROGRAM_ID
-    );
-
-    await mintTo(
-      provider.connection,
-      mintAuthSC,
-      mintSC,
-      resaleBuyer1ATA_sc.address,
-      mintAuthSC,
-      10000000000,
-      [],
-      undefined,
-      TOKEN_PROGRAM_ID
-    );
+      mintTo(
+        connection,
+        mintAuthSC,
+        mintSC,
+        resaleBuyer1ATA_sc.address,
+        mintAuthSC,
+        10000000000,
+        [],
+        undefined,
+        TOKEN_PROGRAM_ID
+      ),
+    ]);
 
     // Pre mint 2 NFTs and give one to buyer 1
 
-    metaplex = new Metaplex(provider.connection);
-    metaplex.use(keypairIdentity(nftWallet));
-
     const { nft } = await metaplex.nfts().create({
       uri: "https://arweave.net/123",
-      name: "CUNT",
+      name: "TESSSSST",
       sellerFeeBasisPoints: 500,
       maxSupply: toBigNumber(5),
       isMutable: false,
@@ -333,30 +314,17 @@ describe("dark-bonds", async () => {
       nftMasteEdition_account.toBase58()
     );
 
-    const { nft: printedNft } = await metaplex.nfts().printNewEdition({
-      originalMint: nft.mint.address,
-    });
-
-    console.log("\n\nnft2: \n", nft);
-
-    // nftWallet;
-
-    // masterKey = nft.creators[0].address;
-    // collectionKey = nft.creators[0].address;
-
     // Address for NFT
     bondBuyer2ATA_nft = await getOrCreateAssociatedTokenAccount(
-      provider.connection,
+      connection,
       bondBuyer2,
       mintKey,
       bondBuyer2.publicKey
     );
-
-    // Need to transfer the NFT
   });
 
   it("Main register initialised!", async () => {
-    [mainIbo] = await PublicKey.findProgramAddress(
+    [mainIbo] = PublicKey.findProgramAddressSync(
       [Buffer.from("main_register")],
       bondProgram.programId
     );
@@ -388,7 +356,7 @@ describe("dark-bonds", async () => {
     console.log("ibo_index at ibo make: ", ibo_index);
 
     // Derive ibo pda for counter 0
-    [ibo0] = await PublicKey.findProgramAddress(
+    [ibo0] = PublicKey.findProgramAddressSync(
       [
         Buffer.from("ibo_instance"),
         new BN(ibo_index).toArrayLike(Buffer, "be", 8),
@@ -397,7 +365,7 @@ describe("dark-bonds", async () => {
     );
 
     ibo0ATA_b = await getOrCreateAssociatedTokenAccount(
-      provider.connection,
+      connection,
       adminIbo0,
       mintB,
       ibo0,
@@ -405,7 +373,7 @@ describe("dark-bonds", async () => {
     );
 
     await mintTo(
-      provider.connection,
+      connection,
       mintAuthB,
       mintB,
       ibo0ATA_b.address,
@@ -418,9 +386,9 @@ describe("dark-bonds", async () => {
 
     const tx = await bondProgram.methods
       .createIbo(
-        new anchor.BN(exchangeRate),
-        new anchor.BN(liveDate),
-        new anchor.BN(liveDate + 100000), // Can buy bonds until that point in the future
+        new BN(exchangeRate),
+        new BN(liveDate),
+        new BN(liveDate + 100000), // Can buy bonds until that point in the future
         swapCut,
         mintSC,
         adminIbo0.publicKey
@@ -437,7 +405,7 @@ describe("dark-bonds", async () => {
 
   it("Add three different lockups.", async () => {
     // Derive lock up PDAs for 1,2,3
-    [lockUp0PDA] = await PublicKey.findProgramAddress(
+    [lockUp0PDA] = PublicKey.findProgramAddressSync(
       [
         Buffer.from("lockup"),
         Buffer.from(ibo0.toBytes()),
@@ -446,7 +414,7 @@ describe("dark-bonds", async () => {
       bondProgram.programId
     );
     lockup_counter += 1;
-    [lockUp1PDA] = await PublicKey.findProgramAddress(
+    [lockUp1PDA] = PublicKey.findProgramAddressSync(
       [
         Buffer.from("lockup"),
         Buffer.from(ibo0.toBytes()),
@@ -455,7 +423,7 @@ describe("dark-bonds", async () => {
       bondProgram.programId
     );
     lockup_counter += 1;
-    [lockUp2PDA] = await PublicKey.findProgramAddress(
+    [lockUp2PDA] = PublicKey.findProgramAddressSync(
       [
         Buffer.from("lockup"),
         Buffer.from(ibo0.toBytes()),
@@ -465,8 +433,8 @@ describe("dark-bonds", async () => {
     );
     lockup_counter += 1;
     let lockUp0Instruction = bondProgram.instruction.addLockup(
-      new anchor.BN(lockUp0Period),
-      new anchor.BN(lockUp0Apy),
+      new BN(lockUp0Period),
+      new BN(lockUp0Apy),
       {
         accounts: {
           admin: adminIbo0.publicKey,
@@ -477,8 +445,8 @@ describe("dark-bonds", async () => {
       }
     );
     let lockUp1Instruction = bondProgram.instruction.addLockup(
-      new anchor.BN(lockUp1Period),
-      new anchor.BN(lockUp1Apy),
+      new BN(lockUp1Period),
+      new BN(lockUp1Apy),
       {
         accounts: {
           admin: adminIbo0.publicKey,
@@ -489,8 +457,8 @@ describe("dark-bonds", async () => {
       }
     );
     let lockUp2Instruction = bondProgram.instruction.addLockup(
-      new anchor.BN(lockUp2Period),
-      new anchor.BN(lockUp2Apy),
+      new BN(lockUp2Period),
+      new BN(lockUp2Apy),
       {
         accounts: {
           admin: adminIbo0.publicKey,
@@ -517,7 +485,7 @@ describe("dark-bonds", async () => {
 
   it("Add gated lockup.", async () => {
     // Add lock-up PDA
-    [lockUp3PDA] = await PublicKey.findProgramAddress(
+    [lockUp3PDA] = PublicKey.findProgramAddressSync(
       [
         Buffer.from("lockup"),
         Buffer.from(ibo0.toBytes()),
@@ -527,7 +495,7 @@ describe("dark-bonds", async () => {
     );
 
     const tx = await bondProgram.methods
-      .addLockup(new anchor.BN(lockUp3Period), new anchor.BN(lockUp3Apy))
+      .addLockup(new BN(lockUp3Period), new BN(lockUp3Apy))
       .accounts({
         admin: adminIbo0.publicKey,
         ibo: ibo0,
@@ -540,7 +508,7 @@ describe("dark-bonds", async () => {
     lockup_counter += 1;
 
     // ADdd PDA for gating details
-    [lockUp3Gate] = await PublicKey.findProgramAddress(
+    [lockUp3Gate] = PublicKey.findProgramAddressSync(
       [
         Buffer.from("gate"),
         Buffer.from(ibo0.toBytes()),
@@ -582,7 +550,7 @@ describe("dark-bonds", async () => {
     masterBalance = await getTokenBalance(masterRecipientATA_sc);
 
     // Derive bond from latest counter instance
-    [bond0] = await PublicKey.findProgramAddress(
+    [bond0] = PublicKey.findProgramAddressSync(
       [
         Buffer.from("bond"),
         Buffer.from(ibo0.toBytes()),
@@ -593,7 +561,7 @@ describe("dark-bonds", async () => {
 
     // Get ATA for bond0 PDA
     bond0ATA_b = await getOrCreateAssociatedTokenAccount(
-      provider.connection,
+      connection,
       bondBuyer1,
       mintB,
       bond0,
@@ -604,7 +572,7 @@ describe("dark-bonds", async () => {
 
     // Spend 500 for rate 1 as player 1
     const tx_lu1 = await bondProgram.methods
-      .buyBond(0, new anchor.BN(ibo_index), new anchor.BN(purchaseAmount))
+      .buyBond(0, new BN(ibo_index), new BN(purchaseAmount))
       .accounts({
         buyer: bondBuyer1.publicKey,
         bond: bond0,
@@ -652,7 +620,7 @@ describe("dark-bonds", async () => {
 
   it("Buyer 2 deposits funds at a rate 2", async () => {
     // Derive bond from latest counter instance
-    [bond1] = await PublicKey.findProgramAddress(
+    [bond1] = PublicKey.findProgramAddressSync(
       [
         Buffer.from("bond"),
         Buffer.from(ibo0.toBytes()),
@@ -662,7 +630,7 @@ describe("dark-bonds", async () => {
     );
 
     bond1ATA_b = await getOrCreateAssociatedTokenAccount(
-      provider.connection,
+      connection,
       bondBuyer2,
       mintB,
       bond1,
@@ -671,7 +639,7 @@ describe("dark-bonds", async () => {
 
     // Spend 500 for rate 2 as player 2
     const tx_lu1 = await bondProgram.methods
-      .buyBond(1, new anchor.BN(ibo_index), new anchor.BN(purchaseAmount))
+      .buyBond(1, new BN(ibo_index), new BN(purchaseAmount))
       .accounts({
         buyer: bondBuyer2.publicKey,
         bond: bond1,
@@ -719,7 +687,7 @@ describe("dark-bonds", async () => {
 
   it("Buyer 3 deposits funds at a rate 3", async () => {
     // Derive bond from latest counter instance
-    [bond2] = await PublicKey.findProgramAddress(
+    [bond2] = PublicKey.findProgramAddressSync(
       [
         Buffer.from("bond"),
         Buffer.from(ibo0.toBytes()),
@@ -730,7 +698,7 @@ describe("dark-bonds", async () => {
 
     // Get ATA for bond0 PDA
     bond2ATA_b = await getOrCreateAssociatedTokenAccount(
-      provider.connection,
+      connection,
       bondBuyer2,
       mintB,
       bond2,
@@ -739,7 +707,7 @@ describe("dark-bonds", async () => {
 
     // Spend mega amount for rate 3 as player 3
     const tx_lu1 = await bondProgram.methods
-      .buyBond(2, new anchor.BN(ibo_index), new anchor.BN(megaPurchase))
+      .buyBond(2, new BN(ibo_index), new BN(megaPurchase))
       .accounts({
         buyer: bondBuyer2.publicKey,
         bond: bond2,
@@ -903,7 +871,7 @@ describe("dark-bonds", async () => {
     console.log("\n\n\nibo0_state start: ", ibo0_state.bondCounter.toString());
 
     // derive a new bond
-    [bond3] = await PublicKey.findProgramAddress(
+    [bond3] = PublicKey.findProgramAddressSync(
       [
         Buffer.from("bond"),
         Buffer.from(ibo0.toBytes()),
@@ -914,7 +882,7 @@ describe("dark-bonds", async () => {
 
     // Get ATA for bond0 PDA
     bond3ATA_b = await getOrCreateAssociatedTokenAccount(
-      provider.connection,
+      connection,
       bondBuyer2,
       mintB,
       bond3,
@@ -984,7 +952,7 @@ describe("dark-bonds", async () => {
         masterRecipientAta: masterRecipientATA_sc.address,
         sellerAta: bondBuyer2ATA_sc.address,
         ibo: ibo0,
-        iboAdminAta: adminIbo0ATA_sc.address,
+        iboAdminAta: iboAdminATA_sc.address,
         tokenProgram: TOKEN_PROGRAM_ID,
         associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
       })
@@ -1003,7 +971,7 @@ describe("dark-bonds", async () => {
 
     console.log("bond counter: ", ibo0_state.bondCounter);
 
-    [bond4] = await PublicKey.findProgramAddress(
+    [bond4] = PublicKey.findProgramAddressSync(
       [
         Buffer.from("bond"),
         Buffer.from(ibo0.toBytes()),
@@ -1015,7 +983,7 @@ describe("dark-bonds", async () => {
     console.log("bond4 pda address: ", bond4.toBase58());
 
     bond4ATA_b = await getOrCreateAssociatedTokenAccount(
-      provider.connection,
+      connection,
       bondBuyer2,
       mintB,
       bond4,
@@ -1035,7 +1003,7 @@ describe("dark-bonds", async () => {
 
     // Spend 500 for rate 1 as player 1
     const tx_lu1 = await bondProgram.methods
-      .buyBondGated(3, new anchor.BN(ibo_index), new anchor.BN(10000))
+      .buyBondGated(3, new BN(ibo_index), new BN(10000))
       .accounts({
         buyer: bondBuyer2.publicKey,
         bond: bond4,
