@@ -10,6 +10,14 @@ const PURCHASE_CUT: u64 = 500; // equivalent to 5%
 
 // TODO hardcode program ID as it doesn't need to be passed as an account
 
+pub fn mark_end<'info>(vertex: &mut Account<'info, Vertex>, max_depth: u8, this_depth: u8) {
+    msg!("Depth helper");
+    if max_depth == this_depth {
+        msg!("End of line");
+        vertex.end = true;
+    }
+}
+
 pub fn purchase_mechanics<'info>(
     buyer: &Signer<'info>,
     lockup: &Account<'info, Lockup>,
