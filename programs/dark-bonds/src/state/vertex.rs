@@ -1,14 +1,8 @@
 use anchor_lang::prelude::*;
 
-#[derive(Default, Clone, Copy, AnchorSerialize, AnchorDeserialize)]
-pub struct Pointer {
-    address: Pubkey,
-    taken: bool,
-}
-
 #[account]
 pub struct Vertex {
-    end: bool, // true means all pointers are to the baskets
-    idx: u8, // 10 max, counter can be either of
-    data: Vec<Pointer>, // Pointers to either next branch, or Nft basket
+    pub end: bool, // true means all pointers are to the baskets
+    pub sub_idx: u8, // 10 max, counter can be either of
+    pub empty: [u8; 10], // If set as empty can go next one mapping to a counter
 }
