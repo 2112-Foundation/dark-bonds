@@ -1,5 +1,6 @@
 pub mod add_gate;
 pub mod add_lockup;
+pub mod add_tree;
 pub mod buy_bond;
 pub mod buy_bond_gated;
 pub mod buy_swap;
@@ -29,3 +30,4 @@ pub use remove_lockup::*;
 pub use set_swap::*;
 pub use split::*;
 pub use withdraw::*;
+pub use add_tree::*;

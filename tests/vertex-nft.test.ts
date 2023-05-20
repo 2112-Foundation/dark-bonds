@@ -162,6 +162,9 @@ describe("dark-bonds", async () => {
   let metaplex;
   let nft_handle;
 
+  // Tree
+  let tree: PublicKey;
+
   // testing
   let bond_counter = 0;
   let lockup_counter = 0;
@@ -432,6 +435,29 @@ describe("dark-bonds", async () => {
       .accounts({
         master: mainIbo,
         admin: adminIbo0.publicKey,
+        ibo: ibo0,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .signers([adminIbo0])
+      .rpc();
+  });
+
+  it("Add tree to the bond offering", async () => {
+    // derive tree index
+    [tree] = await PublicKey.findProgramAddress(
+      [
+        Buffer.from("tree"),
+        Buffer.from(ibo0.toBytes()),
+        new BN(0).toArrayLike(Buffer, "be", 1),
+      ],
+      bondProgram.programId
+    );
+
+    const tx = await bondProgram.methods
+      .addTree(0, 0, 2)
+      .accounts({
+        admin: adminIbo0.publicKey,
+        tree: tree,
         ibo: ibo0,
         systemProgram: anchor.web3.SystemProgram.programId,
       })
