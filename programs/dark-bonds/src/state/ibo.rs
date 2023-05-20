@@ -28,4 +28,6 @@ pub struct Ibo {
 
     pub lockup_counter: u32, // TODO Can definitaly reduce this one
     pub bond_counter: u32,
+    pub nft_counter: u32, // TODO ned to also lock withdrawl of NFTs until its over
+    pub nft_base_price: u64, // TODO needs to be loaded
 }

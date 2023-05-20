@@ -2268,6 +2268,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "vectorised"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang 0.27.0",
+ "anchor-spl",
+]
+
+[[package]]
 name = "version_check"
 version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"

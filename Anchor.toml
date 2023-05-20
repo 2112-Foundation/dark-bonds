@@ -3,6 +3,7 @@ seeds = false
 skip-lint = false
 [programs.localnet]
 dark_bonds = "H7zcGXtV7Fo1JkhxJ4hao7ZkLpAqzBTkQySAUbVxnLj7"
+vectorised = "457eHNDfL1YTWcGFrdksApV4bo961zBuKvsnEhz16ev3"
 
 [registry]
 url = "https://api.apr.dev"
@@ -13,4 +14,5 @@ wallet = "/Users/wincentdulkowski/.config/solana/id.json"
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/dark-bonds.ts"
+vec = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/vectorised.ts"
 mint = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/mint-test.ts"
