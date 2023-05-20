@@ -135,17 +135,36 @@ pub mod dark_bonds {
         ctx: Context<AddVertex0>,
         ibo_idx: u32,
         tree_idx: u8,
-        vertex_idx: u8
+        vertex_idx_0: u8
     ) -> Result<()> {
-        instructions::add_vertex::add_vertex0(ctx, ibo_idx, tree_idx, vertex_idx)
+        instructions::add_vertex::add_vertex0(ctx, ibo_idx, tree_idx, vertex_idx_0)
     }
 
     pub fn add_vertex1(
         ctx: Context<AddVertex1>,
         ibo_idx: u32,
         tree_idx: u8,
-        vertex_idx: u8
+        vertex_idx_0: u8,
+        vertex_idx_1: u8
     ) -> Result<()> {
-        instructions::add_vertex::add_vertex1(ctx, ibo_idx, tree_idx, vertex_idx)
+        instructions::add_vertex::add_vertex1(ctx, ibo_idx, tree_idx, vertex_idx_0, vertex_idx_1)
+    }
+
+    pub fn add_vertex2(
+        ctx: Context<AddVertex2>,
+        ibo_idx: u32,
+        tree_idx: u8,
+        vertex_idx_0: u8,
+        vertex_idx_1: u8,
+        vertex_idx_2: u8
+    ) -> Result<()> {
+        instructions::add_vertex::add_vertex2(
+            ctx,
+            ibo_idx,
+            tree_idx,
+            vertex_idx_0,
+            vertex_idx_1,
+            vertex_idx_2
+        )
     }
 }
