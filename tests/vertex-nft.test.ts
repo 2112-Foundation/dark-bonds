@@ -164,6 +164,7 @@ describe("dark-bonds", async () => {
 
   // Tree
   let tree: PublicKey;
+  let vertex: PublicKey;
 
   // testing
   let bond_counter = 0;
@@ -457,6 +458,35 @@ describe("dark-bonds", async () => {
       .addTree(0, 0, 2)
       .accounts({
         admin: adminIbo0.publicKey,
+        tree: tree,
+        ibo: ibo0,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .signers([adminIbo0])
+      .rpc();
+  });
+
+  it("Add vertex to the tree", async () => {
+    // "vertex".as_bytes(),
+    // ibo.key().as_ref(),
+    // &tree_idx.to_be_bytes(),
+    // &vertex_idx.to_be_bytes(),
+
+    [vertex] = await PublicKey.findProgramAddress(
+      [
+        Buffer.from("vertex"),
+        Buffer.from(ibo0.toBytes()),
+        new BN(0).toArrayLike(Buffer, "be", 1),
+        new BN(0).toArrayLike(Buffer, "be", 1),
+      ],
+      bondProgram.programId
+    );
+
+    const tx = await bondProgram.methods
+      .addVertex(0, 0, 0)
+      .accounts({
+        admin: adminIbo0.publicKey,
+        vertex: vertex,
         tree: tree,
         ibo: ibo0,
         systemProgram: anchor.web3.SystemProgram.programId,

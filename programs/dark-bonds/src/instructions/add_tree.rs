@@ -22,7 +22,7 @@ pub struct AddTree<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn add_tree(ctx: Context<AddTree>, _ibo_idx: u32, _tree_idx: u32, depth: u8) -> Result<()> {
+pub fn add_tree(ctx: Context<AddTree>, _ibo_idx: u32, _tree_idx: u8, depth: u8) -> Result<()> {
     let tree: &mut Account<Tree> = &mut ctx.accounts.tree;
     let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
 

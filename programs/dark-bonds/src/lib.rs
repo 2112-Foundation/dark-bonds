@@ -127,7 +127,16 @@ pub mod dark_bonds {
         instructions::buy_swap::buy_swap(ctx)
     }
 
-    pub fn add_tree(ctx: Context<AddTree>, ibo_idx: u32, tree_idx: u32, depth: u8) -> Result<()> {
+    pub fn add_tree(ctx: Context<AddTree>, ibo_idx: u32, tree_idx: u8, depth: u8) -> Result<()> {
         instructions::add_tree::add_tree(ctx, ibo_idx, tree_idx, depth)
+    }
+
+    pub fn add_vertex(
+        ctx: Context<AddVertex>,
+        ibo_idx: u32,
+        tree_idx: u8,
+        vertex_idx: u8
+    ) -> Result<()> {
+        instructions::add_vertex::add_vertex(ctx, ibo_idx, tree_idx, vertex_idx)
     }
 }
