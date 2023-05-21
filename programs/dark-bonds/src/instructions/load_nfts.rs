@@ -37,12 +37,14 @@ pub fn load_nfts(
     vertex_idx_2: u8,
     nft_basket_idx: u8
 ) -> Result<()> {
-    // let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
+    let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
     let tree: &mut Account<Tree> = &mut ctx.accounts.tree;
 
     // Extract tree depth, this will be to get the x first loaded accoutns
 
     // Loop over vertices and verify them
+
+    let y = ibo.key();
 
     let accounts: &mut Vec<AccountInfo> = &mut ctx.remaining_accounts.to_vec();
     msg!("accounts length: {:?}", accounts.len());
@@ -61,11 +63,13 @@ pub fn load_nfts(
         .map(|account_info| account_info.key)
         .collect();
 
+    let vertex_idx_vec: Vec<u8> = vec![vertex_idx_0, vertex_idx_1, vertex_idx_2];
+
     recursive_pda_derivation(
+        &ibo.key().clone(),
+        &tree.key().clone(),
+        vertex_idx_vec,
         tree_idx,
-        vertex_idx_0,
-        vertex_idx_1,
-        vertex_idx_2,
         0,
         ver,
         &ctx.program_id
