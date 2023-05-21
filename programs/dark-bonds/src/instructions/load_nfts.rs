@@ -67,7 +67,9 @@ pub fn load_nfts<'a, 'b, 'c, 'd: 'a + 'e, 'e: 'a + 'd>(
     // Needs to be divisible by 3
     // require!(rest_vec.len() % 3 == 0, ErrorCode::IncorrectRatioRemaining);
 
-    for i in (0..rest_vec.len()).step_by(3) {
+    msg!("ATAs size: {:?}", rest_vec.len());
+
+    for i in (0..rest_vec.len()).step_by(2) {
         // let from_ata: Account<TokenAccount> = Account::try_from(&rest_vec[i])?;
         // let to_ata: Account<TokenAccount> = Account::try_from(&rest_vec[i + 1])?;
         let admin_account_info = ctx.accounts.admin.to_account_info().clone();

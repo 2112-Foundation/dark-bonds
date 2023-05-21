@@ -664,33 +664,35 @@ describe("dark-bonds", async () => {
       nftBasket
     );
 
-    console.log("ata_s: ", ata_s[0]);
-    console.log("ata_s[0].address", ata_s[0][0].address);
+    // console.log("ata_s: ", ata_s[0]);
+    // console.log("ata_s[0].address", ata_s[0][0].address);
 
-    try {
-      const tx = await bondProgram.methods
-        .loadNfts(0, 0, 0, 0, 0, 0)
-        .accounts({
-          admin: adminIbo0.publicKey,
-          nftBasket: nftBasket,
-          vertex0: vertex0,
-          vertex1: vertex1,
-          vertex2: vertex2,
-          tree: tree,
-          ibo: ibo0,
-          systemProgram: anchor.web3.SystemProgram.programId,
-        })
-        .remainingAccounts([
-          { pubkey: vertex0, isWritable: false, isSigner: false },
-          { pubkey: vertex1, isWritable: false, isSigner: false },
-          { pubkey: vertex2, isWritable: false, isSigner: false },
-          { pubkey: ata_s[0][0].address, isWritable: true, isSigner: false },
-          { pubkey: ata_s[0][1].address, isWritable: true, isSigner: false },
-        ])
-        .signers([adminIbo0])
-        .rpc();
-    } catch (err) {
-      console.log(err);
-    }
+    const tx = await bondProgram.methods
+      .loadNfts(0, 0, 0, 0, 0, 0)
+      .accounts({
+        admin: adminIbo0.publicKey,
+        nftBasket: nftBasket,
+        vertex0: vertex0,
+        vertex1: vertex1,
+        vertex2: vertex2,
+        tree: tree,
+        ibo: ibo0,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .remainingAccounts([
+        { pubkey: vertex0, isWritable: false, isSigner: false },
+        { pubkey: vertex1, isWritable: false, isSigner: false },
+        { pubkey: vertex2, isWritable: false, isSigner: false },
+        { pubkey: ata_s[0][0].address, isWritable: true, isSigner: false },
+        { pubkey: ata_s[0][1].address, isWritable: true, isSigner: false },
+        { pubkey: ata_s[1][0].address, isWritable: true, isSigner: false },
+        { pubkey: ata_s[1][1].address, isWritable: true, isSigner: false },
+        { pubkey: ata_s[2][0].address, isWritable: true, isSigner: false },
+        { pubkey: ata_s[2][1].address, isWritable: true, isSigner: false },
+        { pubkey: ata_s[3][0].address, isWritable: true, isSigner: false },
+        { pubkey: ata_s[3][1].address, isWritable: true, isSigner: false },
+      ])
+      .signers([adminIbo0])
+      .rpc();
   });
 });
