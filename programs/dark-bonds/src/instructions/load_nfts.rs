@@ -37,11 +37,14 @@ pub fn load_nfts(
     vertex_idx_2: u8,
     nft_basket_idx: u8
 ) -> Result<()> {
+    msg!("initialising nft basket");
+
     let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
     let tree: &mut Account<Tree> = &mut ctx.accounts.tree;
 
     let accounts: &mut Vec<AccountInfo> = &mut ctx.remaining_accounts.to_vec();
 
+    // TODO maybe make it larger than since need at least 3 acounts afterwards for this function to be useful
     require!((accounts.len() as u8) >= tree.depth, ErrorCode::MissingVertexAccount);
     msg!("accounts length: {:?}", accounts.len());
     msg!("tree.depth : {:?}", tree.depth);
@@ -66,8 +69,6 @@ pub fn load_nfts(
         ver,
         &ctx.program_id
     )?;
-
-    msg!("initialising nft basket");
 
     Ok(())
 }

@@ -62,8 +62,6 @@ pub fn recursive_pda_derivation(
     };
 
     let (derived_address, _) = Pubkey::find_program_address(&seeds, program_id);
-    //
-    // Uncomment the following line to enable validation
     require!(vertices[current_depth as usize] == &derived_address, ErrorCode::WrongVertexAccount);
 
     msg!("Provided address: {}", vertices[current_depth as usize]);
@@ -81,13 +79,8 @@ pub fn recursive_pda_derivation(
             current_depth + 1,
             vertices,
             program_id
-        )?;
+        )
     }
-
-    // msg!("Provided address: {}", vertices[current_depth as usize]);
-    // msg!("Derived address: {}", derived_address);
-
-    Ok(())
 }
 
 pub fn mark_end<'info>(vertex: &mut Account<'info, Vertex>, max_depth: u8, this_depth: u8) {
