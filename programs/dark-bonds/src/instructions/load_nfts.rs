@@ -17,12 +17,12 @@ pub struct LoadNfts<'info> {
     pub tree: Box<Account<'info, Tree>>,
     #[account(mut)]
     pub nft_basket: Box<Account<'info, NftBasket>>,
-    #[account(mut)]
-    pub vertex0: Box<Account<'info, Vertex>>,
-    #[account(mut)]
-    pub vertex1: Box<Account<'info, Vertex>>,
-    #[account(mut)]
-    pub vertex2: Box<Account<'info, Vertex>>,
+    // #[account(mut)]
+    // pub vertex0: Box<Account<'info, Vertex>>,
+    // #[account(mut)]
+    // pub vertex1: Box<Account<'info, Vertex>>,
+    // #[account(mut)]
+    // pub vertex2: Box<Account<'info, Vertex>>,
     pub system_program: Program<'info, System>,
 }
 
@@ -40,23 +40,15 @@ pub fn load_nfts(
     let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
     let tree: &mut Account<Tree> = &mut ctx.accounts.tree;
 
-    // Extract tree depth, this will be to get the x first loaded accoutns
-
-    // Loop over vertices and verify them
-
-    let y = ibo.key();
-
     let accounts: &mut Vec<AccountInfo> = &mut ctx.remaining_accounts.to_vec();
+
+    require!((accounts.len() as u8) >= tree.depth, ErrorCode::MissingVertexAccount);
     msg!("accounts length: {:?}", accounts.len());
     msg!("tree.depth : {:?}", tree.depth);
-    let (vertices, rest) = accounts.split_at(tree.depth as usize);
+    let (vertices, rest) = accounts.split_at((tree.depth as usize) + 1); // TODO needs to be unified what depth is
 
     let vertices_vec: Vec<AccountInfo> = vertices.to_vec();
     let rest_vec: Vec<AccountInfo> = rest.to_vec();
-
-    // // Loop over vertices to assert correct derivation
-    // // for (idx, vertex) in vertices_vec.iter().enumerate() {
-    // // }
 
     let ver: Vec<&Pubkey> = vertices_vec
         .into_iter()

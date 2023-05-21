@@ -37,4 +37,6 @@ pub enum ErrorCode {
     InvalidRecursiveIdx,
     #[msg("Provided wrong vertex")]
     WrongVertexAccount,
+    #[msg("Provided wrong number of vertex accounts")]
+    MissingVertexAccount,
 }

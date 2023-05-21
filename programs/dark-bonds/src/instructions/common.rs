@@ -24,6 +24,9 @@ pub fn recursive_pda_derivation(
         .map(|&idx| [idx])
         .collect();
 
+    msg!("current_depth: {:?}", current_depth);
+    msg!("vertices length: {:?}", vertices.len());
+
     // Define the seeds based on current_depth
     let seeds: Vec<&[u8]> = match current_depth {
         0 =>
@@ -58,11 +61,10 @@ pub fn recursive_pda_derivation(
         }
     };
 
-    let derived_address = Pubkey::create_program_address(&seeds, program_id).unwrap();
     let (derived_address, _) = Pubkey::find_program_address(&seeds, program_id);
     //
     // Uncomment the following line to enable validation
-    // require!(vertices[current_depth as usize] == &derived_address, ErrorCode::WrongVertexAccount);
+    require!(vertices[current_depth as usize] == &derived_address, ErrorCode::WrongVertexAccount);
 
     msg!("Provided address: {}", vertices[current_depth as usize]);
     msg!("Derived address: {}", derived_address);
