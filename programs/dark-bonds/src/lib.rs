@@ -167,4 +167,24 @@ pub mod dark_bonds {
             vertex_idx_2
         )
     }
+
+    pub fn add_nft_basket2(
+        ctx: Context<AddNftBasket2>,
+        ibo_idx: u32,
+        tree_idx: u8,
+        vertex_idx_0: u8,
+        vertex_idx_1: u8,
+        vertex_idx_2: u8,
+        nft_basket_idx: u8
+    ) -> Result<()> {
+        instructions::add_nft_basket::add_nft_basket2(
+            ctx,
+            ibo_idx,
+            tree_idx,
+            vertex_idx_0,
+            vertex_idx_1,
+            vertex_idx_2,
+            nft_basket_idx
+        )
+    }
 }

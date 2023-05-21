@@ -11,7 +11,7 @@ const PURCHASE_CUT: u64 = 500; // equivalent to 5%
 // TODO hardcode program ID as it doesn't need to be passed as an account
 
 pub fn mark_end<'info>(vertex: &mut Account<'info, Vertex>, max_depth: u8, this_depth: u8) {
-    msg!("Depth helper");
+    msg!("Depth helper\n\tthis depth: {:?}\n\tmax_depth {:?}", this_depth, max_depth);
     if max_depth == this_depth {
         msg!("End of line");
         vertex.end = true;

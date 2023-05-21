@@ -27,6 +27,7 @@ pub fn add_tree(ctx: Context<AddTree>, _ibo_idx: u32, _tree_idx: u8, depth: u8) 
     let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
 
     // Increment individuall tree counter and set depth
+    msg!("setting tree depth of: {:?}", depth);
     ibo.tree_counter += 1;
     tree.depth = depth;
 

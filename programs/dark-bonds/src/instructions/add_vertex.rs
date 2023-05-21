@@ -1,9 +1,6 @@
 use crate::state::*;
 use crate::errors::errors::ErrorCode;
 use anchor_lang::prelude::*;
-use anchor_spl::token::{ self, Token, TokenAccount, Transfer };
-use switchboard_v2::VrfAccountData;
-
 use super::common::mark_end;
 
 // For adding the FIRST level
@@ -112,7 +109,7 @@ pub fn add_vertex1(
 
     Ok(())
 }
-// For adding the FIRST level
+// For adding the THIRD level
 #[derive(Accounts)]
 #[instruction(ibo_idx: u32, tree_idx: u8, vertex_idx_0: u8, vertex_idx_1: u8, vertex_idx_2: u8)]
 pub struct AddVertex2<'info> {

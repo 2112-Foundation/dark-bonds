@@ -167,6 +167,7 @@ describe("dark-bonds", async () => {
   let vertex0: PublicKey;
   let vertex1: PublicKey;
   let vertex2: PublicKey;
+  let nftBasket: PublicKey;
 
   // testing
   let bond_counter = 0;
@@ -457,7 +458,7 @@ describe("dark-bonds", async () => {
     );
 
     const tx = await bondProgram.methods
-      .addTree(0, 0, 1)
+      .addTree(0, 0, 2)
       .accounts({
         admin: adminIbo0.publicKey,
         tree: tree,
@@ -537,6 +538,37 @@ describe("dark-bonds", async () => {
       .addVertex2(0, 0, 0, 0, 0)
       .accounts({
         admin: adminIbo0.publicKey,
+        vertex0: vertex0,
+        vertex1: vertex1,
+        vertex2: vertex2,
+        tree: tree,
+        ibo: ibo0,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .signers([adminIbo0])
+      .rpc();
+  });
+
+  it("Add nft basket to the tree vertex 2", async () => {
+    [nftBasket] = await PublicKey.findProgramAddress(
+      [
+        Buffer.from("nft_basket"),
+        Buffer.from(ibo0.toBytes()),
+        new BN(0).toArrayLike(Buffer, "be", 1),
+        Buffer.from(tree.toBytes()),
+        Buffer.from(vertex0.toBytes()),
+        Buffer.from(vertex1.toBytes()),
+        Buffer.from(vertex2.toBytes()),
+        new BN(0).toArrayLike(Buffer, "be", 1),
+      ],
+      bondProgram.programId
+    );
+
+    const tx = await bondProgram.methods
+      .addNftBasket2(0, 0, 0, 0, 0, 0)
+      .accounts({
+        admin: adminIbo0.publicKey,
+        nftBasket: nftBasket,
         vertex0: vertex0,
         vertex1: vertex1,
         vertex2: vertex2,
