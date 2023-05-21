@@ -64,6 +64,48 @@ describe("dark-bonds", async () => {
     }
   }
 
+  async function createATAsForMints(mintKeys, senderKey, recipientKey) {
+    // const senderPublicKey = new PublicKey(senderKey);
+    // const recipientPublicKey = new PublicKey(recipientKey);
+
+    console.log("number of distinct mints: ", mintKeys.length);
+    const atAs = [];
+
+    for (let i = 0; i < mintKeys.length; i++) {
+      const mintPublicKey = new PublicKey(mintKeys[i]);
+
+      // Create sender ATA
+      const recipientATA = await getOrCreateAssociatedTokenAccount(
+        provider.connection,
+        bondBuyer2,
+        mintPublicKey,
+        recipientKey,
+        true
+      );
+
+      const senderATA = await getOrCreateAssociatedTokenAccount(
+        provider.connection,
+        bondBuyer2,
+        mintPublicKey,
+        senderKey,
+        true
+      );
+
+      // Push the sender and recipient ATA for the mint to the array
+      atAs.push([senderATA, recipientATA]);
+      console.log("pushed");
+    }
+    console.log("returning");
+    return atAs;
+  }
+
+  //   const toATA = await Token.getAssociatedTokenAddress(
+  //     Token.getAssociatedTokenAccountProgramId(),
+  //     TOKEN_PROGRAM_ID,
+  //     mintPublicKey,
+  //     toOwnerPublicKey
+  // );
+
   console.log("|EHEHHEEHEH");
 
   const bondProgram = anchor.workspace.DarkBonds as Program<DarkBonds>;
@@ -130,6 +172,9 @@ describe("dark-bonds", async () => {
   let purchaseAmount = 500;
   let bond1ResalePrice = 100000;
   let megaPurchase = 100000000;
+
+  let mintAddresses = []; // Array to store mint addresses
+  let handles = [];
 
   // Lock ups
   let lockUp0PDA: PublicKey;
@@ -370,9 +415,6 @@ describe("dark-bonds", async () => {
       bondBuyer2.publicKey
     );
 
-    let mintAddresses = []; // Array to store mint addresses
-    let handles = [];
-
     for (let step = 0; step < 8; step++) {
       console.log("loop: ", step);
 
@@ -388,11 +430,12 @@ describe("dark-bonds", async () => {
         nftOrSft: printedNft,
         authority: nftWallet,
         fromOwner: nftWallet.publicKey,
-        toOwner: bondBuyer2.publicKey,
+        toOwner: adminIbo0.publicKey,
         amount: token(1),
       });
 
       // Add the mint address of the new edition to the array
+      mintAddresses.push(printedNft.mint.address);
     }
 
     console.log("all mint addresses: ", mintAddresses);
@@ -615,6 +658,15 @@ describe("dark-bonds", async () => {
   });
 
   it("Load NFTs to a basket", async () => {
+    let ata_s = await createATAsForMints(
+      mintAddresses,
+      adminIbo0.publicKey,
+      nftBasket
+    );
+
+    console.log("ata_s: ", ata_s[0]);
+    console.log("ata_s[0].address", ata_s[0][0].address);
+
     try {
       const tx = await bondProgram.methods
         .loadNfts(0, 0, 0, 0, 0, 0)
@@ -632,6 +684,8 @@ describe("dark-bonds", async () => {
           { pubkey: vertex0, isWritable: false, isSigner: false },
           { pubkey: vertex1, isWritable: false, isSigner: false },
           { pubkey: vertex2, isWritable: false, isSigner: false },
+          { pubkey: ata_s[0][0].address, isWritable: true, isSigner: false },
+          { pubkey: ata_s[0][1].address, isWritable: true, isSigner: false },
         ])
         .signers([adminIbo0])
         .rpc();

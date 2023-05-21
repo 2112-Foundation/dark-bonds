@@ -80,6 +80,8 @@ pub fn load_nfts<'a, 'b, 'c, 'd: 'a + 'e, 'e: 'a + 'd>(
             }),
             1
         )?;
+
+        msg!("transfered NFT");
     }
 
     // Increment the counter
