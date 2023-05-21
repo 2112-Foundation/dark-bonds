@@ -39,6 +39,7 @@ pub fn load_nfts<'a, 'b, 'c, 'd: 'a + 'e, 'e: 'a + 'd>(
     let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
     let tree: &mut Account<Tree> = &mut ctx.accounts.tree;
     let token_program: &Program<Token> = &ctx.accounts.token_program;
+    let nft_basket: &mut Account<NftBasket> = &mut ctx.accounts.nft_basket;
 
     let accounts: &mut Vec<AccountInfo> = &mut ctx.remaining_accounts.to_vec();
 
@@ -64,16 +65,13 @@ pub fn load_nfts<'a, 'b, 'c, 'd: 'a + 'e, 'e: 'a + 'd>(
         &ctx.program_id
     )?;
 
-    // Needs to be divisible by 3
-    // require!(rest_vec.len() % 3 == 0, ErrorCode::IncorrectRatioRemaining);
+    // Needs to be divisible by 2
+    require!(rest_vec.len() % 2 == 0, ErrorCode::IncorrectRatioRemaining);
 
     msg!("ATAs size: {:?}", rest_vec.len());
 
     for i in (0..rest_vec.len()).step_by(2) {
-        // let from_ata: Account<TokenAccount> = Account::try_from(&rest_vec[i])?;
-        // let to_ata: Account<TokenAccount> = Account::try_from(&rest_vec[i + 1])?;
         let admin_account_info = ctx.accounts.admin.to_account_info().clone();
-
         token::transfer(
             CpiContext::new(ctx.accounts.token_program.to_account_info(), Transfer {
                 from: rest_vec[i].clone(),
@@ -82,12 +80,11 @@ pub fn load_nfts<'a, 'b, 'c, 'd: 'a + 'e, 'e: 'a + 'd>(
             }),
             1
         )?;
-
         msg!("transfered NFT");
     }
 
     // Increment the counter
-
+    nft_basket.fill_idx += rest_vec.len() as u16;
     Ok(())
 }
 

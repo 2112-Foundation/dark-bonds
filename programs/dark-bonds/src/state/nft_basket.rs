@@ -2,8 +2,8 @@ use anchor_lang::prelude::*;
 
 #[account]
 pub struct NftBasket {
-    fill_idx: u16,
-    data: Vec<NftEntry>, //; 300],
+    pub fill_idx: u16,
+    pub data: Vec<NftEntry>, //; 300],
 }
 
 impl NftBasket {
