@@ -371,6 +371,7 @@ describe("dark-bonds", async () => {
     );
 
     let mintAddresses = []; // Array to store mint addresses
+    let handles = [];
 
     for (let step = 0; step < 8; step++) {
       console.log("loop: ", step);
@@ -379,6 +380,8 @@ describe("dark-bonds", async () => {
       const { nft: printedNft } = await metaplex.nfts().printNewEdition({
         originalMint: nft.mint.address,
       });
+
+      handles.push(printedNft);
 
       // Transfer NFT
       await metaplex.nfts().transfer({
@@ -393,10 +396,7 @@ describe("dark-bonds", async () => {
     }
 
     console.log("all mint addresses: ", mintAddresses);
-
-    process.exit();
-
-    // Need to transfer the NFT
+    console.log("all handles: ", handles);
   });
 
   it("Main register initialised!", async () => {
