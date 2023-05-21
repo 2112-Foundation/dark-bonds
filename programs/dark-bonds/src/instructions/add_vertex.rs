@@ -178,7 +178,7 @@ pub fn add_vertex2(
 
     msg!("tree.depth: {:?}", tree.depth);
 
-    mark_end(vertex2, tree.depth, 1);
+    mark_end(vertex2, tree.depth, 2);
 
     Ok(())
 }

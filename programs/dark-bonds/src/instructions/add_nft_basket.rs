@@ -67,14 +67,15 @@ pub struct AddNftBasket2<'info> {
             vertex1.key().as_ref(),
             &vertex_idx_2.to_be_bytes(),
         ],
-        bump
+        bump,
+        constraint = vertex2.end == true
     )]
     pub vertex2: Account<'info, Vertex>, // constraint for end being set to true
     pub system_program: Program<'info, System>,
 }
 
 pub fn add_nft_basket2(
-    ctx: Context<AddNftBasket2>,
+    _ctx: Context<AddNftBasket2>,
     _ibo_idx: u32,
     _tree_idx: u8,
     _vertex_idx_0: u8,
