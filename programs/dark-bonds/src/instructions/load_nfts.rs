@@ -67,47 +67,10 @@ pub fn load_nfts<'a, 'b, 'c, 'd: 'a + 'e, 'e: 'a + 'd>(
     // Needs to be divisible by 3
     // require!(rest_vec.len() % 3 == 0, ErrorCode::IncorrectRatioRemaining);
 
-    // let rest_accounts: Vec<Account<TokenAccount>> = rest_vec
-    //     .iter()
-    //     .map(|info| Account::try_from(&info.clone()).unwrap())
-    //     .collect();
-
-    // for i in (0..rest_accounts.len()).step_by(3) {
-    //     let from_ata = &rest_accounts[i];
-    //     let to_ata = &rest_accounts[i + 1];
-
-    //     let from_account_info = from_ata.to_account_info().clone();
-    //     let to_account_info = to_ata.to_account_info().clone();
-    //     let admin_account_info = ctx.accounts.admin.to_account_info().clone();
-
-    //     // Call the transfer helper
-    //     token::transfer(
-    //         CpiContext::new(ctx.accounts.token_program.to_account_info().clone(), Transfer {
-    //             from: from_account_info,
-    //             to: to_account_info,
-    //             authority: admin_account_info,
-    //         }),
-    //         1
-    //     )?;
-    // }
-
     for i in (0..rest_vec.len()).step_by(3) {
-        let from_ata: Account<TokenAccount> = Account::try_from(&rest_vec[i])?;
-        let to_ata: Account<TokenAccount> = Account::try_from(&rest_vec[i + 1])?;
-
-        let from_account_info = from_ata.to_account_info().clone();
-        let to_account_info = to_ata.to_account_info().clone();
+        // let from_ata: Account<TokenAccount> = Account::try_from(&rest_vec[i])?;
+        // let to_ata: Account<TokenAccount> = Account::try_from(&rest_vec[i + 1])?;
         let admin_account_info = ctx.accounts.admin.to_account_info().clone();
-
-        // Call the transfer helper
-        // token::transfer(
-        //     CpiContext::new(ctx.accounts.token_program.to_account_info(), Transfer {
-        //         from: rest_vec[i].clone(),
-        //         to: rest_vec[i + 1].clone(),
-        //         authority: admin.to_account_info().clone(),
-        //     }),
-        //     1
-        // )?;
 
         token::transfer(
             CpiContext::new(ctx.accounts.token_program.to_account_info(), Transfer {
@@ -119,40 +82,7 @@ pub fn load_nfts<'a, 'b, 'c, 'd: 'a + 'e, 'e: 'a + 'd>(
         )?;
     }
 
-    // Please be cautious with the use of unwrap() here. In real production code, you would want to handle the Result of try_from in a more robust way. This example is provided for illustrative purposes.
-    // Remember to handle any potential errors and unwrap the results accordingly.
-
-    // Loop over NFTs and transfer them
-    // for i in (0..rest_vec.len()).step_by(3) {
-    //     // Extract the accounts
-    //     // let from_ata = rest_vec[i];
-    //     // let from_ata: Account<'a, TokenAccount> = Account::try_from(&rest_vec[i].clone())?;
-    //     // let to_ata: Account<'a, TokenAccount> = Account::try_from(&rest_vec[i].clone())?;
-
-    //     // let from_account_info = from_ata.to_account_info().clone();
-    //     // let to_account_info = to_ata.to_account_info().clone();
-    //     // let admin_account_info: AccountInfo = admin.to_account_info().clone();
-
-    //     let from_ata_info = &rest_vec[i];
-    //     let to_ata_info = &rest_vec[i + 1];
-
-    //     let from_ata = TokenAccount::unpack(&from_ata_info.data.borrow())?;
-    //     let to_ata = TokenAccount::unpack(&to_ata_info.data.borrow())?;
-
-    //     // Need rederive ATA to see if it is the one of NFT basket
-
-    //     // Call the transfer helper
-    //     token::transfer(
-    //         CpiContext::new(token_program.to_account_info(), Transfer {
-    //             from: from_ata.to_account_info().clone(),
-    //             to: to_ata.to_account_info().clone(),
-    //             authority: admin_account_info.to_account_info().clone(),
-    //         }),
-    //         1
-    //     )?;
-
-    //     // Increment the counter
-    // }
+    // Increment the counter
 
     Ok(())
 }

@@ -312,15 +312,19 @@ describe("dark-bonds", async () => {
     metaplex = new Metaplex(provider.connection);
     metaplex.use(keypairIdentity(nftWallet));
 
-    for (let step = 0; step < 100; step++) {}
+    let nft_count = 10;
 
     const { nft } = await metaplex.nfts().create({
       uri: "https://arweave.net/123",
       name: "CUNT",
       sellerFeeBasisPoints: 500,
-      maxSupply: toBigNumber(5),
+      maxSupply: toBigNumber(nft_count),
       isMutable: false,
     });
+
+    console.log("Created edition");
+
+    console.log("transfered");
 
     nft_handle = nft;
 
@@ -351,6 +355,7 @@ describe("dark-bonds", async () => {
     });
 
     console.log("\n\nnft2: \n", nft);
+    console.log("\n\nft_handle: \n", nft_handle);
 
     // nftWallet;
 
@@ -364,6 +369,32 @@ describe("dark-bonds", async () => {
       mintKey,
       bondBuyer2.publicKey
     );
+
+    let mintAddresses = []; // Array to store mint addresses
+
+    for (let step = 0; step < 8; step++) {
+      console.log("loop: ", step);
+
+      // Mint NFT
+      const { nft: printedNft } = await metaplex.nfts().printNewEdition({
+        originalMint: nft.mint.address,
+      });
+
+      // Transfer NFT
+      await metaplex.nfts().transfer({
+        nftOrSft: printedNft,
+        authority: nftWallet,
+        fromOwner: nftWallet.publicKey,
+        toOwner: bondBuyer2.publicKey,
+        amount: token(1),
+      });
+
+      // Add the mint address of the new edition to the array
+    }
+
+    console.log("all mint addresses: ", mintAddresses);
+
+    process.exit();
 
     // Need to transfer the NFT
   });
