@@ -26,12 +26,20 @@ pub fn recursive_pda_derivation(
 
     // Define the seeds based on current_depth
     let seeds: Vec<&[u8]> = match current_depth {
-        0 => vec!["vertex".as_bytes(), ibo.as_ref(), &tree_idx_bytes, &vertex_idx_bytes[0]],
+        0 =>
+            vec![
+                "vertex".as_bytes(),
+                ibo.as_ref(),
+                &tree_idx_bytes,
+                tree.as_ref(),
+                &vertex_idx_bytes[0]
+            ],
         1 =>
             vec![
                 "vertex".as_bytes(),
                 ibo.as_ref(),
                 &tree_idx_bytes,
+                tree.as_ref(),
                 vertices[0].as_ref(),
                 &vertex_idx_bytes[1]
             ],
@@ -40,6 +48,7 @@ pub fn recursive_pda_derivation(
                 "vertex".as_bytes(),
                 ibo.as_ref(),
                 &tree_idx_bytes,
+                tree.as_ref(),
                 vertices[0].as_ref(),
                 vertices[1].as_ref(),
                 &vertex_idx_bytes[2]
@@ -50,190 +59,34 @@ pub fn recursive_pda_derivation(
     };
 
     let derived_address = Pubkey::create_program_address(&seeds, program_id).unwrap();
-
+    let (derived_address, _) = Pubkey::find_program_address(&seeds, program_id);
+    //
     // Uncomment the following line to enable validation
-    // require!(vertices[current_depth as usize] == derived_address, ProgramError::InvalidArgument);
+    // require!(vertices[current_depth as usize] == &derived_address, ErrorCode::WrongVertexAccount);
 
     msg!("Provided address: {}", vertices[current_depth as usize]);
     msg!("Derived address: {}", derived_address);
 
+    // Check if we have reached the last vertex
+    if (current_depth as usize) == vertices.len() - 1 {
+        return Ok(());
+    } else {
+        recursive_pda_derivation(
+            ibo,
+            tree,
+            vertex_idx,
+            tree_idx,
+            current_depth + 1,
+            vertices,
+            program_id
+        )?;
+    }
+
+    // msg!("Provided address: {}", vertices[current_depth as usize]);
+    // msg!("Derived address: {}", derived_address);
+
     Ok(())
 }
-
-// TODO hardcode program ID as it doesn't need to be passed as an account
-// pub fn recursive_pda_derivation(
-//     tree_idx: u8,
-//     vertex_idx_0: u8,
-//     vertex_idx_1: u8,
-//     vertex_idx_2: u8,
-//     current_depth: u8,
-//     vertices: Vec<&Pubkey>,
-//     program_id: &Pubkey
-// ) -> Result<()> {
-//     // Create byte arrays
-//     let tree_idx_bytes = tree_idx.to_be_bytes();
-//     let vertex_idx_0_bytes = vertex_idx_0.to_be_bytes();
-//     let vertex_idx_1_bytes = vertex_idx_1.to_be_bytes();
-//     let vertex_idx_2_bytes = vertex_idx_2.to_be_bytes();
-
-//     // Define the seeds based on current_depth
-//     let seeds: Vec<&[u8]> = match current_depth {
-//         0 => vec!["vertex".as_bytes(), vertices[0].as_ref(), &tree_idx_bytes, &vertex_idx_0_bytes],
-//         1 =>
-//             vec![
-//                 "vertex".as_bytes(),
-//                 vertices[0].as_ref(),
-//                 &tree_idx_bytes,
-//                 vertices[1].as_ref(),
-//                 vertices[2].as_ref(),
-//                 &vertex_idx_1_bytes
-//             ],
-//         2 =>
-//             vec![
-//                 "vertex".as_bytes(),
-//                 vertices[0].as_ref(),
-//                 &tree_idx_bytes,
-//                 vertices[1].as_ref(),
-//                 vertices[2].as_ref(),
-//                 vertices[3].as_ref(),
-//                 &vertex_idx_2_bytes
-//             ],
-//         _ => {
-//             return Err(ErrorCode::InvalidRecursiveIdx.into());
-//         }
-//     };
-
-//     let derived_address = Pubkey::create_program_address(&seeds, program_id).unwrap();
-
-//     // Uncomment the following line to enable validation
-//     // require!(vertices[current_depth as usize] == derived_address, ProgramError::InvalidArgument);
-
-//     msg!("Provided address: {}", vertices[current_depth as usize]);
-//     msg!("Derived address: {}", derived_address);
-
-//     // // Check if we have reached the last vertex
-//     // if (current_depth as usize) == vertices.len() - 1 {
-//     //     return Ok(());
-//     // }
-
-//     // // Recursive call for the next depth
-//     // recursive_pda_derivation(
-//     //     tree_idx,
-//     //     vertex_idx_0,
-//     //     vertex_idx_1,
-//     //     vertex_idx_2,
-//     //     current_depth + 1,
-//     //     vertices,
-//     //     program_id
-//     // )
-
-//     Ok(())
-// }
-
-// pub fn recursive_pda_derivation(
-//     tree_idx: u8,
-//     vertex_idx_0: u8,
-//     vertex_idx_1: u8,
-//     vertex_idx_2: u8,
-//     current_depth: u8,
-//     vertices: Vec<Pubkey>,
-//     program_id: &Pubkey
-// ) -> Result<()> {
-//     // Create byte arrays
-//     let tree_idx_bytes = tree_idx.to_be_bytes();
-//     let vertex_idx_0_bytes = vertex_idx_0.to_be_bytes();
-//     let vertex_idx_1_bytes = vertex_idx_1.to_be_bytes();
-//     let vertex_idx_2_bytes = vertex_idx_2.to_be_bytes();
-
-//     let seeds = match current_depth {
-//         0 => vec!["vertex".as_bytes(), vertices[0].as_ref(), &tree_idx_bytes, &vertex_idx_0_bytes],
-//         1 =>
-//             vec![
-//                 "vertex".as_bytes(),
-//                 vertices[0].as_ref(),
-//                 &tree_idx_bytes,
-//                 vertices[1].as_ref(),
-//                 vertices[2].as_ref(),
-//                 &vertex_idx_1_bytes
-//             ],
-//         2 =>
-//             vec![
-//                 "vertex".as_bytes(),
-//                 vertices[0].as_ref(),
-//                 &tree_idx_bytes,
-//                 vertices[1].as_ref(),
-//                 vertices[2].as_ref(),
-//                 vertices[3].as_ref(),
-//                 &vertex_idx_2_bytes
-//             ],
-//         _ => {
-//             return Err(ErrorCode::InvalidRecursiveIdx.into());
-//         }
-//     };
-
-//     let derived_address = Pubkey::create_program_address(&seeds, program_id).unwrap();
-
-//     // Uncomment the following line to enable validation
-//     // require!(vertices[current_depth as usize] == derived_address, ProgramError::InvalidArgument);
-
-//     msg!("Provided address: {}", vertices[current_depth as usize]);
-//     msg!("Derived address: {}", derived_address);
-
-//     Ok(())
-// }
-
-// fn recursive_pda_derivation(
-//     tree_idx: u8,
-//     vertex_idx_0: u8,
-//     vertex_idx_1: u8,
-//     vertex_idx_2: u8,
-//     current_depth: u8,
-//     vertices: Vec<Pubkey>,
-//     program_id: &Pubkey
-// ) -> Result<()> {
-//     let seeds = match current_depth {
-//         0 =>
-//             vec![
-//                 "vertex".as_bytes(),
-//                 vertices[0].as_ref(),
-//                 &tree_idx.to_be_bytes(),
-//                 &vertex_idx_0.to_be_bytes()
-//             ],
-//         1 =>
-//             vec![
-//                 "vertex".as_bytes(),
-//                 vertices[0].as_ref(),
-//                 &tree_idx.to_be_bytes(),
-//                 vertices[1].as_ref(),
-//                 vertices[2].as_ref(),
-//                 &vertex_idx_1.to_be_bytes()
-//             ],
-//         2 =>
-//             vec![
-//                 "vertex".as_bytes(),
-//                 vertices[0].as_ref(),
-//                 &tree_idx.to_be_bytes(),
-//                 vertices[1].as_ref(),
-//                 vertices[2].as_ref(),
-//                 vertices[3].as_ref(),
-//                 &vertex_idx_2.to_be_bytes()
-//             ],
-//         _ => {
-//             return Err(ErrorCode::InvalidRecursiveIdx.into());
-//             // msg!("fucked up biatch");
-//         }
-//     };
-
-//     let derived_address = Pubkey::create_program_address(&seeds, program_id).unwrap();
-
-//     // Uncomment the following line to enable validation
-//     // require!(vertices[current_depth as usize] == derived_address, ProgramError::InvalidArgument);
-
-//     msg!("Provided address: {}", vertices[current_depth as usize]);
-//     msg!("Derived address: {}", derived_address);
-
-//     Ok(())
-// }
 
 pub fn mark_end<'info>(vertex: &mut Account<'info, Vertex>, max_depth: u8, this_depth: u8) {
     msg!("Depth helper\n\tthis depth: {:?}\n\tmax_depth {:?}", this_depth, max_depth);

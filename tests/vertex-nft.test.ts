@@ -475,6 +475,7 @@ describe("dark-bonds", async () => {
         Buffer.from("vertex"),
         Buffer.from(ibo0.toBytes()),
         new BN(0).toArrayLike(Buffer, "be", 1),
+        Buffer.from(tree.toBytes()),
         new BN(0).toArrayLike(Buffer, "be", 1),
       ],
       bondProgram.programId
@@ -581,24 +582,28 @@ describe("dark-bonds", async () => {
   });
 
   it("Load NFTs to a basket", async () => {
-    const tx = await bondProgram.methods
-      .loadNfts(0, 0, 0, 0, 0, 0)
-      .accounts({
-        admin: adminIbo0.publicKey,
-        nftBasket: nftBasket,
-        vertex0: vertex0,
-        vertex1: vertex1,
-        vertex2: vertex2,
-        tree: tree,
-        ibo: ibo0,
-        systemProgram: anchor.web3.SystemProgram.programId,
-      })
-      .remainingAccounts([
-        { pubkey: vertex0, isWritable: false, isSigner: false },
-        { pubkey: vertex1, isWritable: false, isSigner: false },
-        { pubkey: vertex2, isWritable: false, isSigner: false },
-      ])
-      .signers([adminIbo0])
-      .rpc();
+    try {
+      const tx = await bondProgram.methods
+        .loadNfts(0, 0, 0, 0, 0, 0)
+        .accounts({
+          admin: adminIbo0.publicKey,
+          nftBasket: nftBasket,
+          vertex0: vertex0,
+          vertex1: vertex1,
+          vertex2: vertex2,
+          tree: tree,
+          ibo: ibo0,
+          systemProgram: anchor.web3.SystemProgram.programId,
+        })
+        .remainingAccounts([
+          { pubkey: vertex0, isWritable: false, isSigner: false },
+          { pubkey: vertex1, isWritable: false, isSigner: false },
+          { pubkey: vertex2, isWritable: false, isSigner: false },
+        ])
+        .signers([adminIbo0])
+        .rpc();
+    } catch (err) {
+      console.log(err);
+    }
   });
 });

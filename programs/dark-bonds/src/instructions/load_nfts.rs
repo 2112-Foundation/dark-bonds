@@ -75,31 +75,6 @@ pub fn load_nfts(
         &ctx.program_id
     )?;
 
-    // let vertices_pubkeys: Vec<Pubkey> = vertices_vec
-    //     .into_iter()
-    //     .map(|account_info| account_info.key)
-    //     .collect();
-
-    // for (idx, answer) in answers.iter().enumerate() {
-    //     // Check that the PDA match
-    //     let (pda_answer, _bump) = Pubkey::find_program_address(
-    //         &[proposal.key().as_ref(), &[idx as u8]],
-    //         &ctx.program_id
-    //     );
-    //     msg!("pda_answer: {:?}", pda_answer);
-    //     msg!("answer.key(): {:?}", answer.key());
-    //     assert!(pda_answer == answer.key());
-
-    //     // Cast AccountInfo as Asnwer struct
-    //     let tmp_answer: Account<Answer> = Account::try_from(&answer)?;
-
-    //     // Check if votes exceed current leader
-    //     if tmp_answer.votes > winner.0 {
-    //         winner.0 = tmp_answer.votes;
-    //         winner.1 = idx as u8;
-    //     }
-    // }
-
     msg!("initialising nft basket");
 
     Ok(())

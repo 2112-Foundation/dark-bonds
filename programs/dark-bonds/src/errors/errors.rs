@@ -35,4 +35,6 @@ pub enum ErrorCode {
     WithdrawLocked,
     #[msg("Provided wrong number to the derivation")]
     InvalidRecursiveIdx,
+    #[msg("Provided wrong vertex")]
+    WrongVertexAccount,
 }

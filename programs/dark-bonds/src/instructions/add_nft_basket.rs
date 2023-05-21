@@ -41,6 +41,7 @@ pub struct AddNftBasket2<'info> {
             "vertex".as_bytes(),
             ibo.key().as_ref(),
             &tree_idx.to_be_bytes(),
+            tree.key().as_ref(),
             &vertex_idx_0.to_be_bytes(),
         ],
         bump
