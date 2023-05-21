@@ -7,7 +7,9 @@ pub enum ErrorCode {
     RatesLocked,
     #[msg("Can not add or remove gate type")]
     GatesLocked,
-    #[msg("There aren't enought tokens left for this bond allocation. Try again with a smaller amount")]
+    #[msg(
+        "There aren't enought tokens left for this bond allocation. Try again with a smaller amount"
+    )]
     BondsSoldOut,
     #[msg("This bond is not for sale")]
     NotForSale,
@@ -31,4 +33,6 @@ pub enum ErrorCode {
     InvalidCreator,
     #[msg("Can not withdraw until IBO is over")]
     WithdrawLocked,
+    #[msg("Provided wrong number to the derivation")]
+    InvalidRecursiveIdx,
 }

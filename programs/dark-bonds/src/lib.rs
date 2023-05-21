@@ -187,4 +187,24 @@ pub mod dark_bonds {
             nft_basket_idx
         )
     }
+
+    pub fn load_nfts(
+        ctx: Context<LoadNfts>,
+        ibo_idx: u32,
+        tree_idx: u8,
+        vertex_idx_0: u8,
+        vertex_idx_1: u8,
+        vertex_idx_2: u8,
+        nft_basket_idx: u8
+    ) -> Result<()> {
+        instructions::load_nfts::load_nfts(
+            ctx,
+            ibo_idx,
+            tree_idx,
+            vertex_idx_0,
+            vertex_idx_1,
+            vertex_idx_2,
+            nft_basket_idx
+        )
+    }
 }

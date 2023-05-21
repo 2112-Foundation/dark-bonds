@@ -16,6 +16,7 @@ pub mod remove_lockup;
 pub mod set_swap;
 pub mod split;
 pub mod withdraw;
+pub mod load_nfts;
 
 pub use add_gate::*;
 pub use add_vertex::*;
@@ -35,3 +36,4 @@ pub use split::*;
 pub use withdraw::*;
 pub use add_tree::*;
 pub use add_nft_basket::*;
+pub use load_nfts::*;
