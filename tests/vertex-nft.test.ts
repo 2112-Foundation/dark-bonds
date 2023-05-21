@@ -307,10 +307,12 @@ describe("dark-bonds", async () => {
       TOKEN_PROGRAM_ID
     );
 
-    // Pre mint 2 NFTs and give one to buyer 1
+    // Pre mint fuckloads of NFTs for transfers
 
     metaplex = new Metaplex(provider.connection);
     metaplex.use(keypairIdentity(nftWallet));
+
+    for (let step = 0; step < 100; step++) {}
 
     const { nft } = await metaplex.nfts().create({
       uri: "https://arweave.net/123",

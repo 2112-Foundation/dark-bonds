@@ -39,4 +39,6 @@ pub enum ErrorCode {
     WrongVertexAccount,
     #[msg("Provided wrong number of vertex accounts")]
     MissingVertexAccount,
+    #[msg("Accounts after vertices need to be in multiple of three")]
+    IncorrectRatioRemaining,
 }

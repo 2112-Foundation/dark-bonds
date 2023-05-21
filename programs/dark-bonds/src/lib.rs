@@ -188,8 +188,8 @@ pub mod dark_bonds {
         )
     }
 
-    pub fn load_nfts(
-        ctx: Context<LoadNfts>,
+    pub fn load_nfts<'a, 'b, 'c, 'd: 'a + 'e, 'e: 'a + 'd>(
+        ctx: Context<'a, 'a, 'a, 'd, LoadNfts<'e>>,
         ibo_idx: u32,
         tree_idx: u8,
         vertex_idx_0: u8,
