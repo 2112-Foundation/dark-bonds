@@ -8,7 +8,88 @@ use solana_program::pubkey::Pubkey;
 const SECONDS_YEAR: f64 = 31536000.0;
 const PURCHASE_CUT: u64 = 500; // equivalent to 5%
 
-// TODO hardcode program ID as it doesn't need to be passed as an account
+pub fn recursive_pda_derivation(
+    ibo: &Pubkey,
+    tree: &Pubkey,
+    vertex_idx: Vec<u8>,
+    tree_idx: u8,
+    current_depth: u8,
+    vertices: Vec<&Pubkey>,
+    program_id: &Pubkey
+) -> Result<()> {
+    // Create byte arrays
+    let tree_idx_bytes = tree_idx.to_be_bytes();
+    let vertex_idx_bytes: Vec<[u8; 1]> = vertex_idx
+        .iter()
+        .map(|&idx| [idx])
+        .collect();
+
+    msg!("current_depth: {:?}", current_depth);
+    msg!("vertices length: {:?}", vertices.len());
+
+    // Define the seeds based on current_depth
+    let seeds: Vec<&[u8]> = match current_depth {
+        0 =>
+            vec![
+                "vertex".as_bytes(),
+                ibo.as_ref(),
+                &tree_idx_bytes,
+                tree.as_ref(),
+                &vertex_idx_bytes[0]
+            ],
+        1 =>
+            vec![
+                "vertex".as_bytes(),
+                ibo.as_ref(),
+                &tree_idx_bytes,
+                tree.as_ref(),
+                vertices[0].as_ref(),
+                &vertex_idx_bytes[1]
+            ],
+        2 =>
+            vec![
+                "vertex".as_bytes(),
+                ibo.as_ref(),
+                &tree_idx_bytes,
+                tree.as_ref(),
+                vertices[0].as_ref(),
+                vertices[1].as_ref(),
+                &vertex_idx_bytes[2]
+            ],
+        _ => {
+            return Err(ErrorCode::InvalidRecursiveIdx.into());
+        }
+    };
+
+    let (derived_address, _) = Pubkey::find_program_address(&seeds, program_id);
+    require!(vertices[current_depth as usize] == &derived_address, ErrorCode::WrongVertexAccount);
+
+    msg!("Provided address: {}", vertices[current_depth as usize]);
+    msg!("Derived address: {}", derived_address);
+
+    // Check if we have reached the last vertex
+    if (current_depth as usize) == vertices.len() - 1 {
+        return Ok(());
+    } else {
+        recursive_pda_derivation(
+            ibo,
+            tree,
+            vertex_idx,
+            tree_idx,
+            current_depth + 1,
+            vertices,
+            program_id
+        )
+    }
+}
+
+pub fn mark_end<'info>(vertex: &mut Account<'info, Vertex>, max_depth: u8, this_depth: u8) {
+    msg!("Depth helper\n\tthis depth: {:?}\n\tmax_depth {:?}", this_depth, max_depth);
+    if max_depth == this_depth {
+        msg!("End of line");
+        vertex.end = true;
+    }
+}
 
 pub fn purchase_mechanics<'info>(
     buyer: &Signer<'info>,

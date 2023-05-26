@@ -126,4 +126,85 @@ pub mod dark_bonds {
     pub fn buy_swap(ctx: Context<BuySwap>) -> Result<()> {
         instructions::buy_swap::buy_swap(ctx)
     }
+
+    pub fn add_tree(ctx: Context<AddTree>, ibo_idx: u32, tree_idx: u8, depth: u8) -> Result<()> {
+        instructions::add_tree::add_tree(ctx, ibo_idx, tree_idx, depth)
+    }
+
+    pub fn add_vertex0(
+        ctx: Context<AddVertex0>,
+        ibo_idx: u32,
+        tree_idx: u8,
+        vertex_idx_0: u8
+    ) -> Result<()> {
+        instructions::add_vertex::add_vertex0(ctx, ibo_idx, tree_idx, vertex_idx_0)
+    }
+
+    pub fn add_vertex1(
+        ctx: Context<AddVertex1>,
+        ibo_idx: u32,
+        tree_idx: u8,
+        vertex_idx_0: u8,
+        vertex_idx_1: u8
+    ) -> Result<()> {
+        instructions::add_vertex::add_vertex1(ctx, ibo_idx, tree_idx, vertex_idx_0, vertex_idx_1)
+    }
+
+    pub fn add_vertex2(
+        ctx: Context<AddVertex2>,
+        ibo_idx: u32,
+        tree_idx: u8,
+        vertex_idx_0: u8,
+        vertex_idx_1: u8,
+        vertex_idx_2: u8
+    ) -> Result<()> {
+        instructions::add_vertex::add_vertex2(
+            ctx,
+            ibo_idx,
+            tree_idx,
+            vertex_idx_0,
+            vertex_idx_1,
+            vertex_idx_2
+        )
+    }
+
+    pub fn add_nft_basket2(
+        ctx: Context<AddNftBasket2>,
+        ibo_idx: u32,
+        tree_idx: u8,
+        vertex_idx_0: u8,
+        vertex_idx_1: u8,
+        vertex_idx_2: u8,
+        nft_basket_idx: u8
+    ) -> Result<()> {
+        instructions::add_nft_basket::add_nft_basket2(
+            ctx,
+            ibo_idx,
+            tree_idx,
+            vertex_idx_0,
+            vertex_idx_1,
+            vertex_idx_2,
+            nft_basket_idx
+        )
+    }
+
+    pub fn load_nfts<'a, 'b, 'c, 'd: 'a + 'e, 'e: 'a + 'd>(
+        ctx: Context<'a, 'a, 'a, 'd, LoadNfts<'e>>,
+        ibo_idx: u32,
+        tree_idx: u8,
+        vertex_idx_0: u8,
+        vertex_idx_1: u8,
+        vertex_idx_2: u8,
+        nft_basket_idx: u8
+    ) -> Result<()> {
+        instructions::load_nfts::load_nfts(
+            ctx,
+            ibo_idx,
+            tree_idx,
+            vertex_idx_0,
+            vertex_idx_1,
+            vertex_idx_2,
+            nft_basket_idx
+        )
+    }
 }
