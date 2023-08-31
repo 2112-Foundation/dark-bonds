@@ -10,7 +10,7 @@ import {
   token,
   walletAdapterIdentity,
 } from "@metaplex-foundation/js";
-import { loadKeypairFromFile } from "./helper";
+// import { loadKeypairFromFile } from "./helper";
 import {
   createMint,
   createAccount,
@@ -96,7 +96,8 @@ describe("dark-bonds", async () => {
   }
 
   const bondProgram = anchor.workspace.DarkBonds as Program<DarkBonds>;
-  const superAdmin = loadKeypairFromFile("./master-keypair.json"); // reused so that ATA are
+  // const superAdmin = loadKeypairFromFile("./master-keypair.json"); // reused so that ATA are
+  const superAdmin = anchor.web3.Keypair.generate();
   const adminIbo0 = anchor.web3.Keypair.generate();
   const bondBuyer1 = anchor.web3.Keypair.generate();
   const bondBuyer2 = anchor.web3.Keypair.generate();

@@ -1,5 +1,12 @@
 use anchor_lang::prelude::*;
 
+use metaplex_token_metadata::state::Metadata;
+use metaplex_token_metadata::state::Creator;
+use mpl_token_metadata::{
+    instruction::freeze_delegated_account,
+    instruction::thaw_delegated_account,
+};
+
 pub mod errors;
 pub mod instructions;
 pub mod state;
@@ -8,7 +15,7 @@ pub use errors::*;
 pub use instructions::*;
 pub use state::*;
 
-declare_id!("H7zcGXtV7Fo1JkhxJ4hao7ZkLpAqzBTkQySAUbVxnLj7");
+declare_id!("8ZP1cSpVPVPp5aeake5f1BtgW1xv1e39zkoG8bWobbwV");
 
 #[program]
 pub mod dark_bonds {

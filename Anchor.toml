@@ -2,7 +2,7 @@
 seeds = false
 skip-lint = false
 [programs.localnet]
-dark_bonds = "H7zcGXtV7Fo1JkhxJ4hao7ZkLpAqzBTkQySAUbVxnLj7"
+dark_bonds = "8ZP1cSpVPVPp5aeake5f1BtgW1xv1e39zkoG8bWobbwV"
 
 [registry]
 url = "https://api.apr.dev"
