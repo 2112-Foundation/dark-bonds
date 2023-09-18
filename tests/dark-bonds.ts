@@ -54,6 +54,8 @@ describe("dark-bonds", async () => {
   const bondProgram = anchor.workspace.DarkBonds as Program<DarkBonds>;
   const superAdmin = loadKeypairFromFile("./master-keypair.json"); // reused so that ATA are
 
+  console.log("DARK BONDS ID: ", bondProgram.programId.toBase58());
+
   //TODO move that stuff to special class allowing to access keypair and it's ATA if created.
   const adminIbo0 = anchor.web3.Keypair.generate();
   const bondBuyer1 = anchor.web3.Keypair.generate();
@@ -80,6 +82,9 @@ describe("dark-bonds", async () => {
   let bond3ATA_b: Account;
   let bond4ATA_b: Account;
 
+  // New master struc
+  const master = new Master(bondProgram.programId);
+
   let ibo_index = 0;
 
   // Stable coin mint
@@ -96,7 +101,7 @@ describe("dark-bonds", async () => {
   let mainIbo: PublicKey;
 
   // Ibo 0
-  let ibo0: PublicKey;
+  let ibo: Ibo;
   let exchangeRate: number = 40;
   let liveDate: number = 1683718579;
   let ibo0ATA_b: Account;
@@ -127,7 +132,7 @@ describe("dark-bonds", async () => {
 
   // Gated
   let lockUp3PDA: PublicKey;
-  let lockUp3Gate: PublicKey;
+  let gate1: PublicKey;
   let lockUp3Period: number = shortBond;
   let lockUp3Apy: number = 10000000 * 100;
 
@@ -325,16 +330,16 @@ describe("dark-bonds", async () => {
   });
 
   it("Main register initialised!", async () => {
-    [mainIbo] = PublicKey.findProgramAddressSync(
-      [Buffer.from("main_register")],
-      bondProgram.programId
-    );
-
+    mainIbo = master.getMasterAddress();
+    // Check if already deployed by fetching account and if so don't deploy again
     try {
       let main_state = await bondProgram.account.master.fetch(mainIbo);
       ibo_index = parseInt(main_state.iboCounter.toString());
       console.log("\nAlreadyt deployed\n");
       console.log("ibo_index at ibo make: ", ibo_index);
+
+      // If it exists set IBO counter
+      master.iboCounter = parseInt(main_state.iboCounter.toString());
     } catch (err) {
       const tx = await bondProgram.methods
         .init()
@@ -351,25 +356,25 @@ describe("dark-bonds", async () => {
 
   it("Register bond offering.", async () => {
     // Get ibo counter for this run
-    let main_state = await bondProgram.account.master.fetch(mainIbo);
-    ibo_index = parseInt(main_state.iboCounter.toString());
+    // let main_state = await bondProgram.account.master.fetch(mainIbo);
+    // ibo_index = parseInt(main_state.iboCounter.toString());
 
     console.log("ibo_index at ibo make: ", ibo_index);
 
-    // Derive ibo pda for counter 0
-    [ibo0] = PublicKey.findProgramAddressSync(
-      [
-        Buffer.from("ibo_instance"),
-        new BN(ibo_index).toArrayLike(Buffer, "be", 8),
-      ],
-      bondProgram.programId
+    ibo = master.addIbo(
+      exchangeRate,
+      liveDate,
+      liveDate + 100000, // Can buy bonds until that point in the future
+      swapCut,
+      mintSC,
+      adminIbo0
     );
 
     ibo0ATA_b = await getOrCreateAssociatedTokenAccount(
       connection,
-      adminIbo0,
+      ibo.admin,
       mintB,
-      ibo0,
+      ibo.address,
       true
     );
 
@@ -387,17 +392,17 @@ describe("dark-bonds", async () => {
 
     const tx = await bondProgram.methods
       .createIbo(
-        new BN(exchangeRate),
-        new BN(liveDate),
-        new BN(liveDate + 100000), // Can buy bonds until that point in the future
-        swapCut,
-        mintSC,
-        adminIbo0.publicKey
+        new BN(ibo.fixedExchangeRate),
+        new BN(ibo.liveDate),
+        new BN(ibo.endDate), // Can buy bonds until that point in the future
+        ibo.swapCut,
+        ibo.liquidityToken,
+        ibo.admin.publicKey
       )
       .accounts({
         master: mainIbo,
-        admin: adminIbo0.publicKey,
-        ibo: ibo0,
+        admin: ibo.admin.publicKey,
+        ibo: ibo.address,
         systemProgram: anchor.web3.SystemProgram.programId,
       })
       .signers([adminIbo0])
@@ -409,7 +414,7 @@ describe("dark-bonds", async () => {
     [lockUp0PDA] = PublicKey.findProgramAddressSync(
       [
         Buffer.from("lockup"),
-        Buffer.from(ibo0.toBytes()),
+        Buffer.from(ibo.address.toBytes()),
         new BN(lockup_counter).toArrayLike(Buffer, "be", 4),
       ],
       bondProgram.programId
@@ -418,7 +423,7 @@ describe("dark-bonds", async () => {
     [lockUp1PDA] = PublicKey.findProgramAddressSync(
       [
         Buffer.from("lockup"),
-        Buffer.from(ibo0.toBytes()),
+        Buffer.from(ibo.address.toBytes()),
         new BN(lockup_counter).toArrayLike(Buffer, "be", 4),
       ],
       bondProgram.programId
@@ -427,7 +432,7 @@ describe("dark-bonds", async () => {
     [lockUp2PDA] = PublicKey.findProgramAddressSync(
       [
         Buffer.from("lockup"),
-        Buffer.from(ibo0.toBytes()),
+        Buffer.from(ibo.address.toBytes()),
         new BN(lockup_counter).toArrayLike(Buffer, "be", 4),
       ],
       bondProgram.programId
@@ -439,7 +444,7 @@ describe("dark-bonds", async () => {
       {
         accounts: {
           admin: adminIbo0.publicKey,
-          ibo: ibo0,
+          ibo: ibo.address,
           lockup: lockUp0PDA,
           systemProgram: anchor.web3.SystemProgram.programId,
         },
@@ -451,7 +456,7 @@ describe("dark-bonds", async () => {
       {
         accounts: {
           admin: adminIbo0.publicKey,
-          ibo: ibo0,
+          ibo: ibo.address,
           lockup: lockUp1PDA,
           systemProgram: anchor.web3.SystemProgram.programId,
         },
@@ -463,7 +468,7 @@ describe("dark-bonds", async () => {
       {
         accounts: {
           admin: adminIbo0.publicKey,
-          ibo: ibo0,
+          ibo: ibo.address,
           lockup: lockUp2PDA,
           systemProgram: anchor.web3.SystemProgram.programId,
         },
@@ -489,7 +494,7 @@ describe("dark-bonds", async () => {
     [lockUp3PDA] = PublicKey.findProgramAddressSync(
       [
         Buffer.from("lockup"),
-        Buffer.from(ibo0.toBytes()),
+        Buffer.from(ibo.address.toBytes()),
         new BN(3).toArrayLike(Buffer, "be", 4),
       ],
       bondProgram.programId
@@ -499,7 +504,7 @@ describe("dark-bonds", async () => {
       .addLockup(new BN(lockUp3Period), new BN(lockUp3Apy))
       .accounts({
         admin: adminIbo0.publicKey,
-        ibo: ibo0,
+        ibo: ibo.address,
         lockup: lockUp3PDA,
         systemProgram: anchor.web3.SystemProgram.programId,
       })
@@ -509,11 +514,10 @@ describe("dark-bonds", async () => {
     lockup_counter += 1;
 
     // ADdd PDA for gating details
-    [lockUp3Gate] = PublicKey.findProgramAddressSync(
+    [gate1] = PublicKey.findProgramAddressSync(
       [
         Buffer.from("gate"),
-        Buffer.from(ibo0.toBytes()),
-        Buffer.from(lockUp3PDA.toBytes()),
+        Buffer.from(ibo.address.toBytes()),
         new BN(0).toArrayLike(Buffer, "be", 4),
       ],
       bondProgram.programId
@@ -523,9 +527,9 @@ describe("dark-bonds", async () => {
       .addGate(3, 3, mintKey, masterKey, editionKey)
       .accounts({
         admin: adminIbo0.publicKey,
-        ibo: ibo0,
+        ibo: ibo.address,
         lockup: lockUp3PDA,
-        gate: lockUp3Gate,
+        gate: gate1,
         systemProgram: anchor.web3.SystemProgram.programId,
       })
       .signers([adminIbo0])
@@ -537,13 +541,13 @@ describe("dark-bonds", async () => {
       .lock(true, true)
       .accounts({
         admin: adminIbo0.publicKey,
-        ibo: ibo0,
+        ibo: ibo.address,
       })
       .signers([adminIbo0])
       .rpc();
 
     // Assert lock changed to true
-    let ibo0_state = await bondProgram.account.ibo.fetch(ibo0);
+    let ibo0_state = await bondProgram.account.ibo.fetch(ibo.address);
     assert(ibo0_state.lockupsLocked == true);
   });
 
@@ -554,7 +558,7 @@ describe("dark-bonds", async () => {
     [bond0] = PublicKey.findProgramAddressSync(
       [
         Buffer.from("bond"),
-        Buffer.from(ibo0.toBytes()),
+        Buffer.from(ibo.address.toBytes()),
         new BN(bond_counter).toArrayLike(Buffer, "be", 4),
       ],
       bondProgram.programId
@@ -577,7 +581,7 @@ describe("dark-bonds", async () => {
       .accounts({
         buyer: bondBuyer1.publicKey,
         bond: bond0,
-        ibo: ibo0,
+        ibo: ibo.address,
         lockup: lockUp0PDA,
         buyerAta: bondBuyer1ATA_sc.address,
         recipientAta: iboAdminATA_sc.address,
@@ -602,7 +606,7 @@ describe("dark-bonds", async () => {
       bond0_state.totalClaimable.toString()
     );
 
-    // let ibo0_state = await bondProgram.account.ibo.fetch(ibo0);
+    // let ibo0_state = await bondProgram.account.ibo.fetch(ibo.address);
     // console.log("ibo0_state: ", ibo0_state.)
 
     let masterBalanceEnd = await getTokenBalance(masterRecipientATA_sc);
@@ -624,7 +628,7 @@ describe("dark-bonds", async () => {
     [bond1] = PublicKey.findProgramAddressSync(
       [
         Buffer.from("bond"),
-        Buffer.from(ibo0.toBytes()),
+        Buffer.from(ibo.address.toBytes()),
         new BN(bond_counter).toArrayLike(Buffer, "be", 4),
       ],
       bondProgram.programId
@@ -644,7 +648,7 @@ describe("dark-bonds", async () => {
       .accounts({
         buyer: bondBuyer2.publicKey,
         bond: bond1,
-        ibo: ibo0,
+        ibo: ibo.address,
         lockup: lockUp1PDA,
         master: mainIbo,
         buyerAta: bondBuyer2ATA_sc.address,
@@ -691,7 +695,7 @@ describe("dark-bonds", async () => {
     [bond2] = PublicKey.findProgramAddressSync(
       [
         Buffer.from("bond"),
-        Buffer.from(ibo0.toBytes()),
+        Buffer.from(ibo.address.toBytes()),
         new BN(bond_counter).toArrayLike(Buffer, "be", 4),
       ],
       bondProgram.programId
@@ -712,7 +716,7 @@ describe("dark-bonds", async () => {
       .accounts({
         buyer: bondBuyer2.publicKey,
         bond: bond2,
-        ibo: ibo0,
+        ibo: ibo.address,
         lockup: lockUp2PDA,
         master: mainIbo,
         buyerAta: bondBuyer2ATA_sc.address,
@@ -779,7 +783,7 @@ describe("dark-bonds", async () => {
     await delay(shortBond / 2 - time_elapsed);
 
     const tx_lu1 = await bondProgram.methods
-      .claim(ibo0, 2)
+      .claim(ibo.address, 2)
       .accounts({
         bondOwner: bondBuyer2.publicKey,
         bond: bond2,
@@ -809,7 +813,7 @@ describe("dark-bonds", async () => {
 
     // Spend 500 for rate 1 as player 1
     const tx_lu1 = await bondProgram.methods
-      .claim(ibo0, 2)
+      .claim(ibo.address, 2)
       .accounts({
         bondOwner: bondBuyer2.publicKey,
         bond: bond2,
@@ -840,7 +844,7 @@ describe("dark-bonds", async () => {
 
     // Spend 500 for rate 1 as player 1
     const tx_lu1 = await bondProgram.methods
-      .claim(ibo0, 2)
+      .claim(ibo.address, 2)
       .accounts({
         bondOwner: bondBuyer2.publicKey,
         bond: bond2,
@@ -868,14 +872,14 @@ describe("dark-bonds", async () => {
     let bondBalanceStart = await getTokenBalance(bond2ATA_b);
     let bond2_state = await bondProgram.account.bond.fetch(bond2);
 
-    let ibo0_state = await bondProgram.account.ibo.fetch(ibo0);
+    let ibo0_state = await bondProgram.account.ibo.fetch(ibo.address);
     console.log("\n\n\nibo0_state start: ", ibo0_state.bondCounter.toString());
 
     // derive a new bond
     [bond3] = PublicKey.findProgramAddressSync(
       [
         Buffer.from("bond"),
-        Buffer.from(ibo0.toBytes()),
+        Buffer.from(ibo.address.toBytes()),
         new BN(3).toArrayLike(Buffer, "be", 4),
       ],
       bondProgram.programId
@@ -892,13 +896,13 @@ describe("dark-bonds", async () => {
 
     // Spend 500 for rate 1 as player 1
     const tx_lu1 = await bondProgram.methods
-      .split(50, ibo0, 1)
+      .split(50, ibo.address, 1)
       .accounts({
         owner: bondBuyer2.publicKey,
         bond: bond1,
         newBond: bond3,
         master: mainIbo,
-        ibo: ibo0,
+        ibo: ibo.address,
         bondAtaOld: bond1ATA_b.address,
         bondAtaNew: bond3ATA_b.address,
         systemProgram: anchor.web3.SystemProgram.programId,
@@ -911,7 +915,7 @@ describe("dark-bonds", async () => {
     // Equal amount of tokens split
     assert(bond1_balance - bond3_balance == 0);
 
-    let ibo0_state_end = await bondProgram.account.ibo.fetch(ibo0);
+    let ibo0_state_end = await bondProgram.account.ibo.fetch(ibo.address);
     console.log(
       "\n\n\nibo0_state end: ",
       ibo0_state_end.bondCounter.toString()
@@ -952,7 +956,7 @@ describe("dark-bonds", async () => {
         master: mainIbo,
         masterRecipientAta: masterRecipientATA_sc.address,
         sellerAta: bondBuyer2ATA_sc.address,
-        ibo: ibo0,
+        ibo: ibo.address,
         iboAdminAta: iboAdminATA_sc.address,
         tokenProgram: TOKEN_PROGRAM_ID,
         associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -967,7 +971,7 @@ describe("dark-bonds", async () => {
   });
 
   it("Buy gated bond offered on ibo", async () => {
-    let ibo0_state = await bondProgram.account.ibo.fetch(ibo0);
+    let ibo0_state = await bondProgram.account.ibo.fetch(ibo.address);
     // assert(ibo0_state.lockupsLocked == true);
 
     console.log("bond counter: ", ibo0_state.bondCounter);
@@ -975,7 +979,7 @@ describe("dark-bonds", async () => {
     [bond4] = PublicKey.findProgramAddressSync(
       [
         Buffer.from("bond"),
-        Buffer.from(ibo0.toBytes()),
+        Buffer.from(ibo.address.toBytes()),
         new BN(4).toArrayLike(Buffer, "be", 4),
       ],
       bondProgram.programId
@@ -1008,9 +1012,9 @@ describe("dark-bonds", async () => {
       .accounts({
         buyer: bondBuyer2.publicKey,
         bond: bond4,
-        ibo: ibo0,
+        ibo: ibo.address,
         lockup: lockUp3PDA,
-        gate: lockUp3Gate,
+        gate: gate1,
         master: mainIbo,
         buyerAta: bondBuyer2ATA_sc.address,
         recipientAta: iboAdminATA_sc.address,

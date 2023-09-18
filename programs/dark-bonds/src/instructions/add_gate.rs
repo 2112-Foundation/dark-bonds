@@ -15,12 +15,7 @@ pub struct AddGate<'info> {
     pub lockup: Account<'info, Lockup>,
     #[account(
         init,
-        seeds = [
-            "gate".as_bytes(),
-            ibo.key().as_ref(),
-            lockup.key().as_ref(),
-            &lockup.gate_counter.to_be_bytes(),
-        ],
+        seeds = ["gate".as_bytes(), ibo.key().as_ref(), &ibo.gate_counter.to_be_bytes()],
         bump,
         payer = admin,
         space = 400

@@ -16,7 +16,7 @@ pub struct RemoveGate<'info> {
     #[account(        
         mut,
         close = admin,      
-        seeds = ["gate".as_bytes(), ibo.key().as_ref(), lockup.key().as_ref(), &lockup.gate_counter.to_be_bytes()],       
+        seeds = ["gate".as_bytes(), ibo.key().as_ref(), &ibo.lockup_counter.to_be_bytes()],       
         bump
     )]
     pub gate: Account<'info, Gate>,

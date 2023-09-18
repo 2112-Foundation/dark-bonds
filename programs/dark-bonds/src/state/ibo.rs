@@ -5,6 +5,8 @@ pub struct Ibo {
     pub lockups_locked: bool, // After being set to true can't add further lock-ups
     pub withdraws_locked: bool, // After being set to true, IBO admin can't withdraw underlying token until end of the sesh
 
+    pub gate_counter: u32, //
+
     // Fixed rate of conversion between underlying token and liquidity coin
     // Set by the deployer at the start
     pub fixed_exchange_rate: u64,

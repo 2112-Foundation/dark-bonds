@@ -30,7 +30,7 @@ pub struct GatedBuy<'info> {
     )]
     pub lockup: Account<'info, Lockup>,
 
-    // // TODO needs to be derived off the lockup counter
+    // // TODO needs to be derived off the ibo gate counter
     #[account(mut)]
     pub gate: Account<'info, Gate>,
     // purchse token
