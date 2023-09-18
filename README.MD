@@ -94,3 +94,30 @@ Then you need to:
 [x] Test kept invocation counter incremented at the end of a function  
 [ ] Tests for removing rate and gate  
 [x] Test for taking cut to us on bond purchase
+
+
+# Running it
+
+
+It runs now on 1.16.3
+
+If it gets stuck, restartd validator and redeploy.
+
+If it throws `FetchError: request to http://localhost:8899/ failed, reason: connect ECONNREFUSED ::1:8899` change to node 16 with `nvm use 16`.
+
+Need this to build:
+
+`solana-install init 1.16.3`
+
+Tests work too.
+
+
+~~Can't build with `anchor build` so use `cargo build`, `anchor deploy` works though.~~
+
+
+Kill existing instance
+
+kill -9 $(lsof -t -i:9900)  
+
+
+Kill all npm or node `pkill -9 -f "node|npm"`
