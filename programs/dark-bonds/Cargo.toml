@@ -16,11 +16,11 @@ cpi = ["no-entrypoint"]
 default = []
 
 [dependencies]
-anchor-lang = "0.27.0"
-anchor-spl = "0.27.0"
-jupiter-cpi = "4.0.3"
-mpl-token-metadata = { version = "1.2.5", features = ["no-entrypoint"] }
-metaplex-token-metadata = { version = "0.0.1", features = ["no-entrypoint"] }
-solana-program = "^1.13.5"
-switchboard-v2 = "0.1.23"
+mpl-token-metadata = "3.0.1"
+anchor-spl = "0.28.0"
+spl-token = {version = "3.5.0", default-features = false, features = ["no-entrypoint"]}
+anchor-lang = {version = "0.28.0", features = ["init-if-needed"]}
+solana-program = "^1.16.0"
+switchboard-v2 = "0.4.0"
+bytemuck = "1.13.1"
 

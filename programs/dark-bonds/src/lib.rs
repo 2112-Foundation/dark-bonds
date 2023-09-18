@@ -1,11 +1,6 @@
 use anchor_lang::prelude::*;
 
-use metaplex_token_metadata::state::Metadata;
-use metaplex_token_metadata::state::Creator;
-use mpl_token_metadata::{
-    instruction::freeze_delegated_account,
-    instruction::thaw_delegated_account,
-};
+use mpl_token_metadata;
 
 pub mod errors;
 pub mod instructions;

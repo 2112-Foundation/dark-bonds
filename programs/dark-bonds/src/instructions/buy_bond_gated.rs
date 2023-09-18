@@ -3,7 +3,7 @@ use crate::state::*;
 use anchor_lang::prelude::*;
 use anchor_spl::token::{ Mint, Token, TokenAccount };
 
-use metaplex_token_metadata::state::Metadata;
+use mpl_token_metadata::accounts::Metadata;
 use super::common::purchase_mechanics;
 
 #[derive(Accounts)]
@@ -69,7 +69,7 @@ pub struct GatedBuy<'info> {
 
 impl<'info> GatedBuy<'info> {
     fn verify(&self, _mint_key: Pubkey, master_key: Pubkey, creator_key: Pubkey) -> Result<()> {
-        let metadata = Metadata::from_account_info(&self.nft_metadata_account)?;
+        let metadata: Metadata = Metadata::try_from(&self.nft_metadata_account)?;
         // Verify NFT token account
         // Check if the owner of the token account is the buyer
         // if self.nft_token_account.owner != self.buyer.key() {
@@ -116,7 +116,7 @@ impl<'info> GatedBuy<'info> {
         // Verify NFT creator
         // Check if there's any creator in the metadata that matches the provided creator key and is verified
         if
-            !metadata.data.creators.iter().any(|creator_vec| {
+            !metadata.creators.iter().any(|creator_vec| {
                 if let Some(creator) = creator_vec.first() {
                     creator.address == creator_key && creator.verified
                 } else {
