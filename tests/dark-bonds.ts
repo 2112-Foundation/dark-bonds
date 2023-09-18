@@ -20,6 +20,7 @@ import {
   Account,
 } from "@solana/spl-token";
 import { assert } from "chai";
+import { Ibo, LockUp, Gate, Master } from "./master";
 
 const BN = anchor.BN;
 

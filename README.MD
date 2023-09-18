@@ -46,7 +46,6 @@ Then you need to:
 
 [x] change lockup to lockup  
 [x] change ticket to bond  
-[ ] Remove `msg!`  
 [X] In the diagram change:
 
 - Bond counter to Bond offering counter
@@ -65,6 +64,7 @@ Then you need to:
  Or they can be resold. On purchase they are burned, and two step invocation for a VRF is made.  
  Based on that a random NFT is selected and can be withdrawn. Would need a wheel to iterate over all of the remaining NFTs using the obtained randomness.  
 [ ] Option for a price look-up. Rather than having a fixed price, instead need a call to an oracle to fetch latest price and use that
+[ ] Use the safe math from staking for calculation of interest
 
 ### Revenue
 
@@ -87,6 +87,7 @@ Then you need to:
 [ ] Inputs to functions can be smaller (as for percent input)  
 [ ] Before deployment hardcode program ID  
 [ ] I think `mint_key` in `buy_bond_gated()` and in setting up that gate is redundant
+[ ] Move Gates so they spawn of counter at bond account
 
 ### Testing
 
