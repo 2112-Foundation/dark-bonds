@@ -63,11 +63,8 @@ export class Ibo {
   /** Represents the underlying token for the IBO. */
   public underlyingToken: PublicKey;
 
-  /** Address which receives the provided liquidity. */
-  public recipientAddress: PublicKey;
-
-  /** Address ATA which receives the provided liquidity. */
-  public recipientAddressAccount: Account;
+  /** Stores ata for the account that has tokens to be bonded out. */
+  public iboCoinVault: Account;
 
   /** TODO Can definitely reduce this one. */
   public lockupCounter: number;
@@ -93,18 +90,10 @@ export class Ibo {
   /** An array of LockUp objects associated with the Ibo. */
   public gates: Gate[] = [];
 
-  async setRecipientAddress(recipient: PublicKey) {
-    this.recipientAddress = recipient;
-
-    // this.recipientAddressAccount = await getOrCreateAssociatedTokenAccount(
-    //   this.parent.connection,
-    //   this.admin,
-    //   this.mintSc,
-    //   recipeint
-    // );
-
-    this.parent.mintSc.makeAta(recipient);
-  }
+  // async setRecipientAddress(recipient: PublicKey) {
+  //   this.recipientAddress = recipient;
+  //   this.parent.mintSc.makeAta(recipient);
+  // }
 
   async addLockUp(
     period: number,
@@ -155,31 +144,39 @@ export class Ibo {
         this.parent.programAddress
       )
     )[0];
-
     const newGate = new Gate(gatePda, mintKey, masterKey, editionKey);
-
     this.gates.push(newGate);
-
     this.gateCounter++;
     return newGate;
   }
 
   constructor(
     public parent: Master,
-    /** ATA for this PDA from the specified liquidity tokenx. */
-    public ata: PublicKey,
+
+    /** Account that holds tokens being bonded off. */
+    public vaultAccount: Account,
+
+    /** Address which receives the provided liquidity. */
+    public recipientAddressAccount: Account,
+
     /** Address of this Ibo instance. */
     public address: PublicKey,
+
     /** Fixed rate of conversion between the underlying token and liquidity coin. */
     public fixedExchangeRate: number,
+
     /** The date when the IBO can be purchased. */
     public liveDate: number,
+
     /** The end date for the IBO, needs to be set. */
     public endDate: number,
+
     /** The cut for swaps in % x 100. */
     public swapCut: number,
+
     /** Token being bonded off. */
     public iboMint: PublicKey,
+
     /** The admin address for the IBO. */
     public admin: anchor.web3.Keypair
   ) {
@@ -248,8 +245,8 @@ export class Master {
       this.programAddress
     )[0];
 
-    // Set ATA
-    const ata = await getOrCreateAssociatedTokenAccount(
+    // Get account for ibo ATA
+    const iboAccount = await getOrCreateAssociatedTokenAccount(
       this.connection,
       adminKey,
       iboMint,
@@ -257,13 +254,16 @@ export class Master {
       true
     );
 
-    console.log("diod the ATA");
+    const liquidityAccount = await this.mintSc.makeAta(iboPda);
 
-    console.log("ATA address: ", ata.address.toBase58());
+    // console.log("diod the ATA");
+
+    // console.log("ATA address: ", ata.address.toBase58());
 
     const newIbo = new Ibo(
       this,
-      ata.address,
+      iboAccount,
+      liquidityAccount,
       iboPda,
       fixedExchangeRate,
       liveDate,

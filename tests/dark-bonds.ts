@@ -325,13 +325,13 @@ describe("dark-bonds", async () => {
       adminIbo0
     );
 
-    console.log("ibo.ata: ", ibo.ata.toBase58());
+    console.log("ibo.ata: ", ibo.vaultAccount.address.toBase58());
 
     await mintTo(
       connection,
       mintAuthB,
       mintB,
-      ibo.ata,
+      ibo.vaultAccount.address,
       mintAuthB,
       1000000000000000,
       [],
@@ -464,7 +464,7 @@ describe("dark-bonds", async () => {
     assert(ibo0_state.lockupsLocked == true);
   });
 
-  // xit("Buyer 1 deposits funds at a rate 1", async () => {
+  // it("Buyer 1 deposits funds at a rate 1", async () => {
   //   masterBalance = await getTokenBalance(superAdminAta_sc);
 
   //   // Derive bond from latest counter instance

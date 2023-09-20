@@ -23,7 +23,8 @@ export class Mint {
       this.connection,
       this.mintScAuth,
       this.mintSc,
-      topUpAcc
+      topUpAcc,
+      true
     );
   }
 
