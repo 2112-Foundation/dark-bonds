@@ -16,6 +16,8 @@ import {
  */
 export class Gate {
   constructor(
+    /** Address of the PDA. */
+    public address: PublicKey,
     /** The mint key for the gate. */
     public mintKey: PublicKey,
     /** The master key for the gate. */
@@ -66,6 +68,9 @@ export class Ibo {
   /** TODO Can definitely reduce this one. */
   public lockupCounter: number;
 
+  /** TODO Can definitely reduce this one. */
+  public gateCounter: number;
+
   /** The bond counter for the IBO. */
   public bondCounter: number;
 
@@ -80,6 +85,9 @@ export class Ibo {
 
   /** An array of LockUp objects associated with the Ibo. */
   public lockups: LockUp[] = [];
+
+  /** An array of LockUp objects associated with the Ibo. */
+  public gates: Gate[] = [];
 
   async addLockUp(
     period: number,
@@ -113,6 +121,30 @@ export class Ibo {
     // Increment the lockup counter
     this.lockupCounter++;
     return newLockUp;
+  }
+  async addGate(
+    mintKey: PublicKey,
+    masterKey: PublicKey,
+    editionKey: PublicKey
+  ): Promise<Gate> {
+    // Derive gate PDA
+    const gatePda = (
+      await PublicKey.findProgramAddressSync(
+        [
+          Buffer.from("gate"),
+          Buffer.from(this.address.toBytes()),
+          new BN(this.gateCounter).toArrayLike(Buffer, "be", 4),
+        ],
+        this.parent.programAddress
+      )
+    )[0];
+
+    const newGate = new Gate(gatePda, mintKey, masterKey, editionKey);
+
+    this.gates.push(newGate);
+
+    this.gateCounter++;
+    return newGate;
   }
 
   constructor(

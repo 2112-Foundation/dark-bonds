@@ -459,52 +459,56 @@ describe("dark-bonds", async () => {
     }
   });
 
-  // it("Add gated lockup.", async () => {
-  //   // Add lock-up PDA
-  //   [lockUp3PDA] = PublicKey.findProgramAddressSync(
-  //     [
-  //       Buffer.from("lockup"),
-  //       Buffer.from(ibo.address.toBytes()),
-  //       new BN(3).toArrayLike(Buffer, "be", 4),
-  //     ],
-  //     bondProgram.programId
-  //   );
+  it("Add gated lockup.", async () => {
+    // Add lock-up PDA
+    // [lockUp3PDA] = PublicKey.findProgramAddressSync(
+    //   [
+    //     Buffer.from("lockup"),
+    //     Buffer.from(ibo.address.toBytes()),
+    //     new BN(3).toArrayLike(Buffer, "be", 4),
+    //   ],
+    //   bondProgram.programId
+    // );
 
-  //   const tx = await bondProgram.methods
-  //     .addLockup(new BN(lockUp3Period), new BN(lockUp3Apy))
-  //     .accounts({
-  //       admin: adminIbo0.publicKey,
-  //       ibo: ibo.address,
-  //       lockup: lockUp3PDA,
-  //       systemProgram: anchor.web3.SystemProgram.programId,
-  //     })
-  //     .signers([adminIbo0])
-  //     .rpc();
+    let lockUp3 = await ibo.addLockUp(lockUp2Period, lockUp2Apy, true, 0);
 
-  //   lockup_counter += 1;
+    const tx = await bondProgram.methods
+      .addLockup(new BN(lockUp3Period), new BN(lockUp3Apy))
+      .accounts({
+        admin: ibo.admin.publicKey,
+        ibo: ibo.address,
+        lockup: lockUp3.address,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .signers([ibo.admin])
+      .rpc();
 
-  //   // ADdd PDA for gating details
-  //   [gate1] = PublicKey.findProgramAddressSync(
-  //     [
-  //       Buffer.from("gate"),
-  //       Buffer.from(ibo.address.toBytes()),
-  //       new BN(0).toArrayLike(Buffer, "be", 4),
-  //     ],
-  //     bondProgram.programId
-  //   );
+    // lockup_counter += 1;
 
-  //   const tx2 = await bondProgram.methods
-  //     .addGate(3, 3, mintKey, masterKey, editionKey)
-  //     .accounts({
-  //       admin: adminIbo0.publicKey,
-  //       ibo: ibo.address,
-  //       lockup: lockUp3PDA,
-  //       gate: gate1,
-  //       systemProgram: anchor.web3.SystemProgram.programId,
-  //     })
-  //     .signers([adminIbo0])
-  //     .rpc();
-  // });
+    // ADdd PDA for gating details
+    [gate1] = PublicKey.findProgramAddressSync(
+      [
+        Buffer.from("gate"),
+        Buffer.from(ibo.address.toBytes()),
+        new BN(0).toArrayLike(Buffer, "be", 4),
+      ],
+      bondProgram.programId
+    );
+
+    let gate0: Gate = await ibo.addGate(mintKey, masterKey, editionKey);
+
+    const tx2 = await bondProgram.methods
+      .addGate(3, 3, gate0.mintKey, gate0.masterKey, gate0.creatorKey)
+      .accounts({
+        admin: ibo.admin.publicKey,
+        ibo: ibo.address,
+        lockup: lockUp3.address,
+        gate: gate0.address,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .signers([adminIbo0])
+      .rpc();
+  });
 
   // it("Lock further lockups.", async () => {
   //   const tx_lu1 = await bondProgram.methods
