@@ -21,6 +21,7 @@ import {
 } from "@solana/spl-token";
 import { assert } from "chai";
 import { Ibo, LockUp, Gate, Master } from "./master";
+import { Users } from "./user";
 
 const BN = anchor.BN;
 
@@ -58,39 +59,40 @@ describe("dark-bonds", async () => {
 
   //TODO move that stuff to special class allowing to access keypair and it's ATA if created.
   const adminIbo0 = anchor.web3.Keypair.generate();
-  const bondBuyer1 = anchor.web3.Keypair.generate();
-  const bondBuyer2 = anchor.web3.Keypair.generate();
-  const resaleBuyer1 = anchor.web3.Keypair.generate();
+  // const bondBuyer1 = anchor.web3.Keypair.generate();
+  // const bondBuyer2 = anchor.web3.Keypair.generate();
+  // const resaleBuyer1 = anchor.web3.Keypair.generate();
   const nftWallet = anchor.web3.Keypair.generate();
 
   const shortBond = 16;
 
-  let bondBuyer1ATA_sc: Account;
-  let bondBuyer2ATA_sc: Account;
-  let resaleBuyer1ATA_sc: Account;
-  let masterRecipientATA_sc: Account;
-  let iboAdminATA_sc: Account;
-  let bondBuyer1ATA_b: Account;
-  let bondBuyer2ATA_b: Account;
-  let resaleBuyer1ATA_b: Account;
+  // let bondBuyer1ATA_sc: Account;
+  // let bondBuyer2ATA_sc: Account;
+  // let resaleBuyer1ATA_sc: Account;
+  // let masterRecipientATA_sc: Account;
+  // let iboAdminATA_sc: Account;
+  // let bondBuyer1ATA_b: Account;
+  // let bondBuyer2ATA_b: Account;
+  // let resaleBuyer1ATA_b: Account;
 
-  let bondBuyer2ATA_nft: Account;
+  // let bondBuyer2ATA_nft: Account;
 
-  let bond0ATA_b: Account;
-  let bond1ATA_b: Account;
-  let bond2ATA_b: Account;
-  let bond3ATA_b: Account;
-  let bond4ATA_b: Account;
+  // let bond0ATA_b: Account;
+  // let bond1ATA_b: Account;
+  // let bond2ATA_b: Account;
+  // let bond3ATA_b: Account;
+  // let bond4ATA_b: Account;
 
   // New master struc
+  const mintAuthSC = anchor.web3.Keypair.generate();
+  const mintKeypairSC = anchor.web3.Keypair.generate();
   const master = new Master(bondProgram.programId, connection);
+  const users = new Users(connection, mintAuthSC);
 
   let ibo_index = 0;
 
   // Stable coin mint
   let mintSC: PublicKey;
-  const mintAuthSC = anchor.web3.Keypair.generate();
-  const mintKeypairSC = anchor.web3.Keypair.generate();
 
   // Bond coin mint
   let mintB: PublicKey;
@@ -158,17 +160,13 @@ describe("dark-bonds", async () => {
 
   before(async () => {
     await Promise.all([
-      topUp(bondBuyer1.publicKey),
-      topUp(bondBuyer2.publicKey),
       topUp(mintAuthSC.publicKey),
       topUp(mintKeypairSC.publicKey),
       topUp(mintAuthB.publicKey),
       topUp(mintKeypairB.publicKey),
-      topUp(superAdmin.publicKey),
-      topUp(adminIbo0.publicKey),
-      topUp(resaleBuyer1.publicKey),
-      topUp(nftWallet.publicKey),
     ]);
+
+    console.log("Moint top up done");
 
     [mintSC, mintB] = await Promise.all([
       // liquidity_token mint
@@ -188,104 +186,117 @@ describe("dark-bonds", async () => {
       ),
     ]);
 
-    [
-      bondBuyer1ATA_sc, // Initialise bondBuyer ATAs for the liquidity_token
-      bondBuyer2ATA_sc,
-      resaleBuyer1ATA_sc,
-      iboAdminATA_sc,
-      masterRecipientATA_sc,
-      bondBuyer1ATA_b, // Initialise  ATAs for the bond token
-      bondBuyer2ATA_b,
-      resaleBuyer1ATA_b,
-    ] = await Promise.all([
-      getOrCreateAssociatedTokenAccount(
-        connection,
-        bondBuyer1,
-        mintSC,
-        bondBuyer1.publicKey
-      ),
-      getOrCreateAssociatedTokenAccount(
-        connection,
-        bondBuyer2,
-        mintSC,
-        bondBuyer2.publicKey
-      ),
-      getOrCreateAssociatedTokenAccount(
-        connection,
-        resaleBuyer1,
-        mintSC,
-        resaleBuyer1.publicKey
-      ),
-      getOrCreateAssociatedTokenAccount(
-        connection,
-        adminIbo0,
-        mintSC,
-        adminIbo0.publicKey
-      ),
-      getOrCreateAssociatedTokenAccount(
-        connection,
-        superAdmin,
-        mintSC,
-        superAdmin.publicKey
-      ),
-      getOrCreateAssociatedTokenAccount(
-        connection,
-        bondBuyer1,
-        mintB,
-        bondBuyer1.publicKey
-      ),
-      getOrCreateAssociatedTokenAccount(
-        connection,
-        bondBuyer2,
-        mintB,
-        bondBuyer2.publicKey
-      ),
-      getOrCreateAssociatedTokenAccount(
-        connection,
-        resaleBuyer1,
-        mintB,
-        resaleBuyer1.publicKey
-      ),
-    ]);
-    await Promise.all([
-      // Airdrop liquditi token to the accounts
-      mintTo(
-        connection,
-        mintAuthSC,
-        mintSC,
-        bondBuyer1ATA_sc.address,
-        mintAuthSC,
-        8888888,
-        [],
-        undefined,
-        TOKEN_PROGRAM_ID
-      ),
-
-      mintTo(
-        connection,
-        mintAuthSC,
-        mintSC,
-        bondBuyer2ATA_sc.address,
-        mintAuthSC,
-        10000000000000,
-        [],
-        undefined,
-        TOKEN_PROGRAM_ID
-      ),
-
-      mintTo(
-        connection,
-        mintAuthSC,
-        mintSC,
-        resaleBuyer1ATA_sc.address,
-        mintAuthSC,
-        10000000000,
-        [],
-        undefined,
-        TOKEN_PROGRAM_ID
-      ),
-    ]);
+    users.addMintSc(mintSC);
     master.addLiquidtyToken(mintSC);
+
+    await Promise.all([
+      // topUp(mintAuthB.publicKey),
+      // topUp(mintKeypairB.publicKey),
+      topUp(superAdmin.publicKey),
+      topUp(adminIbo0.publicKey),
+      topUp(nftWallet.publicKey),
+      // Add few users
+      // users.addUsers(5),
+    ]);
+
+    // [
+    //   bondBuyer1ATA_sc, // Initialise bondBuyer ATAs for the liquidity_token
+    //   bondBuyer2ATA_sc,
+    //   resaleBuyer1ATA_sc,
+    //   iboAdminATA_sc,
+    //   masterRecipientATA_sc,
+    //   bondBuyer1ATA_b, // Initialise  ATAs for the bond token
+    //   bondBuyer2ATA_b,
+    //   resaleBuyer1ATA_b,
+    // ] = await Promise.all([
+    //   getOrCreateAssociatedTokenAccount(
+    //     connection,
+    //     bondBuyer1,
+    //     mintSC,
+    //     bondBuyer1.publicKey
+    //   ),
+    //   getOrCreateAssociatedTokenAccount(
+    //     connection,
+    //     bondBuyer2,
+    //     mintSC,
+    //     bondBuyer2.publicKey
+    //   ),
+    //   getOrCreateAssociatedTokenAccount(
+    //     connection,
+    //     resaleBuyer1,
+    //     mintSC,
+    //     resaleBuyer1.publicKey
+    //   ),
+    //   getOrCreateAssociatedTokenAccount(
+    //     connection,
+    //     adminIbo0,
+    //     mintSC,
+    //     adminIbo0.publicKey
+    //   ),
+    //   getOrCreateAssociatedTokenAccount(
+    //     connection,
+    //     superAdmin,
+    //     mintSC,
+    //     superAdmin.publicKey
+    //   ),
+    //   getOrCreateAssociatedTokenAccount(
+    //     connection,
+    //     bondBuyer1,
+    //     mintB,
+    //     bondBuyer1.publicKey
+    //   ),
+    //   getOrCreateAssociatedTokenAccount(
+    //     connection,
+    //     bondBuyer2,
+    //     mintB,
+    //     bondBuyer2.publicKey
+    //   ),
+    //   getOrCreateAssociatedTokenAccount(
+    //     connection,
+    //     resaleBuyer1,
+    //     mintB,
+    //     resaleBuyer1.publicKey
+    //   ),
+    // ]);
+    // await Promise.all([
+    //   // Airdrop liquditi token to the accounts
+    //   mintTo(
+    //     connection,
+    //     mintAuthSC,
+    //     mintSC,
+    //     bondBuyer1ATA_sc.address,
+    //     mintAuthSC,
+    //     8888888,
+    //     [],
+    //     undefined,
+    //     TOKEN_PROGRAM_ID
+    //   ),
+
+    //   mintTo(
+    //     connection,
+    //     mintAuthSC,
+    //     mintSC,
+    //     bondBuyer2ATA_sc.address,
+    //     mintAuthSC,
+    //     10000000000000,
+    //     [],
+    //     undefined,
+    //     TOKEN_PROGRAM_ID
+    //   ),
+
+    //   mintTo(
+    //     connection,
+    //     mintAuthSC,
+    //     mintSC,
+    //     resaleBuyer1ATA_sc.address,
+    //     mintAuthSC,
+    //     10000000000,
+    //     [],
+    //     undefined,
+    //     TOKEN_PROGRAM_ID
+    //   ),
+    // ]);
+
     // Pre mint 2 NFTs and give one to buyer 1
 
     const { nft } = await metaplex.nfts().create({
@@ -321,12 +332,12 @@ describe("dark-bonds", async () => {
     );
 
     // Address for NFT
-    bondBuyer2ATA_nft = await getOrCreateAssociatedTokenAccount(
-      connection,
-      bondBuyer2,
-      mintKey,
-      bondBuyer2.publicKey
-    );
+    // bondBuyer2ATA_nft = await getOrCreateAssociatedTokenAccount(
+    //   connection,
+    //   bondBuyer2,
+    //   mintKey,
+    //   bondBuyer2.publicKey
+    // );
   });
 
   it("Main register initialised!", async () => {
@@ -395,7 +406,7 @@ describe("dark-bonds", async () => {
         ibo: ibo.address,
         systemProgram: anchor.web3.SystemProgram.programId,
       })
-      .signers([adminIbo0])
+      .signers([ibo.admin])
       .rpc();
   });
 
@@ -448,7 +459,7 @@ describe("dark-bonds", async () => {
       let tx = await anchor.web3.sendAndConfirmTransaction(
         anchor.getProvider().connection,
         transaction,
-        [adminIbo0],
+        [ibo.admin],
         {
           skipPreflight: true,
           preflightCommitment: "single",
@@ -460,16 +471,6 @@ describe("dark-bonds", async () => {
   });
 
   it("Add gated lockup.", async () => {
-    // Add lock-up PDA
-    // [lockUp3PDA] = PublicKey.findProgramAddressSync(
-    //   [
-    //     Buffer.from("lockup"),
-    //     Buffer.from(ibo.address.toBytes()),
-    //     new BN(3).toArrayLike(Buffer, "be", 4),
-    //   ],
-    //   bondProgram.programId
-    // );
-
     let lockUp3 = await ibo.addLockUp(lockUp2Period, lockUp2Apy, true, 0);
 
     const tx = await bondProgram.methods
@@ -483,18 +484,6 @@ describe("dark-bonds", async () => {
       .signers([ibo.admin])
       .rpc();
 
-    // lockup_counter += 1;
-
-    // ADdd PDA for gating details
-    [gate1] = PublicKey.findProgramAddressSync(
-      [
-        Buffer.from("gate"),
-        Buffer.from(ibo.address.toBytes()),
-        new BN(0).toArrayLike(Buffer, "be", 4),
-      ],
-      bondProgram.programId
-    );
-
     let gate0: Gate = await ibo.addGate(mintKey, masterKey, editionKey);
 
     const tx2 = await bondProgram.methods
@@ -506,26 +495,26 @@ describe("dark-bonds", async () => {
         gate: gate0.address,
         systemProgram: anchor.web3.SystemProgram.programId,
       })
-      .signers([adminIbo0])
+      .signers([ibo.admin])
       .rpc();
   });
 
-  // it("Lock further lockups.", async () => {
-  //   const tx_lu1 = await bondProgram.methods
-  //     .lock(true, true)
-  //     .accounts({
-  //       admin: adminIbo0.publicKey,
-  //       ibo: ibo.address,
-  //     })
-  //     .signers([adminIbo0])
-  //     .rpc();
+  it("Lock further lockups.", async () => {
+    const tx_lu1 = await bondProgram.methods
+      .lock(true, true)
+      .accounts({
+        admin: ibo.admin.publicKey,
+        ibo: ibo.address,
+      })
+      .signers([ibo.admin])
+      .rpc();
 
-  //   // Assert lock changed to true
-  //   let ibo0_state = await bondProgram.account.ibo.fetch(ibo.address);
-  //   assert(ibo0_state.lockupsLocked == true);
-  // });
+    // Assert lock changed to true
+    let ibo0_state = await bondProgram.account.ibo.fetch(ibo.address);
+    assert(ibo0_state.lockupsLocked == true);
+  });
 
-  // it("Buyer 1 deposits funds at a rate 1", async () => {
+  // xit("Buyer 1 deposits funds at a rate 1", async () => {
   //   masterBalance = await getTokenBalance(masterRecipientATA_sc);
 
   //   // Derive bond from latest counter instance
