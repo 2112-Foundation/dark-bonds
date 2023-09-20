@@ -11,32 +11,35 @@ import {
   Account,
 } from "@solana/spl-token";
 
+/**
+ * To abstract mintint and creating ATAs
+ */
 export class Mint {
   constructor(
     public connection: anchor.web3.Connection,
-    public mintScAuth: anchor.web3.Keypair,
-    public mintSc: PublicKey
+    public mintAuth: anchor.web3.Keypair,
+    public mint: PublicKey
   ) {}
 
   async makeAta(topUpAcc: PublicKey): Promise<Account> {
     return await getOrCreateAssociatedTokenAccount(
       this.connection,
-      this.mintScAuth,
-      this.mintSc,
+      this.mintAuth,
+      this.mint,
       topUpAcc,
       true
     );
   }
 
-  async topUpStable(topUpAccAta: PublicKey, amount: number = 1000) {
-    console.log("this.mintSc: ", this.mintSc.toBase58());
+  async topUpSPl(topUpAccAta: PublicKey, amount: number = 1000) {
+    console.log("this.mintSc: ", this.mint.toBase58());
     try {
       mintTo(
         this.connection,
-        this.mintScAuth,
-        this.mintSc,
+        this.mintAuth,
+        this.mint,
         topUpAccAta,
-        this.mintScAuth,
+        this.mintAuth,
         amount,
         [],
         undefined,

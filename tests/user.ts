@@ -38,10 +38,6 @@ export class Users {
     public mintSC: Mint
   ) {}
 
-  addMintSc(mintSc: PublicKey) {
-    this.mintSc = mintSc;
-  }
-
   async addUser() {
     const user = anchor.web3.Keypair.generate();
 
@@ -50,7 +46,7 @@ export class Users {
 
     // Create an ATA
     const userScAta = await this.mintSC.makeAta(user.publicKey);
-    await this.mintSC.topUpStable(userScAta.address);
+    await this.mintSC.topUpSPl(userScAta.address);
     const userStruct = new User(user.secretKey, user.publicKey, userScAta);
     this.users.push(userStruct);
   }

@@ -12,6 +12,19 @@ import {
 } from "@solana/spl-token";
 import { Mint } from "./mint";
 
+export class Bond {
+  async getIboIdx() {
+    return this.parent.index;
+  }
+  constructor(
+    public parent: Ibo,
+    public address: PublicKey,
+    public account: Account,
+    public lockUpIdx: number,
+    public amount: number
+  ) {}
+}
+
 /**
  * Represents the Gate class with the specified fields.
  */
@@ -84,16 +97,30 @@ export class Ibo {
   /** The tree counter for the IBO. */
   public treeCounter: number;
 
-  /** An array of LockUp objects associated with the Ibo. */
+  /** An array of LockUp objects associated with this Ibo. */
   public lockups: LockUp[] = [];
 
-  /** An array of LockUp objects associated with the Ibo. */
+  /** An array of LockUp objects associated with this Ibo. */
   public gates: Gate[] = [];
 
-  // async setRecipientAddress(recipient: PublicKey) {
-  //   this.recipientAddress = recipient;
-  //   this.parent.mintSc.makeAta(recipient);
-  // }
+  /** An array of LockUp objects associated with this Ibo. */
+  public bonds: Bond[] = [];
+
+  async addBond(lockUpIdx: number, amount: number) {
+    const [bondPDA] = PublicKey.findProgramAddressSync(
+      [
+        Buffer.from("bond"),
+        Buffer.from(this.address.toBytes()),
+        new BN(this.bondCounter).toArrayLike(Buffer, "be", 4),
+      ],
+      this.parent.programAddress
+    );
+    const bondAccount = await this.mintB.makeAta(bondPDA);
+    const bond = new Bond(this, bondPDA, bondAccount, lockUpIdx, amount);
+    this.bondCounter++;
+    this.bonds.push(bond);
+    return bond;
+  }
 
   async addLockUp(
     period: number,
@@ -153,14 +180,17 @@ export class Ibo {
   constructor(
     public parent: Master,
 
+    /** Address of this Ibo instance. */
+    public address: PublicKey,
+
+    /** From origin IBO. */
+    public index: number,
+
     /** Account that holds tokens being bonded off. */
     public vaultAccount: Account,
 
     /** Address which receives the provided liquidity. */
     public recipientAddressAccount: Account,
-
-    /** Address of this Ibo instance. */
-    public address: PublicKey,
 
     /** Fixed rate of conversion between the underlying token and liquidity coin. */
     public fixedExchangeRate: number,
@@ -174,25 +204,27 @@ export class Ibo {
     /** The cut for swaps in % x 100. */
     public swapCut: number,
 
-    /** Token being bonded off. */
-    public iboMint: PublicKey,
+    /** Token being bonded handle. */
+    public mintB: Mint,
 
     /** The admin address for the IBO. */
-    public admin: anchor.web3.Keypair
+    public admin: anchor.web3.Keypair,
+
+    public liquidityMint: PublicKey
   ) {
     this.lockupCounter = 0;
   }
 }
 
 /**
- * Represents the Master class with the specified fields.
+ * Represents the Master class which contains objects mapping to PDA structures of Bonds
  */
 export class Master {
   /** Address of this contract. */
   public programAddress: PublicKey;
 
-  /** Accepted mint address for purchase. */
-  public liqudityToken: PublicKey;
+  /** Address of this contract. */
+  public address: PublicKey;
 
   /** Counter for all of the IBOs to date. */
   public iboCounter: number;
@@ -209,34 +241,15 @@ export class Master {
   /** Recipient field related to the master, not sure if needed. */
   public masterRecipient: PublicKey;
 
-  constructor(
-    programAddress: PublicKey,
-    public connection: anchor.web3.Connection,
-    public mintSc: Mint
-  ) {
-    this.programAddress = programAddress;
-  }
-
-  addLiquidtyToken(liqudityToken: PublicKey) {
-    this.liqudityToken = liqudityToken;
-  }
-
-  getMasterAddress(): PublicKey {
-    return PublicKey.findProgramAddressSync(
-      [Buffer.from("main_register")],
-      this.programAddress
-    )[0];
-  }
-
   async addIbo(
     fixedExchangeRate: number,
     liveDate: number,
     endDate: number,
     swapCut: number,
-    iboMint: PublicKey,
+    mintB: Mint,
+    liquidityMint: PublicKey,
     adminKey: anchor.web3.Keypair
   ): Promise<Ibo> {
-    // Derive Ibo PDA address
     const iboPda = PublicKey.findProgramAddressSync(
       [
         Buffer.from("ibo_instance"),
@@ -245,39 +258,36 @@ export class Master {
       this.programAddress
     )[0];
 
-    // Get account for ibo ATA
-    const iboAccount = await getOrCreateAssociatedTokenAccount(
-      this.connection,
-      adminKey,
-      iboMint,
-      iboPda,
-      true
-    );
-
+    const iboAccount = await mintB.makeAta(iboPda);
     const liquidityAccount = await this.mintSc.makeAta(iboPda);
-
-    // console.log("diod the ATA");
-
-    // console.log("ATA address: ", ata.address.toBase58());
-
     const newIbo = new Ibo(
       this,
+      iboPda,
+      this.iboCounter,
       iboAccount,
       liquidityAccount,
-      iboPda,
       fixedExchangeRate,
       liveDate,
       endDate,
       swapCut,
-      iboMint,
-      adminKey
+      mintB,
+      adminKey,
+      liquidityMint
     );
 
-    // Push to the array
     this.ibos.push(newIbo);
-
-    // Increment counter
     this.iboCounter++;
     return newIbo;
+  }
+  constructor(
+    programAddress: PublicKey,
+    public connection: anchor.web3.Connection,
+    public mintSc: Mint
+  ) {
+    this.programAddress = programAddress;
+    this.address = PublicKey.findProgramAddressSync(
+      [Buffer.from("main_register")],
+      this.programAddress
+    )[0];
   }
 }
