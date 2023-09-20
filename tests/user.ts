@@ -11,6 +11,8 @@ import {
   Account,
 } from "@solana/spl-token";
 
+import { Mint } from "./mint";
+
 export class Bond {
   iboIdx: number;
   amount: number;
@@ -23,7 +25,7 @@ export class User {
     /** Public address */
     public publicKey: PublicKey,
     /** Liquidity ATA address */
-    public liquidityAta: PublicKey
+    public liquidityAccount: Account
   ) {}
 }
 
@@ -32,9 +34,8 @@ export class Users {
   mintSc: PublicKey;
 
   constructor(
-    public connection: anchor.web3.Connection,
-    // public mintSC: PublicKey,
-    public mintScAuth: anchor.web3.Keypair
+    public connection: anchor.web3.Connection, // public mintSC: PublicKey, // public mintScAuth: anchor.web3.Keypair
+    public mintSC: Mint
   ) {}
 
   addMintSc(mintSc: PublicKey) {
@@ -43,13 +44,13 @@ export class Users {
 
   async addUser() {
     const user = anchor.web3.Keypair.generate();
-    // tops up sol
-    this.topUp(user.publicKey);
+
+    // Tops up sol
+    await this.topUp(user.publicKey);
+
     // Create an ATA
-    const userScAta = await this.makeAta(user);
-    console.log("Made ata");
-    // Mints liquidity
-    await this.topUpStable(userScAta);
+    const userScAta = await this.mintSC.makeAta(user.publicKey);
+    await this.mintSC.topUpStable(userScAta.address);
     const userStruct = new User(user.secretKey, user.publicKey, userScAta);
     this.users.push(userStruct);
   }
@@ -60,31 +61,6 @@ export class Users {
       promises.push(this.addUser());
     }
     await Promise.all(promises);
-  }
-
-  async makeAta(topUpAcc: anchor.web3.Keypair): Promise<PublicKey> {
-    return (
-      await getOrCreateAssociatedTokenAccount(
-        this.connection,
-        topUpAcc,
-        this.mintSc,
-        topUpAcc.publicKey
-      )
-    )[0];
-  }
-
-  async topUpStable(topUpAccAta: PublicKey, amount: number = 1000) {
-    mintTo(
-      this.connection,
-      this.mintScAuth,
-      this.mintSc,
-      topUpAccAta,
-      this.mintScAuth,
-      amount,
-      [],
-      undefined,
-      TOKEN_PROGRAM_ID
-    );
   }
 
   async topUp(topUpAcc: PublicKey, amount: number = 200) {

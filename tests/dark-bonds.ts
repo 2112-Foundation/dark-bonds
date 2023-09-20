@@ -22,6 +22,7 @@ import {
 import { assert } from "chai";
 import { Ibo, LockUp, Gate, Master } from "./master";
 import { Users } from "./user";
+import { Mint } from "./mint";
 
 const BN = anchor.BN;
 
@@ -59,6 +60,7 @@ describe("dark-bonds", async () => {
 
   //TODO move that stuff to special class allowing to access keypair and it's ATA if created.
   const adminIbo0 = anchor.web3.Keypair.generate();
+  const masterAdmin = anchor.web3.Keypair.generate();
   // const bondBuyer1 = anchor.web3.Keypair.generate();
   // const bondBuyer2 = anchor.web3.Keypair.generate();
   // const resaleBuyer1 = anchor.web3.Keypair.generate();
@@ -69,8 +71,8 @@ describe("dark-bonds", async () => {
   // let bondBuyer1ATA_sc: Account;
   // let bondBuyer2ATA_sc: Account;
   // let resaleBuyer1ATA_sc: Account;
-  // let masterRecipientATA_sc: Account;
-  // let iboAdminATA_sc: Account;
+  let superAdminAta_sc: Account;
+  let iboAdmin0ATA_sc: Account;
   // let bondBuyer1ATA_b: Account;
   // let bondBuyer2ATA_b: Account;
   // let resaleBuyer1ATA_b: Account;
@@ -86,8 +88,9 @@ describe("dark-bonds", async () => {
   // New master struc
   const mintAuthSC = anchor.web3.Keypair.generate();
   const mintKeypairSC = anchor.web3.Keypair.generate();
-  const master = new Master(bondProgram.programId, connection);
-  const users = new Users(connection, mintAuthSC);
+  let master: Master; // = new Master(bondProgram.programId, connection);
+  let users: Users; // = new Users(connection, mintAuthSC);
+  let mintSc: Mint;
 
   let ibo_index = 0;
 
@@ -186,8 +189,13 @@ describe("dark-bonds", async () => {
       ),
     ]);
 
-    users.addMintSc(mintSC);
-    master.addLiquidtyToken(mintSC);
+    // init mints
+    mintSc = new Mint(connection, mintAuthSC, mintSC);
+    master = new Master(bondProgram.programId, connection, mintSc);
+    users = new Users(connection, mintSc);
+
+    // users.addMintSc(mintSC);
+    // master.addLiquidtyToken(mintSC);
 
     await Promise.all([
       // topUp(mintAuthB.publicKey),
@@ -196,81 +204,23 @@ describe("dark-bonds", async () => {
       topUp(adminIbo0.publicKey),
       topUp(nftWallet.publicKey),
       // Add few users
-      // users.addUsers(5),
+      users.addUsers(10),
     ]);
 
-    // [
-    //   bondBuyer1ATA_sc, // Initialise bondBuyer ATAs for the liquidity_token
-    //   bondBuyer2ATA_sc,
-    //   resaleBuyer1ATA_sc,
-    //   iboAdminATA_sc,
-    //   masterRecipientATA_sc,
-    //   bondBuyer1ATA_b, // Initialise  ATAs for the bond token
-    //   bondBuyer2ATA_b,
-    //   resaleBuyer1ATA_b,
-    // ] = await Promise.all([
-    //   getOrCreateAssociatedTokenAccount(
-    //     connection,
-    //     bondBuyer1,
-    //     mintSC,
-    //     bondBuyer1.publicKey
-    //   ),
-    //   getOrCreateAssociatedTokenAccount(
-    //     connection,
-    //     bondBuyer2,
-    //     mintSC,
-    //     bondBuyer2.publicKey
-    //   ),
-    //   getOrCreateAssociatedTokenAccount(
-    //     connection,
-    //     resaleBuyer1,
-    //     mintSC,
-    //     resaleBuyer1.publicKey
-    //   ),
-    //   getOrCreateAssociatedTokenAccount(
-    //     connection,
-    //     adminIbo0,
-    //     mintSC,
-    //     adminIbo0.publicKey
-    //   ),
-    //   getOrCreateAssociatedTokenAccount(
-    //     connection,
-    //     superAdmin,
-    //     mintSC,
-    //     superAdmin.publicKey
-    //   ),
-    //   getOrCreateAssociatedTokenAccount(
-    //     connection,
-    //     bondBuyer1,
-    //     mintB,
-    //     bondBuyer1.publicKey
-    //   ),
-    //   getOrCreateAssociatedTokenAccount(
-    //     connection,
-    //     bondBuyer2,
-    //     mintB,
-    //     bondBuyer2.publicKey
-    //   ),
-    //   getOrCreateAssociatedTokenAccount(
-    //     connection,
-    //     resaleBuyer1,
-    //     mintB,
-    //     resaleBuyer1.publicKey
-    //   ),
-    // ]);
-    // await Promise.all([
-    //   // Airdrop liquditi token to the accounts
-    //   mintTo(
-    //     connection,
-    //     mintAuthSC,
-    //     mintSC,
-    //     bondBuyer1ATA_sc.address,
-    //     mintAuthSC,
-    //     8888888,
-    //     [],
-    //     undefined,
-    //     TOKEN_PROGRAM_ID
-    //   ),
+    // Create SC ATAs for admin accounts
+    superAdminAta_sc = await getOrCreateAssociatedTokenAccount(
+      connection,
+      superAdmin,
+      mintSC,
+      superAdmin.publicKey
+    );
+
+    iboAdmin0ATA_sc = await getOrCreateAssociatedTokenAccount(
+      connection,
+      superAdmin,
+      mintSC,
+      superAdmin.publicKey
+    );
 
     //   mintTo(
     //     connection,
@@ -515,7 +465,7 @@ describe("dark-bonds", async () => {
   });
 
   // xit("Buyer 1 deposits funds at a rate 1", async () => {
-  //   masterBalance = await getTokenBalance(masterRecipientATA_sc);
+  //   masterBalance = await getTokenBalance(superAdminAta_sc);
 
   //   // Derive bond from latest counter instance
   //   [bond0] = PublicKey.findProgramAddressSync(
@@ -547,9 +497,9 @@ describe("dark-bonds", async () => {
   //       ibo: ibo.address,
   //       lockup: lockUp0PDA,
   //       buyerAta: bondBuyer1ATA_sc.address,
-  //       recipientAta: iboAdminATA_sc.address,
+  //       recipientAta: iboAdmin0ATA_sc.address,
   //       master: mainIbo,
-  //       masterRecipientAta: masterRecipientATA_sc.address,
+  //       masterRecipientAta: superAdminAta_sc.address,
   //       iboAta: ibo0ATA_b.address,
   //       bondAta: bond0ATA_b.address,
   //       systemProgram: anchor.web3.SystemProgram.programId,
@@ -572,7 +522,7 @@ describe("dark-bonds", async () => {
   //   // let ibo0_state = await bondProgram.account.ibo.fetch(ibo.address);
   //   // console.log("ibo0_state: ", ibo0_state.)
 
-  //   let masterBalanceEnd = await getTokenBalance(masterRecipientATA_sc);
+  //   let masterBalanceEnd = await getTokenBalance(superAdminAta_sc);
   //   console.log("masterBalanceEnd: ", masterBalanceEnd);
   //   assert(
   //     purchaseAmount * 0.05 == masterBalanceEnd,
@@ -615,8 +565,8 @@ describe("dark-bonds", async () => {
   //       lockup: lockUp1PDA,
   //       master: mainIbo,
   //       buyerAta: bondBuyer2ATA_sc.address,
-  //       recipientAta: iboAdminATA_sc.address,
-  //       masterRecipientAta: masterRecipientATA_sc.address,
+  //       recipientAta: iboAdmin0ATA_sc.address,
+  //       masterRecipientAta: superAdminAta_sc.address,
   //       iboAta: ibo0ATA_b.address,
   //       bondAta: bond1ATA_b.address,
   //       systemProgram: anchor.web3.SystemProgram.programId,
@@ -639,7 +589,7 @@ describe("dark-bonds", async () => {
   //   console.log("stable coin mint: ", mintSC.toBase58());
   //   console.log("bond coin mint: ", mintB.toBase58());
 
-  //   let masterBalanceEnd = await getTokenBalance(masterRecipientATA_sc);
+  //   let masterBalanceEnd = await getTokenBalance(superAdminAta_sc);
   //   console.log("masterBalanceEnd: ", masterBalanceEnd);
   //   assert(
   //     purchaseAmount * 0.05 == masterBalanceEnd - masterBalance,
@@ -683,8 +633,8 @@ describe("dark-bonds", async () => {
   //       lockup: lockUp2PDA,
   //       master: mainIbo,
   //       buyerAta: bondBuyer2ATA_sc.address,
-  //       recipientAta: iboAdminATA_sc.address,
-  //       masterRecipientAta: masterRecipientATA_sc.address,
+  //       recipientAta: iboAdmin0ATA_sc.address,
+  //       masterRecipientAta: superAdminAta_sc.address,
   //       iboAta: ibo0ATA_b.address,
   //       bondAta: bond2ATA_b.address,
   //       systemProgram: anchor.web3.SystemProgram.programId,
@@ -707,7 +657,7 @@ describe("dark-bonds", async () => {
   //     bond1_state.totalClaimable.toString()
   //   );
 
-  //   let masterBalanceEnd = await getTokenBalance(masterRecipientATA_sc);
+  //   let masterBalanceEnd = await getTokenBalance(superAdminAta_sc);
   //   console.log("masterBalance:          ", masterBalance);
   //   console.log("masterBalanceEnd:       ", masterBalanceEnd);
   //   console.log("megaPurchase:           ", megaPurchase);
@@ -917,10 +867,10 @@ describe("dark-bonds", async () => {
   //       bond: bond1,
   //       buyerAta: resaleBuyer1ATA_sc.address,
   //       master: mainIbo,
-  //       masterRecipientAta: masterRecipientATA_sc.address,
+  //       masterRecipientAta: superAdminAta_sc.address,
   //       sellerAta: bondBuyer2ATA_sc.address,
   //       ibo: ibo.address,
-  //       iboAdminAta: iboAdminATA_sc.address,
+  //       iboAdminAta: iboAdmin0ATA_sc.address,
   //       tokenProgram: TOKEN_PROGRAM_ID,
   //       associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
   //     })
@@ -980,10 +930,10 @@ describe("dark-bonds", async () => {
   //       gate: gate1,
   //       master: mainIbo,
   //       buyerAta: bondBuyer2ATA_sc.address,
-  //       recipientAta: iboAdminATA_sc.address,
+  //       recipientAta: iboAdmin0ATA_sc.address,
   //       iboAta: ibo0ATA_b.address,
   //       bondAta: bond4ATA_b.address,
-  //       masterRecipientAta: masterRecipientATA_sc.address,
+  //       masterRecipientAta: superAdminAta_sc.address,
 
   //       // NFT
   //       mint: mintKey,

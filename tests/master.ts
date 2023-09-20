@@ -10,6 +10,7 @@ import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   Account,
 } from "@solana/spl-token";
+import { Mint } from "./mint";
 
 /**
  * Represents the Gate class with the specified fields.
@@ -65,6 +66,9 @@ export class Ibo {
   /** Address which receives the provided liquidity. */
   public recipientAddress: PublicKey;
 
+  /** Address ATA which receives the provided liquidity. */
+  public recipientAddressAccount: Account;
+
   /** TODO Can definitely reduce this one. */
   public lockupCounter: number;
 
@@ -88,6 +92,19 @@ export class Ibo {
 
   /** An array of LockUp objects associated with the Ibo. */
   public gates: Gate[] = [];
+
+  async setRecipientAddress(recipient: PublicKey) {
+    this.recipientAddress = recipient;
+
+    // this.recipientAddressAccount = await getOrCreateAssociatedTokenAccount(
+    //   this.parent.connection,
+    //   this.admin,
+    //   this.mintSc,
+    //   recipeint
+    // );
+
+    this.parent.mintSc.makeAta(recipient);
+  }
 
   async addLockUp(
     period: number,
@@ -197,7 +214,8 @@ export class Master {
 
   constructor(
     programAddress: PublicKey,
-    public connection: anchor.web3.Connection
+    public connection: anchor.web3.Connection,
+    public mintSc: Mint
   ) {
     this.programAddress = programAddress;
   }
