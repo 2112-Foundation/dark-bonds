@@ -11,17 +11,39 @@ import {
   Account,
 } from "@solana/spl-token";
 import { Mint } from "./mint";
+import { now } from "@metaplex-foundation/js";
 
 export class Bond {
-  async getIboIdx() {
+  swapPrice: number = 0;
+  ownerBondAccount: Account;
+  ownerLiquidityAccount: Account;
+  getIboIdx(): number {
     return this.parent.index;
   }
+
+  setSwap(swapPrice: number) {
+    this.swapPrice = swapPrice;
+  }
+
+  setOwner(ownerBondAccount: Account, ownerLiquidityAccount: Account) {
+    this.ownerBondAccount = ownerBondAccount;
+    this.ownerLiquidityAccount = ownerLiquidityAccount;
+  }
+
+  async split(amount: number) {
+    this.amount -= amount;
+    return await this.parent.addBond(this.lockUpIdx, amount);
+  }
+
   constructor(
     public parent: Ibo,
+    public idx: number,
     public address: PublicKey,
     public account: Account,
     public lockUpIdx: number,
-    public amount: number
+    /** Amount in bond token to be given out. */
+    public amount: number,
+    public bondStart: number = Date.now()
   ) {}
 }
 
@@ -48,6 +70,8 @@ export class LockUp {
   constructor(
     /** Address of the PDA. */
     public address: PublicKey,
+    /** Index of this lockup gate. */
+    public index: number,
     /** Duration in seconds for the lockup. */
     public period: number,
     /** The yearly gain for the lockup. */
@@ -106,7 +130,19 @@ export class Ibo {
   /** An array of LockUp objects associated with this Ibo. */
   public bonds: Bond[] = [];
 
+  // Function that returns any bond that is marked as being on a swap
+  getBondsOnSwap(): Bond[] {
+    return this.bonds.filter((bond) => bond.swapPrice > 0);
+  }
+
+  getBondToken(lockUpIdx: number, stableAmount: number) {
+    const lockUp: LockUp = this.lockups[lockUpIdx];
+    const gains = lockUp.apy * stableAmount * (lockUp.period / 31536000);
+    return gains;
+  }
+
   async addBond(lockUpIdx: number, amount: number) {
+    console.log("Using bond counter: ", this.bondCounter);
     const [bondPDA] = PublicKey.findProgramAddressSync(
       [
         Buffer.from("bond"),
@@ -116,7 +152,19 @@ export class Ibo {
       this.parent.programAddress
     );
     const bondAccount = await this.mintB.makeAta(bondPDA);
-    const bond = new Bond(this, bondPDA, bondAccount, lockUpIdx, amount);
+
+    // Get how much token will be locked up
+    const lockedBondToken = this.getBondToken(lockUpIdx, amount);
+
+    console.log("Stroign in bond class: ", amount);
+    const bond = new Bond(
+      this,
+      this.bondCounter,
+      bondPDA,
+      bondAccount,
+      lockUpIdx,
+      lockedBondToken
+    );
     this.bondCounter++;
     this.bonds.push(bond);
     return bond;
@@ -138,9 +186,10 @@ export class Ibo {
       this.parent.programAddress
     );
 
-    // Instantiate lock wth provided styff, if gate is empty set gatPrsent to false
+    // Instantiate lock wth provided stuff, if gate is empty set gatPrsent to false
     const newLockUp = new LockUp(
       lockUpPda,
+      this.lockupCounter,
       period,
       apy,
       matureOnly,
@@ -213,6 +262,8 @@ export class Ibo {
     public liquidityMint: PublicKey
   ) {
     this.lockupCounter = 0;
+    this.bondCounter = 0;
+    this.gateCounter = 0;
   }
 }
 

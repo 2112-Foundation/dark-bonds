@@ -6,10 +6,14 @@ use anchor_lang::prelude::*;
 
 #[account]
 pub struct Lockup {
-    pub period: i64, // In seconds
-    pub apy: f64, // yearly gain for that lockup
+    /** Minimum lockup period in seconds. */
+    pub period: i64,
+    /** Yearly APY for this lockup */
+    pub apy: f64,
+    /** Pointer to the gate that will allow this lock up to be used */
     pub gate_counter: u32, // TODO check that is zero for normal buy
-    pub mature_only: bool, // Will be transfered to the bond
+    /** Can only withdraw all at once at the end */
+    pub mature_only: bool,
 }
 
 impl Lockup {

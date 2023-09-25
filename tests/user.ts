@@ -12,13 +12,11 @@ import {
 } from "@solana/spl-token";
 
 import { Mint } from "./mint";
-
-export class Bond {
-  iboIdx: number;
-  amount: number;
-}
+import { Bond } from "./master";
 
 export class User {
+  /** Bond's owned by the user */
+  public bonds: Bond[] = [];
   constructor(
     /** Private key */
     public secretKey: Uint8Array,
@@ -27,16 +25,42 @@ export class User {
     /** Liquidity ATA address */
     public liquidityAccount: Account
   ) {}
+
+  async addBond(bond: Bond): Promise<Bond> {
+    // Set owner of bond to be user
+    bond.setOwner(
+      await bond.parent.mintB.makeAta(this.publicKey),
+      this.liquidityAccount
+    );
+    this.bonds.push(bond);
+    return bond;
+  }
+
+  removeBond(/** Index of users bond */ bondIdx: number): Bond {
+    const retBP = this.bonds[bondIdx];
+    this.bonds.splice(bondIdx, 1);
+    return retBP;
+  }
 }
 
 export class Users {
   users: User[] = [];
   mintSc: PublicKey;
+  constructor(public connection: anchor.web3.Connection, public mintSC: Mint) {}
 
-  constructor(
-    public connection: anchor.web3.Connection, // public mintSC: PublicKey, // public mintScAuth: anchor.web3.Keypair
-    public mintSC: Mint
-  ) {}
+  // Transfers bond from user x to user y
+  async transferBond(
+    /** Index of user x */ userFromIdx: number,
+    /** Index of user y */ userToIdx: number,
+    /** Index of bond */ bondIdx: number,
+    /** Amount of bond to transfer */ amount: number
+  ) {
+    // Get bond to transfer
+    const bond: Bond = this.users[userFromIdx].removeBond(bondIdx);
+
+    // Add bond to user y
+    await this.users[userToIdx].addBond(bond);
+  }
 
   async addUser() {
     const user = anchor.web3.Keypair.generate();
@@ -46,7 +70,7 @@ export class Users {
 
     // Create an ATA
     const userScAta = await this.mintSC.makeAta(user.publicKey);
-    await this.mintSC.topUpSPl(userScAta.address);
+    await this.mintSC.topUpSPl(userScAta.address, 100000000);
     const userStruct = new User(user.secretKey, user.publicKey, userScAta);
     this.users.push(userStruct);
   }

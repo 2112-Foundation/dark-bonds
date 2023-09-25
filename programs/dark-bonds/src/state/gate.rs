@@ -10,3 +10,6 @@ pub struct Gate {
     pub master_key: Pubkey,
     pub creator_key: Pubkey,
 }
+
+// Need to add verification functions here
+// Also different types of a gate

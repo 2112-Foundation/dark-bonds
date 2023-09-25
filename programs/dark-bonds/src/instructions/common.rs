@@ -190,7 +190,7 @@ pub fn purchase_mechanics<'info>(
 
     // Create a new bond instance PDA
     let maturity_stamp: i64 = lockup.get_maturity_stamp();
-    bond.new(buyer.key(), maturity_stamp, total_gains, lockup.mature_only);
+    bond.new(buyer.key(), maturity_stamp, total_gains, lockup.mature_only, ibo.bond_counter);
 
     // Increment counter of all the issued bonds
     ibo.bond_counter += 1;

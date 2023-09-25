@@ -48,5 +48,6 @@ export class Mint {
     } catch (e) {
       console.log(e);
     }
+    console.log("SPL topped up");
   }
 }

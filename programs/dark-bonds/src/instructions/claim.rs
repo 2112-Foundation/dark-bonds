@@ -31,6 +31,9 @@ impl<'info> Claim<'info> {
 pub fn claim(ctx: Context<Claim>, ibo_address: Pubkey, bond_idx: u32) -> Result<()> {
     let bond: &mut Account<Bond> = &mut ctx.accounts.bond;
 
+    msg!("\n\nProvided bond idx: {:?}", bond_idx);
+    msg!("Stored bond idx: {:?}", bond.idx);
+
     // Ensure can only withdraw once a day
     // require!(bond.time_elapsed(), ErrorCode::WithdrawTooEarly);
 
@@ -48,10 +51,13 @@ pub fn claim(ctx: Context<Claim>, ibo_address: Pubkey, bond_idx: u32) -> Result<
     // Update withdraw date to now
     bond.update_claim_date();
 
-    let (_, bump) = anchor_lang::prelude::Pubkey::find_program_address(
+    let (l, bump) = anchor_lang::prelude::Pubkey::find_program_address(
         &["bond".as_bytes(), ibo_address.as_ref(), &bond_idx.to_be_bytes()],
         &ctx.program_id
     );
+
+    msg!("derived: {:?} ", l);
+    msg!("stored : {:?} ", bond.key());
     let seeds = &["bond".as_bytes(), ibo_address.as_ref(), &bond_idx.to_be_bytes(), &[bump]];
 
     msg!("total claimable_now: {:?}", bond.total_claimable);

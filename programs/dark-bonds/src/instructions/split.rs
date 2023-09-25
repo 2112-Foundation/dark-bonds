@@ -56,6 +56,7 @@ pub fn split(
     let new_bond: &mut Account<Bond> = &mut ctx.accounts.new_bond;
     let owner: &Signer = &mut ctx.accounts.owner;
     let master: &mut Account<Master> = &mut ctx.accounts.master;
+    let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
 
     let percent_new_fraction: f64 = (percent_new as f64) / 100.0;
 
@@ -65,7 +66,15 @@ pub fn split(
 
     // Update existing bond
     bond.total_claimable = balance_old_bond;
-    new_bond.total_claimable = balance_new_bond;
+
+    // Set new bond
+    new_bond.new(
+        owner.key(),
+        bond.maturity_date,
+        balance_new_bond,
+        bond.mature_only,
+        ibo.bond_counter
+    );
 
     // Transfer lamports to the master recipient account
     anchor_lang::solana_program::program::invoke(
@@ -99,8 +108,6 @@ pub fn split(
     // Increment counter of all bonds issued
     let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
     ibo.bond_counter += 1;
-
-    // TODO check if actual amount gets transfered in tests
 
     Ok(())
 }
