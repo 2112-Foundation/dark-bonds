@@ -61,7 +61,8 @@ pub mod dark_bonds {
         lockup_idx: u32,
         mint_key: Pubkey,
         creator_key: Pubkey,
-        master_key: Pubkey
+        master_key: Pubkey,
+        gate_type: bool
     ) -> Result<()> {
         instructions::add_gate::add_gate(
             ctx,
@@ -69,7 +70,8 @@ pub mod dark_bonds {
             lockup_idx,
             mint_key,
             creator_key,
-            master_key
+            master_key,
+            gate_type
         )
     }
 

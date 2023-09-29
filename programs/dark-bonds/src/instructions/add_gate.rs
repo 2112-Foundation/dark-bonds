@@ -18,7 +18,7 @@ pub struct AddGate<'info> {
         seeds = ["gate".as_bytes(), ibo.key().as_ref(), &ibo.gate_counter.to_be_bytes()],
         bump,
         payer = admin,
-        space = 400
+        space = 400 // TODO fetch size based on bool
     )]
     pub gate: Account<'info, Gate>,
     pub system_program: Program<'info, System>,
@@ -32,18 +32,31 @@ pub fn add_gate(
     _lockup_idx: u32,
     mint_key: Pubkey,
     creator_key: Pubkey,
-    master_key: Pubkey
+    master_key: Pubkey,
+    gate_type: bool
 ) -> Result<()> {
     let lockup: &mut Account<Lockup> = &mut ctx.accounts.lockup;
     let gate: &mut Account<Gate> = &mut ctx.accounts.gate;
 
-    gate.master_key = master_key;
-    gate.creator_key = creator_key;
-    gate.mint_key = mint_key;
+    // Match gate type
+    if gate_type {
+        // Instantiate spl type here
+        let spl: SplData = SplData {
+            mint_key: mint_key,
+        };
 
-    msg!("master_key: {:?}", master_key);
-    msg!("creator_key: {:?}", creator_key);
-    msg!("mint_key: {:?}", mint_key);
+        gate.verification = GateType::Spl(spl);
+    } else {
+        let nft: CollectionData = CollectionData {
+            mint_key: mint_key,
+            master_key: master_key,
+            creator_key: creator_key,
+        };
+
+        // Instrantu
+
+        gate.verification = GateType::Collection(nft);
+    }
 
     // Increment individuall gate counter
     lockup.gate_counter += 1;

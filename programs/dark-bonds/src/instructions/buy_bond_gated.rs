@@ -67,69 +67,69 @@ pub struct GatedBuy<'info> {
 // TODO possibly checking data from GATE against an account provided by the user
 // rather then reading it from the metaplex account
 
-impl<'info> GatedBuy<'info> {
-    fn verify(&self, _mint_key: Pubkey, master_key: Pubkey, creator_key: Pubkey) -> Result<()> {
-        let metadata: Metadata = Metadata::try_from(&self.nft_metadata_account)?;
-        // Verify NFT token account
-        // Check if the owner of the token account is the buyer
-        // if self.nft_token_account.owner != self.buyer.key() {
-        //     return Err(ErrorCode::InvalidNFTAccountOwner.into());
-        // }
-        // // Check if the mint of the token account is the mint provided
-        // if self.nft_token_account.mint != self.mint.key() {
-        //     return Err(ErrorCode::InvalidNFTAccountMint.into());
-        // }
-        // // Check if the amount in the token account is exactly 1 (as expected for an NFT)
-        // if self.nft_token_account.amount != 1 {
-        //     return Err(ErrorCode::InvalidNFTAccountAmount.into());
-        // }
+// impl<'info> GatedBuy<'info> {
+//     fn verify(&self, _mint_key: Pubkey, master_key: Pubkey, creator_key: Pubkey) -> Result<()> {
+//         let metadata: Metadata = Metadata::try_from(&self.nft_metadata_account)?;
+//         // Verify NFT token account
+//         // Check if the owner of the token account is the buyer
+//         // if self.nft_token_account.owner != self.buyer.key() {
+//         //     return Err(ErrorCode::InvalidNFTAccountOwner.into());
+//         // }
+//         // // Check if the mint of the token account is the mint provided
+//         // if self.nft_token_account.mint != self.mint.key() {
+//         //     return Err(ErrorCode::InvalidNFTAccountMint.into());
+//         // }
+//         // // Check if the amount in the token account is exactly 1 (as expected for an NFT)
+//         // if self.nft_token_account.amount != 1 {
+//         //     return Err(ErrorCode::InvalidNFTAccountAmount.into());
+//         // }
 
-        // Verify NFT Mint
-        // Check if the master edition account key matches the provided master key
-        if master_key != self.nft_master_edition_account.key() {
-            return Err(ErrorCode::InvalidMasterEdition.into());
-        }
+//         // Verify NFT Mint
+//         // Check if the master edition account key matches the provided master key
+//         if master_key != self.nft_master_edition_account.key() {
+//             return Err(ErrorCode::InvalidMasterEdition.into());
+//         }
 
-        // metadata.data.
+//         // metadata.data.
 
-        // Check if the master edition account contains any data
-        if self.nft_master_edition_account.data_is_empty() {
-            return Err(ErrorCode::InvalidMasterEdition.into());
-        }
+//         // Check if the master edition account contains any data
+//         if self.nft_master_edition_account.data_is_empty() {
+//             return Err(ErrorCode::InvalidMasterEdition.into());
+//         }
 
-        // Print the master key and the master edition account key for debugging purposes
-        msg!("master_key: {:?}", master_key);
-        msg!("nft_master_edition_account: {:?}", self.nft_master_edition_account.key());
+//         // Print the master key and the master edition account key for debugging purposes
+//         msg!("master_key: {:?}", master_key);
+//         msg!("nft_master_edition_account: {:?}", self.nft_master_edition_account.key());
 
-        // Verify NFT metadata
-        // Extract the metadata from the metadata account and check if its mint matches the provided mint
-        // let metadata = Metadata::from_account_info(&self.nft_metadata_account)?;
-        if metadata.mint != self.mint.key() {
-            return Err(ErrorCode::InvalidMetadata.into());
-        }
+//         // Verify NFT metadata
+//         // Extract the metadata from the metadata account and check if its mint matches the provided mint
+//         // let metadata = Metadata::from_account_info(&self.nft_metadata_account)?;
+//         if metadata.mint != self.mint.key() {
+//             return Err(ErrorCode::InvalidMetadata.into());
+//         }
 
-        // Check if the metadata contains any data
-        // if metadata.data.is_empty() {
-        //     return Err(ErrorCode::InvalidMetadata.into());
-        // }
+//         // Check if the metadata contains any data
+//         // if metadata.data.is_empty() {
+//         //     return Err(ErrorCode::InvalidMetadata.into());
+//         // }
 
-        // Verify NFT creator
-        // Check if there's any creator in the metadata that matches the provided creator key and is verified
-        if
-            !metadata.creators.iter().any(|creator_vec| {
-                if let Some(creator) = creator_vec.first() {
-                    creator.address == creator_key && creator.verified
-                } else {
-                    false
-                }
-            })
-        {
-            return Err(ErrorCode::InvalidCreator.into());
-        }
+//         // Verify NFT creator
+//         // Check if there's any creator in the metadata that matches the provided creator key and is verified
+//         if
+//             !metadata.creators.iter().any(|creator_vec| {
+//                 if let Some(creator) = creator_vec.first() {
+//                     creator.address == creator_key && creator.verified
+//                 } else {
+//                     false
+//                 }
+//             })
+//         {
+//             return Err(ErrorCode::InvalidCreator.into());
+//         }
 
-        Ok(())
-    }
-}
+//         Ok(())
+//     }
+// }
 
 // PDA for acceptable mints
 // Extra cut for deposit which goes on to make LP in raydium
@@ -143,9 +143,38 @@ pub fn buy_bond_gated(
     stable_amount_liquidity: u64
 ) -> Result<()> {
     // Check that the caller is the owner of the desired NFT
-    let gate = ctx.accounts.gate.clone();
-    ctx.accounts.verify(gate.mint_key, gate.master_key, gate.creator_key)?;
+    let gate: Account<'_, Gate> = ctx.accounts.gate.clone();
+    // ctx.accounts.verify(gate.mint_key, gate.master_key, gate.creator_key)?
 
+    // // Need to match the gate type
+    // match gate.verification {
+    //     GateType::Spl(spl) => {
+    //         // gate.verification = GateType::Spl(spl);
+    //     }
+    //     GateType::Collection(nft) => {
+    //         // gate.verification.verify(nft.mint_key, nft.master_key, nft.creator_key)?;
+
+    //         // Access the collection account
+
+    //     }
+    // }
+
+    // Match against the gate's verification type
+    // Match against the gate's verification type
+    match &gate.verification {
+        GateType::Spl(spl) => {
+            let mint_key = &spl.mint_key;
+            spl.verify(*mint_key)?;
+        }
+        GateType::Collection(nft) => {
+            let mint_key = &nft.mint_key;
+            let master_key = &nft.master_key;
+            let creator_key = &nft.creator_key;
+            nft.verify((*mint_key, *master_key, *creator_key))?;
+        }
+    }
+
+    // PAY
     purchase_mechanics(
         &ctx.accounts.buyer,
         &ctx.accounts.lockup,
