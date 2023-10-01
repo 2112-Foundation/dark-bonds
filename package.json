@@ -2,6 +2,7 @@
     "scripts": {
         "lint:fix": "prettier */*.js \"*/**/*{.js,.ts}\" -w",
         "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check",
+        "bd": "anchor build && anchor deploy",
         "val": "solana-test-validator -ud --quiet --reset --bpf-program metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s ./metaplex_token_metadata_program.so"
     },
     "dependencies": {

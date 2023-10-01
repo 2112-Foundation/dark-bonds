@@ -189,7 +189,7 @@ pub fn purchase_mechanics<'info>(
     // msg!("provided mint: {:?}", ctx.accounts.recipient_ata.mint);
 
     // Create a new bond instance PDA
-    let maturity_stamp: i64 = lockup.get_maturity_stamp();
+    let maturity_stamp: i64 = lockup.compute_bond_completion_date();
     bond.new(buyer.key(), maturity_stamp, total_gains, lockup.mature_only, ibo.bond_counter);
 
     // Increment counter of all the issued bonds

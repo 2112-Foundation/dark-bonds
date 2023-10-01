@@ -38,6 +38,9 @@ pub fn claim(ctx: Context<Claim>, ibo_address: Pubkey, bond_idx: u32) -> Result<
     // Ensure can only withdraw once a day
     // require!(bond.time_elapsed(), ErrorCode::WithdrawTooEarly);
 
+    // Ensure the bond is not one of those where you can only claim it all at the end
+    // require!(!bond.claim_all, ErrorCode::ClaimAllBond);
+
     // Calculate balance that can be witdhrawn
     let claimable_now = if Clock::get().unwrap().unix_timestamp > bond.maturity_date {
         msg!("\n\nBond lock-up is OVER");
@@ -47,18 +50,16 @@ pub fn claim(ctx: Context<Claim>, ibo_address: Pubkey, bond_idx: u32) -> Result<
         bond.claim_amount()?
     };
 
-    msg!("\nclaim: {:?}", claimable_now);
+    msg!("\nClaiming now: {:?}", claimable_now);
 
     // Update withdraw date to now
     bond.update_claim_date();
 
-    let (l, bump) = anchor_lang::prelude::Pubkey::find_program_address(
+    let (_, bump) = anchor_lang::prelude::Pubkey::find_program_address(
         &["bond".as_bytes(), ibo_address.as_ref(), &bond_idx.to_be_bytes()],
         &ctx.program_id
     );
 
-    msg!("derived: {:?} ", l);
-    msg!("stored : {:?} ", bond.key());
     let seeds = &["bond".as_bytes(), ibo_address.as_ref(), &bond_idx.to_be_bytes(), &[bump]];
 
     msg!("total claimable_now: {:?}", bond.total_claimable);

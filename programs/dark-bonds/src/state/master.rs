@@ -5,15 +5,12 @@ use anchor_lang::prelude::*;
 
 #[account]
 pub struct Master {
-    // Counter for all of the IBOs to date
+    /** Counter for all of the IBOs intialised to date.*/
     pub ibo_counter: u64,
-
-    // Applied to non-dark IBOs
+    /** Cut take of each bond issuance transaction.*/
     pub master_cut: u64, // Could be just hardcoded it is
-
-    // Admin not sure if needed
-    pub admin: Pubkey,
-
-    // Admin not sure if needed
+    /** Master admin that can.*/
+    pub admin: Pubkey, // Not sure what it can do really, withdraw
+    /** Receives all the cuts.*/
     pub master_recipient: Pubkey,
 }

@@ -6,18 +6,19 @@ use anchor_lang::prelude::*;
 
 #[account]
 pub struct Lockup {
-    /** Minimum lockup period in seconds. */
+    /** Minimum lockup period in seconds.*/
     pub period: i64,
-    /** Yearly APY for this lockup */
+    /** Yearly APY for this lockup.*/
     pub apy: f64,
-    /** Pointer to the gate that will allow this lock up to be used */
+    /** Pointer to the gate that will allow this lock up to be used.*/
     pub gate_counter: u32, // TODO check that is zero for normal buy
-    /** Can only withdraw all at once at the end */
+    /** Can only withdraw all at once at the end.*/
     pub mature_only: bool,
 }
 
 impl Lockup {
-    pub fn get_maturity_stamp(&self) -> i64 {
+    /** Creates a unix since epoch value for when the bond will fully mature.*/
+    pub fn compute_bond_completion_date(&self) -> i64 {
         return Clock::get().unwrap().unix_timestamp + self.period;
     }
 }

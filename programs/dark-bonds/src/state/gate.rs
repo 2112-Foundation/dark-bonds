@@ -6,10 +6,15 @@ use anchor_lang::prelude::*;
 
 #[account]
 pub struct Gate {
+    /** Mint key.*/
     pub mint_key: Pubkey,
+    /** Master key.*/
     pub master_key: Pubkey,
+    /** Creator key.*/
     pub creator_key: Pubkey,
 }
 
 // Need to add verification functions here
 // Also different types of a gate
+// - spl
+// - community

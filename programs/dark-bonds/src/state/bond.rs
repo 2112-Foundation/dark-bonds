@@ -7,21 +7,21 @@ const SECONDS_DAY: i64 = 86_400;
 
 #[account]
 pub struct Bond {
-    /* Public key of the owner that can sell/split this bond.*/
+    /** Public key of the owner that can sell/split this bond.*/
     pub owner: Pubkey,
-    /* Index of the bonc_counter at the ibo state account at the instance this bond was created.*/
+    /** Index of the bonc_counter at the ibo state account at the instance this bond was created.*/
     pub idx: u32,
-    /*  Swap: if non zero someone can exucte it with a transfer otherwise not for sale. Exchange using underlying liqudiity token.*/
+    /**  Swap: if non zero someone can exucte it with a transfer otherwise not for sale. Exchange using underlying liqudiity token.*/
     pub swap_price: u64,
-    /* Total amount that can be made at maturity.*/
+    /** Total amount that can be made at maturity.*/
     pub total_claimable: u64, // Fixed
-    /* Data in seconds since the epoch when full bond value can be withdrawn.*/
+    /** Data in seconds since the epoch when full bond value can be withdrawn.*/
     pub maturity_date: i64, // Fixed
-    /* Last redemption date in seconds since the epoch.*/
+    /** Last redemption date in seconds since the epoch.*/
     pub last_claimed: i64,
-    /* Bond creation date in seconds since the epoch.*/
+    /** Bond creation date in seconds since the epoch.*/
     pub bond_start: i64,
-    /* Redemption possible only once full maturity is reached.*/
+    /** Redemption possible only once full maturity is reached.*/
     pub mature_only: bool, // Set based on lockup type
 }
 
@@ -43,18 +43,18 @@ impl Bond {
         self.idx = idx;
     }
 
-    // Update last claimed
+    /** Update last claimed */
     pub fn update_claim_date(&mut self) {
         self.last_claimed = Clock::get().unwrap().unix_timestamp;
     }
 
-    // A day has passed since last withdraw for this bond bond
+    /** Check whether at least a day has elapsed since the last withdraw */
     pub fn time_elapsed(&self) -> bool {
         return Clock::get().unwrap().unix_timestamp > self.last_claimed + SECONDS_DAY;
     }
 
-    // How much can be claimed on this particular call absed on time elsapsed since
-    // last time and total that is to be claimable
+    /** Calculate using safe math how much can be claimed on for this bong based on time elsapsed
+    since last time and total that is to be claimable*/
     pub fn claim_amount(&self) -> Result<u64> {
         // Calculate time since last claim
         let time_elapsed: i64 = Clock::get().unwrap().unix_timestamp - self.last_claimed;
