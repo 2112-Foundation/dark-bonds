@@ -5,7 +5,7 @@ use anchor_spl::{ associated_token::AssociatedToken, token::{ Token, TokenAccoun
 
 use solana_program::pubkey::Pubkey;
 
-use super::common::purchase_mechanics;
+use crate::common::*;
 
 #[derive(Accounts)]
 #[instruction(lockup_idx: u32)]

@@ -1,4 +1,6 @@
 use anchor_lang::prelude::*;
+use spl_math::precise_number::PreciseNumber;
+use crate::errors::errors::ErrorCode;
 
 // Set to zero for testing
 const SECONDS_DAY: i64 = 86_400;
@@ -53,27 +55,71 @@ impl Bond {
 
     // How much can be claimed on this particular call absed on time elsapsed since
     // last time and total that is to be claimable
-    pub fn claim_amount(&self) -> u64 {
-        // Need to calculate time since last claim
+    pub fn claim_amount(&self) -> Result<u64> {
+        // Calculate time since last claim
         let time_elapsed: i64 = Clock::get().unwrap().unix_timestamp - self.last_claimed;
         msg!("time_elapsed: {:?}", time_elapsed);
 
-        // Need to work out total time from start to maturity
+        // Work out total time from start to maturity
         let total_time: i64 = self.maturity_date - self.bond_start;
         msg!("total_time: {:?}", total_time);
 
-        // Need work out the ratio of total time
-        let ratio: f64 = (time_elapsed as f64) / (total_time as f64);
+        // Convert time_elapsed and total_time into `PreciseNumber`
+        let time_elapsed_precise: PreciseNumber = PreciseNumber::new(time_elapsed as u128).ok_or(
+            error!(ErrorCode::ConversionFailed)
+        )?;
+        let total_time_precise: PreciseNumber = PreciseNumber::new(total_time as u128).ok_or(
+            error!(ErrorCode::ConversionFailed)
+        )?;
+
+        // Work out the ratio of total time
+        let ratio: PreciseNumber = time_elapsed_precise
+            .checked_div(&total_time_precise)
+            .ok_or(error!(ErrorCode::ConversionFailed))?;
         msg!("ratio: {:?}", ratio);
 
-        msg!("total_claimable: {:?}", self.total_claimable);
-        msg!("claiming this time: {:?}", ratio * (self.total_claimable as f64));
+        // Convert total_claimable into `PreciseNumber`
+        let total_claimable_precise: PreciseNumber = PreciseNumber::new(
+            self.total_claimable as u128
+        ).ok_or(error!(ErrorCode::ConversionFailed))?;
+        msg!("total_claimable: {:?}", total_claimable_precise);
 
-        // Multiplly ratio by total that is to gain
-        return (ratio * (self.total_claimable as f64)) as u64;
+        // Multiply ratio by total that is to be claimed
+        let claim_this_time: PreciseNumber = ratio
+            .checked_mul(&total_claimable_precise)
+            .ok_or(error!(ErrorCode::ConversionFailed))?;
+        msg!("claiming this time: {:?}", claim_this_time);
+
+        // Convert the claim_this_time from a `PreciseNumber` back to a `u64`
+        claim_this_time
+            .to_imprecise()
+            .map(|v| v as u64)
+            .ok_or(error!(ErrorCode::ConversionFailed))
     }
+    // Claim but with safe math
 }
 
 // 1683842
 
 // TODO: Need to standardise input to seconds or miliseconds
+
+// Old
+// pub fn claim_amount(&self) -> u64 {
+//     // Need to calculate time since last claim
+//     let time_elapsed: i64 = Clock::get().unwrap().unix_timestamp - self.last_claimed;
+//     msg!("time_elapsed: {:?}", time_elapsed);
+
+//     // Need to work out total time from start to maturity
+//     let total_time: i64 = self.maturity_date - self.bond_start;
+//     msg!("total_time: {:?}", total_time);
+
+//     // Need work out the ratio of total time
+//     let ratio: f64 = (time_elapsed as f64) / (total_time as f64);
+//     msg!("ratio: {:?}", ratio);
+
+//     msg!("total_claimable: {:?}", self.total_claimable);
+//     msg!("claiming this time: {:?}", ratio * (self.total_claimable as f64));
+
+//     // Multiplly ratio by total that is to gain
+//     return (ratio * (self.total_claimable as f64)) as u64;
+// }

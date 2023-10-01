@@ -1,4 +1,5 @@
 use crate::state::*;
+use crate::errors::errors::ErrorCode;
 use anchor_lang::prelude::*;
 use anchor_spl::token::{ self, Token, TokenAccount, Transfer };
 
@@ -43,7 +44,7 @@ pub fn claim(ctx: Context<Claim>, ibo_address: Pubkey, bond_idx: u32) -> Result<
         ctx.accounts.bond_ata.amount
     } else {
         msg!("\n\nBond lock-up is ON");
-        bond.claim_amount()
+        bond.claim_amount()?
     };
 
     msg!("\nclaim: {:?}", claimable_now);

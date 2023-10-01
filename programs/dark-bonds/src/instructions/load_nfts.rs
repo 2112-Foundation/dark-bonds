@@ -2,7 +2,7 @@ use crate::state::*;
 use crate::errors::errors::ErrorCode;
 use anchor_lang::prelude::*;
 use anchor_spl::token::{ self, Token, TokenAccount, Transfer };
-use super::common::recursive_pda_derivation;
+use crate::common::*;
 
 // For adding the FIRST level
 #[derive(Accounts)]

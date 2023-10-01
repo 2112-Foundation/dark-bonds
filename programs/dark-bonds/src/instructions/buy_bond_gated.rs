@@ -4,7 +4,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::{ Mint, Token, TokenAccount };
 
 use mpl_token_metadata::accounts::Metadata;
-use super::common::purchase_mechanics;
+use crate::common::*;
 
 #[derive(Accounts)]
 #[instruction(lockup_idx: u32)]

@@ -41,4 +41,6 @@ pub enum ErrorCode {
     MissingVertexAccount,
     #[msg("Accounts after vertices need to be in multiple of three")]
     IncorrectRatioRemaining,
+    #[msg("Couldnt up the number")]
+    ConversionFailed,
 }
