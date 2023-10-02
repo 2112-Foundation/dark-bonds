@@ -1,4 +1,4 @@
-pub mod add_gate;
+pub mod add_gated_settings;
 pub mod add_lockup;
 pub mod add_tree;
 pub mod add_vertex;
@@ -16,8 +16,9 @@ pub mod set_swap;
 pub mod split;
 pub mod withdraw;
 pub mod load_nfts;
+pub mod update_gates;
 
-pub use add_gate::*;
+pub use add_gated_settings::*;
 pub use add_vertex::*;
 pub use add_lockup::*;
 pub use buy_bond::*;
@@ -35,3 +36,4 @@ pub use withdraw::*;
 pub use add_tree::*;
 pub use add_nft_basket::*;
 pub use load_nfts::*;
+pub use update_gates::*;

@@ -57,25 +57,38 @@ pub mod dark_bonds {
         instructions::remove_lockup::remove_lockup(ctx)
     }
 
-    pub fn add_gate(
-        ctx: Context<AddGate>,
+    pub fn update_gates(
+        ctx: Context<UpdateGates>,
+        _ibo_idx: u32,
+        _lockup_idx: u32,
+        gates_add: Vec<u32>,
+        gates_remove: Vec<u32>
+    ) -> Result<()> {
+        instructions::update_gates::update_gates(ctx, gates_add, gates_remove)
+    }
+
+    pub fn add_gated_settings(
+        ctx: Context<AddGatedSettings>,
         ibo_idx: u32,
         lockup_idx: u32,
-        mint_key: Pubkey,
-        creator_key: Pubkey,
-        master_key: Pubkey
+        option: u8,
+        accounts: Vec<Pubkey>
     ) -> Result<()> {
-        instructions::add_gate::add_gate(
+        instructions::add_gated_settings::add_gated_settings(
             ctx,
             ibo_idx,
             lockup_idx,
-            mint_key,
-            creator_key,
-            master_key
+            option,
+            accounts
         )
+        // Ok(())
     }
 
-    pub fn remove_gate(ctx: Context<RemoveGate>, ibo_idx: u32, lockup_idx: u32) -> Result<()> {
+    pub fn remove_gate(
+        ctx: Context<RemoveGatedSettings>,
+        ibo_idx: u32,
+        lockup_idx: u32
+    ) -> Result<()> {
         instructions::remove_gate::remove_gate(ctx, ibo_idx, lockup_idx)
     }
 
@@ -92,19 +105,20 @@ pub mod dark_bonds {
         ctx: Context<BuyBond>,
         lockup_idx: u32,
         ibo_idx: u64,
-        liquidity_provided: u64
+        liquidity_provided: u64,
+        gate_idx: u32
     ) -> Result<()> {
-        instructions::buy_bond::buy_bond(ctx, lockup_idx, ibo_idx, liquidity_provided)
+        instructions::buy_bond::buy_bond(ctx, lockup_idx, ibo_idx, liquidity_provided, gate_idx)
     }
 
-    pub fn buy_bond_gated(
-        ctx: Context<GatedBuy>,
-        lockup_idx: u32,
-        ibo_idx: u64,
-        liquidity_provided: u64
-    ) -> Result<()> {
-        instructions::buy_bond_gated::buy_bond_gated(ctx, lockup_idx, ibo_idx, liquidity_provided)
-    }
+    // pub fn buy_bond_gated(
+    //     ctx: Context<GatedSettingsdBuy>,
+    //     lockup_idx: u32,
+    //     ibo_idx: u64,
+    //     liquidity_provided: u64
+    // ) -> Result<()> {
+    //     instructions::buy_bond_gated::buy_bond_gated(ctx, lockup_idx, ibo_idx, liquidity_provided)
+    // }
 
     // Claim tokens yielded for that specifc bond bond
     pub fn claim(ctx: Context<Claim>, ibo_address: Pubkey, ibo_idx: u32) -> Result<()> {

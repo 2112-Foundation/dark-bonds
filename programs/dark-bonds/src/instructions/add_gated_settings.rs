@@ -6,12 +6,12 @@ use solana_program::pubkey::Pubkey;
 
 #[derive(Accounts)]
 #[instruction(ibo_idx: u32, lockup_idx: u32)]
-pub struct AddGate<'info> {
+pub struct AddGatedSettings<'info> {
     #[account(mut)]
     pub admin: Signer<'info>,
     #[account(mut, has_one = admin, constraint = ibo.lockups_locked == false @ErrorCode::RatesLocked)]
     pub ibo: Account<'info, Ibo>,
-    #[account(seeds = ["lockup".as_bytes(), ibo.key().as_ref(), &lockup_idx.to_be_bytes()], bump)]
+    #[account(mut, seeds = ["lockup".as_bytes(), ibo.key().as_ref(), &lockup_idx.to_be_bytes()], bump)]
     pub lockup: Account<'info, Lockup>,
     #[account(
         init,
@@ -20,33 +20,33 @@ pub struct AddGate<'info> {
         payer = admin,
         space = 400
     )]
-    pub gate: Account<'info, Gate>,
+    pub gate: Account<'info, GatedSettings>,
     pub system_program: Program<'info, System>,
 }
 
 // Need to feed acounts to set in within th gate
 // TODO first or second argument is redundant
-pub fn add_gate(
-    ctx: Context<AddGate>,
+pub fn add_gated_settings(
+    ctx: Context<AddGatedSettings>,
     _ibo_idx: u32,
     _lockup_idx: u32,
-    mint_key: Pubkey,
-    creator_key: Pubkey,
-    master_key: Pubkey
+    gate_option: u8,
+    accounts: Vec<Pubkey>
 ) -> Result<()> {
-    let lockup: &mut Account<Lockup> = &mut ctx.accounts.lockup;
-    let gate: &mut Account<Gate> = &mut ctx.accounts.gate;
+    let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
+    let gate_settings: &mut Account<GatedSettings> = &mut ctx.accounts.gate;
 
-    gate.master_key = master_key;
-    gate.creator_key = creator_key;
-    gate.mint_key = mint_key;
+    msg!("\nsetting gate option of: {:?}", gate_option);
 
-    msg!("master_key: {:?}", master_key);
-    msg!("creator_key: {:?}", creator_key);
-    msg!("mint_key: {:?}", mint_key);
+    // Set the type
+    gate_settings.set_type(gate_option);
+
+    // Load remaining accounts to a gate
+    gate_settings.load_accounts(accounts);
 
     // Increment individuall gate counter
-    lockup.gate_counter += 1;
+    // Gate is not a part of the IBO, so it has its own counter
+    ibo.gate_counter += 1;
 
     Ok(())
 }

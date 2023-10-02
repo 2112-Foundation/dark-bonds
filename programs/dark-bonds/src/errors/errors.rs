@@ -6,7 +6,7 @@ pub enum ErrorCode {
     #[msg("Can not add or remove lockup type")]
     RatesLocked,
     #[msg("Can not add or remove gate type")]
-    GatesLocked,
+    GatedSettingssLocked,
     #[msg(
         "There aren't enought tokens left for this bond allocation. Try again with a smaller amount"
     )]
@@ -43,4 +43,16 @@ pub enum ErrorCode {
     IncorrectRatioRemaining,
     #[msg("Couldnt up the number")]
     ConversionFailed,
+
+    // new
+    #[msg("Provided wrong gate option")]
+    InvalidGateOption,
+    #[msg("Provided wrong gate PDA")]
+    InvalidGateAccount,
+    #[msg("Provided insufficient number of accounts to verify the collection")]
+    GateCollectionInsufficientAccounts,
+    #[msg("Caller is not the NFT owner")]
+    GateCollectionInvalidOwner,
+    #[msg("Provided gate index is not included in this lockup")]
+    IncorrectGateIndex,
 }

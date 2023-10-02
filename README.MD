@@ -87,7 +87,7 @@ Then you need to:
 [ ] Inputs to functions can be smaller (as for percent input)  
 [ ] Before deployment hardcode program ID  
 [ ] I think `mint_key` in `buy_bond_gated()` and in setting up that gate is redundant
-[ ] Move Gates so they spawn of counter at bond account
+[ ] Move GatedSettingss so they spawn of counter at bond account
 
 ### Testing
 
