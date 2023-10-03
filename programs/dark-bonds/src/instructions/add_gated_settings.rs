@@ -45,7 +45,7 @@ pub fn add_gated_settings(
     // // Load remaining accounts to a gate
     // gate_settings.load_accounts(accounts);
 
-    gate_settings.load(gate_option, accounts, [].to_vec());
+    gate_settings.load(gate_option, accounts, options);
 
     // // Increment individuall gate counter
     // // Gate is not a part of the IBO, so it has its own counter

@@ -12,8 +12,11 @@ pub struct GatedSettings {
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq, Eq)]
 pub enum GateOption {
+    /** Verification via NFT membership.*/
     Collection,
+    /** Verification via SPL ownership.*/
     Spl,
+    /** Verification via SPL ownership and NFT membership.*/
     Combined,
 }
 
@@ -140,9 +143,32 @@ impl<'a> Verifiable<'a> for CollectionType {
 
 impl<'a> Verifiable<'a> for SplType {
     type Args = Vec<AccountInfo<'a>>;
-
     fn verify(&self, owner: &Pubkey, _args: Self::Args) -> Result<bool> {
-        // verify based on membership to an NFT community
+        if _args.len() < 2 {
+            msg!("Not enough accounts provided. At least 3 required.");
+            return Err(ErrorCode::GateSplInsufficientAccounts.into());
+        }
+
+        let account1: &AccountInfo<'_> = &_args[0];
+        let account2: &AccountInfo<'_> = &_args[1];
+
+        // Mint mathes the one stored
+        let mint: Account<Mint> = Account::try_from(account1)?;
+        require!(&mint.key() == &self.spl_mint, ErrorCode::GateSplIncorrectMint);
+
+        // Token account derived from this mint
+        let spl_token_account: Account<TokenAccount> = Account::try_from(account2)?;
+        require!(&spl_token_account.mint == &mint.key(), ErrorCode::GateSplInvalidTokenAccount);
+
+        // User owns provieded token account
+        require!(&spl_token_account.owner == owner, ErrorCode::GateSplInvalidOwner);
+
+        // User has enough tokens
+        require!(
+            spl_token_account.amount >= self.minimum_ownership,
+            ErrorCode::GateSplCallerNotEnoughToken
+        );
+
         Ok(true)
     }
 }
@@ -193,123 +219,3 @@ impl GatedSettings {
         }
     }
 }
-
-//     // pub fn load_accounts(&mut self, accs: Vec<Pubkey>) {
-//     //     let ggate = match self.verification {
-//     //         GateType::Spl => SplType::new(&accs[0].key()),
-//     //         GateType::Collection =>
-//     //             CollectionType::new(&accs[0].key(), &accs[1].key(), &accs[2].key()),
-//     //     };
-
-//     //     // Loop over size and load up provided accounts
-//     //     // for i in 0..size {
-//     //     //     self.accounts.push(accs[i]);
-//     //     // }
-//     // }
-
-//     pub fn load_additional(&mut self, additional: Vec<u32>) {
-//         self.additional_data = additional;
-//     }
-
-//     // set type
-//     // pub fn set_type(&mut self, gate_option: u8) {
-//     //     match gate_option {
-//     //         0 => {
-//     //             self.verification = GateType::Collection;
-//     //         }
-//     //         1 => {
-//     //             self.verification = GateType::Spl;
-//     //         }
-//     //         2 => {
-//     //             self.verification = GateType::Combined;
-//     //         }
-//     //         _ => panic!("Invalid gate type"),
-//     //     }
-//     // }
-
-//     // pub fn verify(&self, owner: &Pubkey, accs: &Vec<AccountInfo>) -> Result<bool> {
-//     //     match self.verification {
-//     //         GateType::Collection => Ok(self.verify_collection(owner, accs)?),
-//     //         GateType::Spl => Ok(self.verify_spl(owner, accs)?),
-//     //         GateType::Combined => {
-//     //             // Need to extract accounts correctly to pass it
-//     //             msg!("Both verification");
-//     //             Ok(self.verify_collection(owner, accs)? && self.verify_spl(owner, accs)?)
-//     //         }
-//     //         _ => panic!("Invalid gate type"),
-//     //     }
-//     // }
-
-//     // Verify SPL
-//     // Accounts: [spl_mint, token_account]
-//     fn verify_spl(&self, owner: &Pubkey, accs: &Vec<AccountInfo>) -> Result<bool> {
-//         let account1: &AccountInfo<'_> = &accs[0];
-//         // Ensure correct mint
-//         require!(&account1.key() == &self.accounts[0].key(), ErrorCode::GateSplIncorrectMint);
-
-//         // Ensure correct mint
-//         // Different gates need different balance amounts
-//         let spl_mint: Account<Mint> = Account::try_from(account1)?;
-
-//         let account2: &AccountInfo<'_> = &accs[1];
-//         // let nft_mint: Account<Mint> = Account::try_from(
-//         msg!("SPL verification");
-//         Ok(true)
-//     }
-
-//     // Verify community
-//     // Accounts: [metadata, nft_mint, token_account]
-//     fn verify_collection(&self, owner: &Pubkey, accs: &Vec<AccountInfo>) -> Result<bool> {
-//         msg!("Provided {:?} accounts.", accs.len());
-//         // Assert there is enough accounts
-//         if let [account1, account2, account3, ..] = accs.as_slice() {
-//             // Get mint metadata
-//             let nft_metadata: Metadata = Metadata::try_from(account1)?;
-//             msg!("Extarcted metadata");
-
-//             // Ensure caller owns provided nft mint
-//             let nft_mint: Account<Mint> = Account::try_from(account2)?;
-//             msg!("Extracted NFT mint");
-
-//             // Get token account
-//             let nft_token_account: Account<TokenAccount> = Account::try_from(account3)?;
-//             msg!("Extarcted nft token account");
-
-//             // Caller is the owner of the nft
-//             require!(&nft_token_account.owner == owner, ErrorCode::GateCollectionInvalidOwner);
-
-//             // Token accout is for that particular  mint
-//             require!(
-//                 &nft_token_account.mint == &nft_mint.key(),
-//                 ErrorCode::GateCollectionInvalidTokenAccount
-//             );
-
-//             // Nft metadta matches the nft mint
-//             msg!("Mint from the metadata provided: {:?}", nft_metadata.mint);
-//             msg!("Provided NFT mint: {:?}", nft_mint.key());
-
-//             // Ensure mint in the metadata matches provided mint
-//             require!(
-//                 nft_metadata.mint == nft_mint.key(),
-//                 ErrorCode::GateCollectionInvalidNftMetadata
-//             );
-
-//             // msg!("\nmaster mint store din class: {:?}", self.accounts[1].key());
-//             // msg!("nft_metadata. colection details: {:?} ", nft_metadata.collection_details);
-//             // msg!("nft_metadata. colection: {:?} ", nft_metadata.collection.unwrap().key);
-//             // msg!("nft_metadata. colection: {:?} ", nft_metadata.);
-
-//             // Ensure daddy mint matches one inside nft metadata
-//             require!(
-//                 self.accounts[1].key() == nft_metadata.collection.unwrap().key,
-//                 ErrorCode::GateCollectionNftNotFromCollection
-//             );
-
-//             // Ensure caller owns provided nft mint
-//             msg!("Collection verification");
-//             Ok(true)
-//         } else {
-//             return Err(ErrorCode::GateCollectionInsufficientAccounts.into());
-//         }
-//     }
-// }

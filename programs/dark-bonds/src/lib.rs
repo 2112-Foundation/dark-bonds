@@ -6,9 +6,13 @@ pub mod errors;
 pub mod instructions;
 pub mod state;
 pub mod common;
+pub mod bond_admin;
 
 pub use errors::*;
 pub use instructions::*;
+
+// Insruction sets
+pub use bond_admin::*;
 pub use state::*;
 pub use common::*;
 
@@ -50,7 +54,7 @@ pub mod dark_bonds {
         lockup_duration: i64,
         lockup_apy: f64
     ) -> Result<()> {
-        instructions::add_lockup::add_lockup(ctx, lockup_duration, lockup_apy)
+        bond_admin::add_lockup::add_lockup(ctx, lockup_duration, lockup_apy)
     }
 
     pub fn remove_lockup(ctx: Context<RemoveLockup>) -> Result<()> {

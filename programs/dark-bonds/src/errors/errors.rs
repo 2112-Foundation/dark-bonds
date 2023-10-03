@@ -55,17 +55,23 @@ pub enum ErrorCode {
     GateCollectionInsufficientAccounts,
     #[msg("Caller is not the NFT owner")]
     GateCollectionInvalidOwner,
-    #[msg("Token account does not match NFT mint")]
+    #[msg("Token account not derived from the NFT mint")]
     GateCollectionInvalidTokenAccount,
     #[msg("Mint does not match mint stored in the metadata")]
     GateCollectionInvalidNftMetadata,
     #[msg("Provided NFT is not a member of this collection")]
     GateCollectionNftNotFromCollection,
     // SPL gate
-    #[msg("Buyer does not own the SPL necessary for this purchase")]
-    GateSplCallerNotSplOwner,
+    #[msg("Buyer does not own the enough SPL necessary for this gate")]
+    GateSplCallerNotEnoughToken,
     #[msg("SPL mint address does not match the one stored for this gate")]
     GateSplIncorrectMint,
+    #[msg("Provided insufficient number of accounts to verify the collection")]
+    GateSplInsufficientAccounts,
+    #[msg("Token account not derived from the SPL mint")]
+    GateSplInvalidTokenAccount,
+    #[msg("Caller is not the owner of the token account")]
+    GateSplInvalidOwner,
     #[msg("Provided gate index is not included in this lockup")]
     IncorrectGateIndex,
 }
