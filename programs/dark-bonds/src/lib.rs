@@ -71,17 +71,18 @@ pub mod dark_bonds {
         ctx: Context<AddGatedSettings>,
         ibo_idx: u32,
         lockup_idx: u32,
-        option: u8,
-        accounts: Vec<Pubkey>
+        gate_option: GateOption,
+        accounts: Vec<Pubkey>,
+        options: Vec<u64>
     ) -> Result<()> {
         instructions::add_gated_settings::add_gated_settings(
             ctx,
             ibo_idx,
             lockup_idx,
-            option,
-            accounts
+            gate_option,
+            accounts,
+            options
         )
-        // Ok(())
     }
 
     pub fn remove_gate(

@@ -30,8 +30,9 @@ pub fn add_gated_settings(
     ctx: Context<AddGatedSettings>,
     _ibo_idx: u32,
     _lockup_idx: u32,
-    gate_option: u8,
-    accounts: Vec<Pubkey>
+    gate_option: GateOption,
+    accounts: Vec<Pubkey>,
+    options: Vec<u64>
 ) -> Result<()> {
     let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
     let gate_settings: &mut Account<GatedSettings> = &mut ctx.accounts.gate;
@@ -39,13 +40,15 @@ pub fn add_gated_settings(
     msg!("\nsetting gate option of: {:?}", gate_option);
 
     // Set the type
-    gate_settings.set_type(gate_option);
+    // gate_settings.set_type(gate_option);
 
-    // Load remaining accounts to a gate
-    gate_settings.load_accounts(accounts);
+    // // Load remaining accounts to a gate
+    // gate_settings.load_accounts(accounts);
 
-    // Increment individuall gate counter
-    // Gate is not a part of the IBO, so it has its own counter
+    gate_settings.load(gate_option, accounts, [].to_vec());
+
+    // // Increment individuall gate counter
+    // // Gate is not a part of the IBO, so it has its own counter
     ibo.gate_counter += 1;
 
     Ok(())

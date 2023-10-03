@@ -105,7 +105,7 @@ pub fn buy_bond(
         let gate: Account<GatedSettings> = Account::try_from(gate_account)?;
 
         // Call on the gate to check the remaining accounts
-        gate.verify(&buyer.key(), &verification_accounts.to_vec())?;
+        gate.verification.verify(&buyer.key(), verification_accounts.to_vec())?;
     }
 
     // If so extarct remainign and verify it

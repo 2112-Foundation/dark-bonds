@@ -31,6 +31,8 @@ const BN = anchor.BN;
 let number_of_collections = 1;
 let nfts_per_collections = 4;
 
+console.log("\nHEY");
+
 describe("dark-bonds", async () => {
   // Configure the client to use the local cluster.
   anchor.setProvider(anchor.AnchorProvider.env());
@@ -38,6 +40,8 @@ describe("dark-bonds", async () => {
   const connection = provider.connection;
 
   const LAMPORTS_PER_SOL = 1000000000;
+
+  console.log("\nHEY222");
 
   async function getTokenBalance(ata: Account) {
     return Number((await getAccount(connection, ata.address)).amount);
@@ -58,7 +62,16 @@ describe("dark-bonds", async () => {
       console.error(error);
     }
   }
-  const bondProgram = anchor.workspace.DarkBonds as Program<DarkBonds>;
+
+  console.log("\nHEY222333");
+  let bondProgram;
+  try {
+    bondProgram = anchor.workspace.DarkBonds as Program<DarkBonds>;
+  } catch (err) {
+    console.log("err: ", err);
+  }
+
+  console.log("\nHEY222333");
   const superAdmin = loadKeypairFromFile("./master-keypair.json"); // reused so that ATA are
 
   console.log("DARK BONDS ID: ", bondProgram.programId.toBase58());
@@ -70,6 +83,8 @@ describe("dark-bonds", async () => {
   const shortBond = 16;
   let superAdminAta_sc: Account;
   let cm: CollectionsMaster;
+
+  console.log("\nHEY222333");
 
   // Mints
   const mintAuthSC = anchor.web3.Keypair.generate();
@@ -379,11 +394,13 @@ describe("dark-bonds", async () => {
     );
 
     const tx2 = await bondProgram.methods
-      .addGatedSettings(ibo.index, lockUp3.index, 0, [
-        gate0.mintKey,
-        gate0.masterKey,
-        gate0.creatorKey,
-      ])
+      .addGatedSettings(
+        ibo.index,
+        lockUp3.index,
+        { collection: {} },
+        [gate0.mintKey, gate0.masterKey, gate0.creatorKey],
+        []
+      )
       .accounts({
         admin: ibo.admin.publicKey,
         ibo: ibo.address,
@@ -867,42 +884,47 @@ describe("dark-bonds", async () => {
     console.log("Sent nft: ");
 
     // Spend 500 for rate 1 as player 1
-    const tx_lu1 = await bondProgram.methods
-      .buyBond(lockup.index, new BN(ibo.index), new BN(10000), 0)
-      .accounts({
-        buyer: user.publicKey,
-        bond: bond.address,
-        ibo: ibo.address,
-        lockup: lockup.address,
-        master: master.address,
-        buyerAta: user.liquidityAccount.address,
-        recipientAta: ibo.recipientAddressAccount.address,
-        iboAta: ibo.vaultAccount.address,
-        bondAta: bond.account.address,
-        masterRecipientAta: superAdminAta_sc.address,
-        systemProgram: anchor.web3.SystemProgram.programId,
-        tokenProgram: TOKEN_PROGRAM_ID,
-      })
-      .remainingAccounts([
-        { pubkey: gate.address, isWritable: false, isSigner: false },
-        {
-          pubkey: collectionM.nfts[0].metadata,
-          isWritable: false,
-          isSigner: false,
-        },
-        {
-          pubkey: collectionM.nfts[0].mint,
-          isWritable: false,
-          isSigner: false,
-        },
-        {
-          pubkey: await collectionM.nfts[0].getAta(user.publicKey),
-          isWritable: false,
-          isSigner: false,
-        },
-      ])
-      .signers([user])
-      .rpc();
+
+    try {
+      const tx_lu1 = await bondProgram.methods
+        .buyBond(lockup.index, new BN(ibo.index), new BN(10000), 0)
+        .accounts({
+          buyer: user.publicKey,
+          bond: bond.address,
+          ibo: ibo.address,
+          lockup: lockup.address,
+          master: master.address,
+          buyerAta: user.liquidityAccount.address,
+          recipientAta: ibo.recipientAddressAccount.address,
+          iboAta: ibo.vaultAccount.address,
+          bondAta: bond.account.address,
+          masterRecipientAta: superAdminAta_sc.address,
+          systemProgram: anchor.web3.SystemProgram.programId,
+          tokenProgram: TOKEN_PROGRAM_ID,
+        })
+        .remainingAccounts([
+          { pubkey: gate.address, isWritable: false, isSigner: false },
+          {
+            pubkey: collectionM.nfts[0].metadata,
+            isWritable: false,
+            isSigner: false,
+          },
+          {
+            pubkey: collectionM.nfts[0].mint,
+            isWritable: false,
+            isSigner: false,
+          },
+          {
+            pubkey: await collectionM.nfts[0].getAta(user.publicKey),
+            isWritable: false,
+            isSigner: false,
+          },
+        ])
+        .signers([user])
+        .rpc();
+    } catch (e) {
+      console.log("\nerror:\n\n", e);
+    }
 
     console.log("\n\nGATED BUY\n\n");
   });

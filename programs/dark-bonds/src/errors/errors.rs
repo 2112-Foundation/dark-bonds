@@ -49,10 +49,23 @@ pub enum ErrorCode {
     InvalidGateOption,
     #[msg("Provided wrong gate PDA")]
     InvalidGateAccount,
+
+    // Collection gate
     #[msg("Provided insufficient number of accounts to verify the collection")]
     GateCollectionInsufficientAccounts,
     #[msg("Caller is not the NFT owner")]
     GateCollectionInvalidOwner,
+    #[msg("Token account does not match NFT mint")]
+    GateCollectionInvalidTokenAccount,
+    #[msg("Mint does not match mint stored in the metadata")]
+    GateCollectionInvalidNftMetadata,
+    #[msg("Provided NFT is not a member of this collection")]
+    GateCollectionNftNotFromCollection,
+    // SPL gate
+    #[msg("Buyer does not own the SPL necessary for this purchase")]
+    GateSplCallerNotSplOwner,
+    #[msg("SPL mint address does not match the one stored for this gate")]
+    GateSplIncorrectMint,
     #[msg("Provided gate index is not included in this lockup")]
     IncorrectGateIndex,
 }
