@@ -1,7 +1,65 @@
 const fs = require("fs");
 const path = require("path");
 const solanaWeb3 = require("@solana/web3.js");
+import { PublicKey } from "@metaplex-foundation/js";
 import * as anchor from "@project-serum/anchor";
+
+export function createCollectionTypeInput(
+  metadata: PublicKey,
+  masterMint: PublicKey,
+  creator: PublicKey
+) {
+  return {
+    collectionType: {
+      collection: {
+        metadata: metadata,
+        masterMint: masterMint,
+        creator: creator,
+      },
+    },
+  };
+}
+
+export function createSplTypeInput(
+  splMint: string,
+  minimumOwnership: number,
+  amountPerToken: number | null
+) {
+  return {
+    splType: {
+      spl: {
+        splMint,
+        minimumOwnership,
+        amountPerToken,
+      },
+    },
+  };
+}
+
+export function createCombinedTypeInput(
+  collectionMetadata: string,
+  collectionMasterMint: string,
+  collectionCreator: string,
+  splMint: string,
+  splMinimumOwnership: number,
+  splAmountPerToken: number | null
+) {
+  return {
+    combinedType: {
+      collection: {
+        metadata: collectionMetadata,
+        masterMint: collectionMasterMint,
+        creator: collectionCreator,
+      },
+      splType: {
+        // <- Note the change here
+        splMint: splMint,
+        minimumOwnership: splMinimumOwnership,
+        amountPerToken: splAmountPerToken,
+      },
+    },
+  };
+}
 
 export function loadKeypairFromFile(fileName) {
   const filePath = path.join(__dirname, fileName);

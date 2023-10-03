@@ -48,9 +48,9 @@ export class Bond {
 }
 
 /**
- * Represents the GatedSettings class with the specified fields.
+ * Represents the Gate class with the specified fields.
  */
-export class GatedSettings {
+export class Gate {
   constructor(
     /** Address of the PDA. */
     public address: PublicKey,
@@ -125,7 +125,7 @@ export class Ibo {
   public lockups: LockUp[] = [];
 
   /** An array of LockUp objects associated with this Ibo. */
-  public gates: GatedSettings[] = [];
+  public gates: Gate[] = [];
 
   /** An array of LockUp objects associated with this Ibo. */
   public bonds: Bond[] = [];
@@ -208,7 +208,7 @@ export class Ibo {
     mintKey: PublicKey,
     masterKey: PublicKey,
     editionKey: PublicKey
-  ): Promise<GatedSettings> {
+  ): Promise<Gate> {
     // Derive gate PDA
     const gatePda = (
       await PublicKey.findProgramAddressSync(
@@ -220,12 +220,7 @@ export class Ibo {
         this.parent.programAddress
       )
     )[0];
-    const newGatedSettings = new GatedSettings(
-      gatePda,
-      mintKey,
-      masterKey,
-      editionKey
-    );
+    const newGatedSettings = new Gate(gatePda, mintKey, masterKey, editionKey);
     this.gates.push(newGatedSettings);
     this.gateCounter++;
     return newGatedSettings;

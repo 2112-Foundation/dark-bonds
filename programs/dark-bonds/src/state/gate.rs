@@ -5,7 +5,7 @@ use mpl_token_metadata::accounts::Metadata;
 
 #[account]
 #[derive(PartialEq, Eq)]
-pub struct GatedSettings {
+pub struct Gate {
     /** Type of verification.*/
     pub verification: GateType,
 }
@@ -37,6 +37,24 @@ pub enum GateType {
     },
 }
 
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq, Eq)]
+pub enum GateInput {
+    Bruv,
+    Tims {
+        lll: u16,
+        death: Pubkey,
+    },
+    CollectionType {
+        collection: CollectionType,
+    },
+    SplType {
+        spl: SplType,
+    },
+    CombinedType {
+        collection: CollectionType,
+        spl: SplType,
+    },
+}
 pub trait Verifiable<'a> {
     type Args;
     fn verify(&self, owner: &Pubkey, args: Self::Args) -> Result<bool>;
@@ -190,32 +208,68 @@ impl SplType {
     }
 }
 
-impl GatedSettings {
-    // Adds accounts
-    pub fn load(&mut self, gate_option: GateOption, accs: Vec<Pubkey>, options: Vec<u64>) {
-        // Match absed on option
-        match gate_option {
-            GateOption::Collection => {
+impl Gate {
+    pub fn load2(&mut self, gate_input: GateInput) {
+        // Debug: Print the input at the beginning of the function.
+        msg!("Input to load2: {:?}", gate_input);
+
+        match gate_input {
+            GateInput::CollectionType { collection } => {
+                // Debug: Print when this branch is reached.
+                msg!("Matching CollectionType with collection: {:?}", collection);
                 self.verification = GateType::Collection {
-                    gate: CollectionType::new(&accs[0], &accs[1], &accs[2]),
+                    gate: collection,
                 };
             }
-            GateOption::Spl => {
-                // let var1: Option<u64> = options.get(0).clone();
-                let minnimum_ownership: u64 = *options.get(0).unwrap();
-                let amount_per_token: Option<u64> = options.get(1).cloned();
+            GateInput::SplType { spl } => {
+                // Debug: Print when this branch is reached.
+                msg!("Matching SplType with spl: {:?}", spl);
                 self.verification = GateType::Spl {
-                    gate: SplType::new(&accs[0], minnimum_ownership, amount_per_token),
+                    gate: spl,
                 };
             }
-            GateOption::Combined => {
-                let minnimum_ownership: u64 = *options.get(0).unwrap();
-                let amount_per_token: Option<u64> = options.get(1).cloned();
+            GateInput::CombinedType { collection, spl } => {
+                // Debug: Print when this branch is reached.
+                msg!("Matching CombinedType with collection: {:?} and spl: {:?}", collection, spl);
                 self.verification = GateType::Combined {
-                    gate_collection: CollectionType::new(&accs[0], &accs[1], &accs[2]),
-                    spl_gate: SplType::new(&accs[0], minnimum_ownership, amount_per_token),
+                    gate_collection: collection,
+                    spl_gate: spl,
                 };
+            }
+            // Catch all other cases.
+            _ => {
+                msg!("Invalid gate input");
             }
         }
+
+        msg!("\n\nGate loaded:\n{:?}", self.verification);
     }
+
+    // Adds accounts
+    // pub fn load(&mut self, gate_option: GateOption, accs: Vec<Pubkey>, options: Vec<u64>) {
+    //     // Match absed on option
+    //     match gate_option {
+    //         GateOption::Collection => {
+    //             self.verification = GateType::Collection {
+    //                 gate: CollectionType::new(&accs[0], &accs[1], &accs[2]),
+    //             };
+    //         }
+    //         GateOption::Spl => {
+    //             // let var1: Option<u64> = options.get(0).clone();
+    //             let minnimum_ownership: u64 = *options.get(0).unwrap();
+    //             let amount_per_token: Option<u64> = options.get(1).cloned();
+    //             self.verification = GateType::Spl {
+    //                 gate: SplType::new(&accs[0], minnimum_ownership, amount_per_token),
+    //             };
+    //         }
+    //         GateOption::Combined => {
+    //             let minnimum_ownership: u64 = *options.get(0).unwrap();
+    //             let amount_per_token: Option<u64> = options.get(1).cloned();
+    //             self.verification = GateType::Combined {
+    //                 gate_collection: CollectionType::new(&accs[0], &accs[1], &accs[2]),
+    //                 spl_gate: SplType::new(&accs[0], minnimum_ownership, amount_per_token),
+    //             };
+    //         }
+    //     }
+    // }
 }

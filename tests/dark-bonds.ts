@@ -9,7 +9,14 @@ import {
   token,
   Nft,
 } from "@metaplex-foundation/js";
-import { loadKeypairFromFile, delay, roughlyEqual } from "./helpers";
+import {
+  loadKeypairFromFile,
+  delay,
+  roughlyEqual,
+  createCollectionTypeInput,
+  createSplTypeInput,
+  createCombinedTypeInput,
+} from "./helpers";
 import {
   createMint,
   getAccount,
@@ -20,11 +27,12 @@ import {
   Account,
 } from "@solana/spl-token";
 import { assert, use } from "chai";
-import { Ibo, LockUp, GatedSettings, Master, Bond } from "./master";
+import { Ibo, LockUp, Gate, Master, Bond } from "./master";
 import { User, Users } from "./user";
 import { Mint } from "./mint";
 import { MintSupplyMustBeZeroError } from "@metaplex-foundation/mpl-token-metadata";
 import { CollectionsMaster, NftMint0, NftMint1 } from "./derived_nfts";
+
 //
 const BN = anchor.BN;
 
@@ -399,20 +407,25 @@ describe("dark-bonds", async () => {
       .signers([ibo.admin])
       .rpc();
 
-    let gate0: GatedSettings = await ibo.AddGate(
+    let gate0: Gate = await ibo.AddGate(
       collectionM.masterMint,
       collectionM.masterMint,
       collectionM.masterEdition
     );
 
+    const faggenum = { bruv: {} };
+    const faggenum222 = { tims: { lll: 666, death: gate0.creatorKey } };
+
+    const gateType = createCollectionTypeInput(
+      gate0.masterKey,
+      gate0.masterKey,
+      gate0.creatorKey
+    );
+
+    console.log("\n\n\ngateType: ", gateType);
+
     const tx2 = await bondProgram.methods
-      .addGate(
-        ibo.index,
-        lockUp3.index,
-        { collection: {} },
-        [gate0.mintKey, gate0.masterKey, gate0.creatorKey],
-        []
-      )
+      .addGate(ibo.index, lockUp3.index, gateType)
       .accounts({
         admin: ibo.admin.publicKey,
         ibo: ibo.address,
@@ -860,7 +873,7 @@ describe("dark-bonds", async () => {
     const lockup: LockUp = ibo.lockups[ibo.lockups.length - 1];
 
     // Get gate
-    const gate: GatedSettings = ibo.gates[lockup.gateIdx];
+    const gate: Gate = ibo.gates[lockup.gateIdx];
 
     // Need to ensure they have NFT
     const user: User = users.users[5];

@@ -19,7 +19,7 @@ pub struct RemoveGatedSettings<'info> {
         seeds = ["gate".as_bytes(), ibo.key().as_ref(), &ibo.lockup_counter.to_be_bytes()],       
         bump
     )]
-    pub gate: Account<'info, GatedSettings>,
+    pub gate: Account<'info, Gate>,
     pub system_program: Program<'info, System>,
 }
 

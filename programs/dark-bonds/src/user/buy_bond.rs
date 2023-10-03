@@ -102,7 +102,7 @@ pub fn buy_bond(
         msg!("Gate is gucci");
 
         // Extract gate from the remaining accounts
-        let gate: Account<GatedSettings> = Account::try_from(gate_account)?;
+        let gate: Account<Gate> = Account::try_from(gate_account)?;
 
         // Call on the gate to check the remaining accounts
         gate.verification.verify(&buyer.key(), verification_accounts.to_vec())?;

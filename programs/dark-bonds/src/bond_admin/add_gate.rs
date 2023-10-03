@@ -20,7 +20,7 @@ pub struct AddGate<'info> {
         payer = admin,
         space = 400
     )]
-    pub gate: Account<'info, GatedSettings>,
+    pub gate: Account<'info, Gate>,
     pub system_program: Program<'info, System>,
 }
 
@@ -30,14 +30,12 @@ pub fn add_gate(
     ctx: Context<AddGate>,
     _ibo_idx: u32,
     _lockup_idx: u32,
-    gate_option: GateOption,
-    accounts: Vec<Pubkey>,
-    options: Vec<u64>
+    gate_settings: GateInput
 ) -> Result<()> {
     let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
-    let gate_settings: &mut Account<GatedSettings> = &mut ctx.accounts.gate;
+    let gate: &mut Account<Gate> = &mut ctx.accounts.gate;
 
-    msg!("\nsetting gate option of: {:?}", gate_option);
+    // msg!("\nsetting gate option of: {:?}", gate_option);
 
     // Set the type
     // gate_settings.set_type(gate_option);
@@ -45,7 +43,9 @@ pub fn add_gate(
     // // Load remaining accounts to a gate
     // gate_settings.load_accounts(accounts);
 
-    gate_settings.load(gate_option, accounts, options);
+    msg!("\n\n\n\n\n\n\n\n\ngate_settings: {:?}", gate_settings);
+
+    gate.load2(gate_settings);
 
     // // Increment individuall gate counter
     // // Gate is not a part of the IBO, so it has its own counter
