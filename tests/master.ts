@@ -50,7 +50,11 @@ export class Bond {
 /**
  * Represents the Gate class with the specified fields.
  */
-export class Gate {
+abstract class Gate {
+  // Define shared properties and methods that apply to all types of Gates here.
+}
+
+class CollectionGate extends Gate {
   constructor(
     /** Address of the PDA. */
     public address: PublicKey,
@@ -60,7 +64,27 @@ export class Gate {
     public masterKey: PublicKey,
     /** The creator key for the gate. */
     public creatorKey: PublicKey
-  ) {}
+  ) {
+    super();
+  }
+}
+
+class CombinedGate extends Gate {
+  constructor(public collectionGat: CollectionGate, public splGate: SplGate) {
+    super();
+  }
+}
+
+/**
+ * Represents the SplGate class that extends Gate.
+ */
+class SplGate extends Gate {
+  constructor(
+    public address: PublicKey,
+    public mint: PublicKey // Example additional field
+  ) {
+    super();
+  }
 }
 
 /**
@@ -204,26 +228,59 @@ export class Ibo {
     this.lockupCounter++;
     return newLockUp;
   }
-  async AddGate(
+  private async deriveGatePda(): Promise<PublicKey> {
+    const [gatePda] = await PublicKey.findProgramAddress(
+      [
+        Buffer.from("gate"),
+        Buffer.from(this.address.toBytes()),
+        new BN(this.gateCounter).toArrayLike(Buffer, "be", 4),
+      ],
+      this.parent.programAddress
+    );
+    return gatePda;
+  }
+
+  async addSplGate(mintKey: PublicKey): Promise<SplGate> {
+    const gatePda = await this.deriveGatePda();
+    const newGate = new SplGate(gatePda, mintKey);
+    this.gates.push(newGate);
+    this.gateCounter++;
+    return newGate;
+  }
+
+  async addCollectionGate(
     mintKey: PublicKey,
     masterKey: PublicKey,
-    editionKey: PublicKey
-  ): Promise<Gate> {
-    // Derive gate PDA
-    const gatePda = (
-      await PublicKey.findProgramAddressSync(
-        [
-          Buffer.from("gate"),
-          Buffer.from(this.address.toBytes()),
-          new BN(this.gateCounter).toArrayLike(Buffer, "be", 4),
-        ],
-        this.parent.programAddress
-      )
-    )[0];
-    const newGatedSettings = new Gate(gatePda, mintKey, masterKey, editionKey);
-    this.gates.push(newGatedSettings);
+    creatorKey: PublicKey
+  ): Promise<CollectionGate> {
+    const gatePda = await this.deriveGatePda();
+    const newGate = new CollectionGate(gatePda, mintKey, masterKey, creatorKey);
+    this.gates.push(newGate);
     this.gateCounter++;
-    return newGatedSettings;
+    return newGate;
+  }
+
+  async addCombinedGate(
+    collectionMintKey: PublicKey,
+    collectionMasterKey: PublicKey,
+    collectionCreatorKey: PublicKey,
+    splMint: PublicKey
+  ): Promise<CombinedGate> {
+    const collectionGatePda = await this.deriveGatePda();
+    const collectionGate = new CollectionGate(
+      collectionGatePda,
+      collectionMintKey,
+      collectionMasterKey,
+      collectionCreatorKey
+    );
+
+    const splGatePda = await this.deriveGatePda();
+    const splGate = new SplGate(splGatePda, splMint);
+
+    const newGate = new CombinedGate(collectionGate, splGate);
+    this.gates.push(newGate);
+    this.gateCounter++;
+    return newGate;
   }
 
   constructor(

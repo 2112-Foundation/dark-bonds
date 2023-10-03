@@ -3,6 +3,7 @@ const path = require("path");
 const solanaWeb3 = require("@solana/web3.js");
 import { PublicKey } from "@metaplex-foundation/js";
 import * as anchor from "@project-serum/anchor";
+const BN = anchor.BN;
 
 export function createCollectionTypeInput(
   metadata: PublicKey,
@@ -10,8 +11,8 @@ export function createCollectionTypeInput(
   creator: PublicKey
 ) {
   return {
-    collectionType: {
-      collection: {
+    collection: {
+      gate: {
         metadata: metadata,
         masterMint: masterMint,
         creator: creator,
@@ -21,16 +22,19 @@ export function createCollectionTypeInput(
 }
 
 export function createSplTypeInput(
-  splMint: string,
+  splMint: PublicKey,
   minimumOwnership: number,
-  amountPerToken: number | null
+  amountPerToken: number
 ) {
+  const minimumOwnershipBN = new BN(minimumOwnership);
+  const amountPerTokenBN = new BN(amountPerToken);
+
   return {
-    splType: {
-      spl: {
+    spl: {
+      gate: {
         splMint,
-        minimumOwnership,
-        amountPerToken,
+        minimumOwnershipBN,
+        amountPerTokenBN,
       },
     },
   };
@@ -45,14 +49,13 @@ export function createCombinedTypeInput(
   splAmountPerToken: number | null
 ) {
   return {
-    combinedType: {
-      collection: {
+    combined: {
+      gate_collection: {
         metadata: collectionMetadata,
         masterMint: collectionMasterMint,
         creator: collectionCreator,
       },
-      splType: {
-        // <- Note the change here
+      spl_gate: {
         splMint: splMint,
         minimumOwnership: splMinimumOwnership,
         amountPerToken: splAmountPerToken,

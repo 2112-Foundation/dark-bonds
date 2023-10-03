@@ -30,7 +30,7 @@ pub fn add_gate(
     ctx: Context<AddGate>,
     _ibo_idx: u32,
     _lockup_idx: u32,
-    gate_settings: GateInput
+    gate_settings: GateType
 ) -> Result<()> {
     let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
     let gate: &mut Account<Gate> = &mut ctx.accounts.gate;
@@ -43,9 +43,9 @@ pub fn add_gate(
     // // Load remaining accounts to a gate
     // gate_settings.load_accounts(accounts);
 
-    msg!("\n\n\n\n\n\n\n\n\ngate_settings: {:?}", gate_settings);
+    // msg!("\n\n\n\n\n\n\n\n\ngate_settings: {:?}", gate_settings);
 
-    gate.load2(gate_settings);
+    gate.load(gate_settings);
 
     // // Increment individuall gate counter
     // // Gate is not a part of the IBO, so it has its own counter

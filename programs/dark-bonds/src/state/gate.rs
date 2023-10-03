@@ -37,41 +37,20 @@ pub enum GateType {
     },
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq, Eq)]
-pub enum GateInput {
-    Bruv,
-    Tims {
-        lll: u16,
-        death: Pubkey,
-    },
-    CollectionType {
-        collection: CollectionType,
-    },
-    SplType {
-        spl: SplType,
-    },
-    CombinedType {
-        collection: CollectionType,
-        spl: SplType,
-    },
-}
 pub trait Verifiable<'a> {
     type Args;
     fn verify(&self, owner: &Pubkey, args: Self::Args) -> Result<bool>;
 }
 
 impl<'a> Verifiable<'a> for GateType {
-    type Args = Vec<AccountInfo<'a>>; // Add lifetime here
+    type Args = Vec<AccountInfo<'a>>;
     fn verify(&self, owner: &Pubkey, args: Self::Args) -> Result<bool> {
         match self {
             GateType::Collection { gate } => gate.verify(owner, args),
             GateType::Spl { gate } => gate.verify(owner, args),
             GateType::Combined { gate_collection, spl_gate } => {
-                // You might want to check both gate_collection and spl_gate here.
-                // It depends on your use case.
                 // Need to splut args into first two and the rest
                 // let (first, rest) = args.split_at(2);
-
                 gate_collection.verify(owner, args.clone())?;
                 spl_gate.verify(owner, args)
             }
@@ -114,8 +93,6 @@ impl<'a> Verifiable<'a> for CollectionType {
         let account3: &AccountInfo<'_> = &_args[2];
 
         // Assert there is enough accounts
-        // if let [account1, account2, account3, ..] = accs.as_slice() {
-        // Get mint metadata
         let nft_metadata: Metadata = Metadata::try_from(account1)?;
         msg!("Extarcted metadata");
 
@@ -195,11 +172,11 @@ impl<'a> Verifiable<'a> for SplType {
 pub struct SplType {
     pub spl_mint: Pubkey,
     pub minimum_ownership: u64,
-    pub amount_per_token: Option<u64>,
+    pub amount_per_token: u64,
 }
 
 impl SplType {
-    pub fn new(mint: &Pubkey, minimum_ownership: u64, amount_per_token: Option<u64>) -> Self {
+    pub fn new(mint: &Pubkey, minimum_ownership: u64, amount_per_token: u64) -> Self {
         Self {
             spl_mint: *mint,
             minimum_ownership: minimum_ownership,
@@ -209,67 +186,41 @@ impl SplType {
 }
 
 impl Gate {
-    pub fn load2(&mut self, gate_input: GateInput) {
+    pub fn load(&mut self, gate_input: GateType) {
         // Debug: Print the input at the beginning of the function.
-        msg!("Input to load2: {:?}", gate_input);
+        // msg!("Input to load2: {:?}", gate_input);
 
         match gate_input {
-            GateInput::CollectionType { collection } => {
+            GateType::Collection { gate } => {
                 // Debug: Print when this branch is reached.
-                msg!("Matching CollectionType with collection: {:?}", collection);
+                msg!("Matching CollectionType with collection: {:?}", gate);
                 self.verification = GateType::Collection {
-                    gate: collection,
+                    gate,
                 };
             }
-            GateInput::SplType { spl } => {
+            // GateInput::SplType { spl } => {
+            GateType::Spl { gate } => {
                 // Debug: Print when this branch is reached.
-                msg!("Matching SplType with spl: {:?}", spl);
+                msg!("Matching SplType with spl: {:?}", gate);
                 self.verification = GateType::Spl {
-                    gate: spl,
+                    gate,
                 };
             }
-            GateInput::CombinedType { collection, spl } => {
+            // GateInput::CombinedType { collection, spl } => {
+            GateType::Combined { gate_collection, spl_gate } => {
                 // Debug: Print when this branch is reached.
-                msg!("Matching CombinedType with collection: {:?} and spl: {:?}", collection, spl);
+                msg!(
+                    "Matching CombinedType with collection: {:?} and spl: {:?}",
+                    gate_collection,
+                    spl_gate
+                );
                 self.verification = GateType::Combined {
-                    gate_collection: collection,
-                    spl_gate: spl,
+                    gate_collection: gate_collection,
+                    spl_gate: spl_gate,
                 };
-            }
-            // Catch all other cases.
-            _ => {
-                msg!("Invalid gate input");
             }
         }
 
         msg!("\n\nGate loaded:\n{:?}", self.verification);
     }
-
-    // Adds accounts
-    // pub fn load(&mut self, gate_option: GateOption, accs: Vec<Pubkey>, options: Vec<u64>) {
-    //     // Match absed on option
-    //     match gate_option {
-    //         GateOption::Collection => {
-    //             self.verification = GateType::Collection {
-    //                 gate: CollectionType::new(&accs[0], &accs[1], &accs[2]),
-    //             };
-    //         }
-    //         GateOption::Spl => {
-    //             // let var1: Option<u64> = options.get(0).clone();
-    //             let minnimum_ownership: u64 = *options.get(0).unwrap();
-    //             let amount_per_token: Option<u64> = options.get(1).cloned();
-    //             self.verification = GateType::Spl {
-    //                 gate: SplType::new(&accs[0], minnimum_ownership, amount_per_token),
-    //             };
-    //         }
-    //         GateOption::Combined => {
-    //             let minnimum_ownership: u64 = *options.get(0).unwrap();
-    //             let amount_per_token: Option<u64> = options.get(1).cloned();
-    //             self.verification = GateType::Combined {
-    //                 gate_collection: CollectionType::new(&accs[0], &accs[1], &accs[2]),
-    //                 spl_gate: SplType::new(&accs[0], minnimum_ownership, amount_per_token),
-    //             };
-    //         }
-    //     }
-    // }
 }

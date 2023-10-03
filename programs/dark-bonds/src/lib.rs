@@ -79,9 +79,9 @@ pub mod dark_bonds {
         ctx: Context<AddGate>,
         ibo_idx: u32,
         lockup_idx: u32,
-        gate_settings: GateInput
+        gate_settings: GateType
     ) -> Result<()> {
-        msg!("\n\n\n\n\n\n\n\n\ngate_settings: {:?}", gate_settings);
+        // msg!("\n\n\n\n\n\n\n\n\ngate_settings: {:?}", gate_settings);
         bond_admin::add_gate::add_gate(ctx, ibo_idx, lockup_idx, gate_settings)
     }
 
