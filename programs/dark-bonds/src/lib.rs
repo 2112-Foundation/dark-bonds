@@ -1,7 +1,5 @@
 use anchor_lang::prelude::*;
 
-use mpl_token_metadata;
-
 pub mod errors;
 pub mod instructions;
 pub mod state;
@@ -9,11 +7,8 @@ pub mod common;
 pub mod bond_admin;
 pub mod user;
 pub mod super_admin;
-
 pub use errors::*;
 pub use instructions::*;
-
-// Insruction sets
 pub use bond_admin::*;
 pub use state::*;
 pub use common::*;
@@ -26,10 +21,16 @@ declare_id!("8ZP1cSpVPVPp5aeake5f1BtgW1xv1e39zkoG8bWobbwV");
 pub mod dark_bonds {
     use super::*;
 
+    // Super admin functions
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     // Invoke once at the deployement,sets Ibo counter and recipient
     pub fn init(ctx: Context<Init>) -> Result<()> {
         super_admin::init::init(ctx)
     }
+
+    // Bond admin functions
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Create a bond offering
     pub fn create_ibo(
@@ -53,6 +54,18 @@ pub mod dark_bonds {
     }
 
     // TODO add payout on maturity only
+    // This also needs structs. That have
+    // Mandatory field
+    // - lock-up duration
+    // - lock-up APY
+    // Optional field
+    // - releasse all on maturity
+    // - toke cap
+    // - start
+    // - expiry
+    // Need to figure out how the above two ifnluence the mainIBO ones
+    // I guess they can be
+
     pub fn add_lockup(
         ctx: Context<AddLockUp>,
         lockup_duration: i64,
@@ -81,7 +94,6 @@ pub mod dark_bonds {
         lockup_idx: u32,
         gate_settings: GateType
     ) -> Result<()> {
-        // msg!("\n\n\n\n\n\n\n\n\ngate_settings: {:?}", gate_settings);
         bond_admin::add_gate::add_gate(ctx, ibo_idx, lockup_idx, gate_settings)
     }
 
@@ -100,6 +112,9 @@ pub mod dark_bonds {
     ) -> Result<()> {
         bond_admin::lock::lock(ctx, lock_withdraws, lock_lockup_addition)
     }
+
+    // USer functions
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Provide liquidity for bonds for a given bond offering
     pub fn buy_bond(
@@ -138,6 +153,7 @@ pub mod dark_bonds {
     }
 
     // NFT stuff for later
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     pub fn add_tree(ctx: Context<AddTree>, ibo_idx: u32, tree_idx: u8, depth: u8) -> Result<()> {
         instructions::add_tree::add_tree(ctx, ibo_idx, tree_idx, depth)
