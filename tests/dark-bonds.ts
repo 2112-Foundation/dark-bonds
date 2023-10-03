@@ -91,7 +91,9 @@ describe("dark-bonds", async () => {
   const mintKeypairSC = anchor.web3.Keypair.generate();
   let mintSC: PublicKey; // Stable coin mint
   let mintB: PublicKey; // Bond coin mint
+  let mintWL: PublicKey; // Bond coin mint
   const mintAuthB = anchor.web3.Keypair.generate();
+  const mintAuthWl = anchor.web3.Keypair.generate();
   const mintKeypairB = anchor.web3.Keypair.generate();
 
   // Classes
@@ -99,6 +101,7 @@ describe("dark-bonds", async () => {
   let users: Users; // = new Users(connection, mintAuthSC);
   let mintSc: Mint;
   let mintBond: Mint;
+  let mintWhiteList: Mint;
 
   // Ibo 0
   let ibo: Ibo;
@@ -145,6 +148,7 @@ describe("dark-bonds", async () => {
     await Promise.all([
       topUp(mintAuthSC.publicKey),
       topUp(mintKeypairSC.publicKey),
+      topUp(mintAuthWl.publicKey),
       topUp(mintAuthB.publicKey),
       topUp(mintKeypairB.publicKey),
       topUp(nftWallet.publicKey),
@@ -171,13 +175,20 @@ describe("dark-bonds", async () => {
 
     console.log("Moint top up done");
 
-    [mintSC, mintB] = await Promise.all([
+    [mintSC, mintB, mintWL] = await Promise.all([
       // liquidity_token mint
       createMint(
         connection,
         mintAuthSC,
         mintAuthSC.publicKey,
         mintAuthSC.publicKey,
+        10
+      ),
+      createMint(
+        connection,
+        mintAuthB,
+        mintAuthB.publicKey,
+        mintAuthB.publicKey,
         10
       ),
       createMint(
@@ -194,6 +205,7 @@ describe("dark-bonds", async () => {
     // init mints and load sc to user
     mintSc = new Mint(connection, mintAuthSC, mintSC);
     mintBond = new Mint(connection, mintAuthB, mintB);
+    mintWhiteList = new Mint(connection, mintAuthWl, mintWL);
     users = new Users(connection, mintSc);
 
     console.log("Created classes");
@@ -371,7 +383,7 @@ describe("dark-bonds", async () => {
     }
   });
 
-  it("Add gated lockup.", async () => {
+  it("Add gated lockup for collection.", async () => {
     let lockUp3 = await ibo.addLockUp(lockUp2Period, lockUp2Apy, true, 0);
 
     let collectionM: NftMint0 = cm.collections[0];
@@ -387,14 +399,14 @@ describe("dark-bonds", async () => {
       .signers([ibo.admin])
       .rpc();
 
-    let gate0: GatedSettings = await ibo.addGatedSettings(
+    let gate0: GatedSettings = await ibo.AddGate(
       collectionM.masterMint,
       collectionM.masterMint,
       collectionM.masterEdition
     );
 
     const tx2 = await bondProgram.methods
-      .addGatedSettings(
+      .addGate(
         ibo.index,
         lockUp3.index,
         { collection: {} },

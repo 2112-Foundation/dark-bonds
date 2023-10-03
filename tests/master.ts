@@ -204,7 +204,7 @@ export class Ibo {
     this.lockupCounter++;
     return newLockUp;
   }
-  async addGatedSettings(
+  async AddGate(
     mintKey: PublicKey,
     masterKey: PublicKey,
     editionKey: PublicKey

@@ -6,7 +6,7 @@ use solana_program::pubkey::Pubkey;
 
 #[derive(Accounts)]
 #[instruction(ibo_idx: u32, lockup_idx: u32)]
-pub struct AddGatedSettings<'info> {
+pub struct AddGate<'info> {
     #[account(mut)]
     pub admin: Signer<'info>,
     #[account(mut, has_one = admin, constraint = ibo.lockups_locked == false @ErrorCode::RatesLocked)]
@@ -26,8 +26,8 @@ pub struct AddGatedSettings<'info> {
 
 // Need to feed acounts to set in within th gate
 // TODO first or second argument is redundant
-pub fn add_gated_settings(
-    ctx: Context<AddGatedSettings>,
+pub fn add_gate(
+    ctx: Context<AddGate>,
     _ibo_idx: u32,
     _lockup_idx: u32,
     gate_option: GateOption,

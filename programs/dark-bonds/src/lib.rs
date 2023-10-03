@@ -75,22 +75,15 @@ pub mod dark_bonds {
         bond_admin::update_gates::update_gates(ctx, gates_add, gates_remove)
     }
 
-    pub fn add_gated_settings(
-        ctx: Context<AddGatedSettings>,
+    pub fn add_gate(
+        ctx: Context<AddGate>,
         ibo_idx: u32,
         lockup_idx: u32,
         gate_option: GateOption,
         accounts: Vec<Pubkey>,
         options: Vec<u64>
     ) -> Result<()> {
-        bond_admin::add_gated_settings::add_gated_settings(
-            ctx,
-            ibo_idx,
-            lockup_idx,
-            gate_option,
-            accounts,
-            options
-        )
+        bond_admin::add_gate::add_gate(ctx, ibo_idx, lockup_idx, gate_option, accounts, options)
     }
 
     pub fn remove_gate(
