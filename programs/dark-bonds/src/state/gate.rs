@@ -80,7 +80,7 @@ impl<'a> Verifiable<'a> for CollectionType {
 
     fn verify(&self, owner: &Pubkey, _args: Self::Args) -> Result<bool> {
         // verify based on membership to an NFT community
-
+        msg!("\n\nCollection verification");
         msg!("Provided {:?} accounts.", _args.len());
 
         if _args.len() < 3 {
@@ -139,8 +139,10 @@ impl<'a> Verifiable<'a> for CollectionType {
 impl<'a> Verifiable<'a> for SplType {
     type Args = Vec<AccountInfo<'a>>;
     fn verify(&self, owner: &Pubkey, _args: Self::Args) -> Result<bool> {
+        msg!("\n\nSPL verification");
+        msg!("Provided {:?} accounts.", _args.len());
         if _args.len() < 2 {
-            msg!("Not enough accounts provided. At least 3 required.");
+            msg!("Not enough accounts provided. At least 2 required.");
             return Err(ErrorCode::GateSplInsufficientAccounts.into());
         }
 
@@ -160,9 +162,12 @@ impl<'a> Verifiable<'a> for SplType {
 
         // User has enough tokens
         require!(
-            spl_token_account.amount >= self.minimum_ownership,
+            spl_token_account.amount > self.minimum_ownership,
             ErrorCode::GateSplCallerNotEnoughToken
         );
+
+        msg!("User has: {:?}", spl_token_account.amount);
+        msg!("User passed SPL verication");
 
         Ok(true)
     }
@@ -193,7 +198,7 @@ impl Gate {
         match gate_input {
             GateType::Collection { gate } => {
                 // Debug: Print when this branch is reached.
-                msg!("Matching CollectionType with collection: {:?}", gate);
+                msg!("\nMatching CollectionType with collection: {:?}", gate);
                 self.verification = GateType::Collection {
                     gate,
                 };
@@ -201,7 +206,7 @@ impl Gate {
             // GateInput::SplType { spl } => {
             GateType::Spl { gate } => {
                 // Debug: Print when this branch is reached.
-                msg!("Matching SplType with spl: {:?}", gate);
+                msg!("\nMatching SplType with spl: {:?}", gate);
                 self.verification = GateType::Spl {
                     gate,
                 };
@@ -210,7 +215,7 @@ impl Gate {
             GateType::Combined { gate_collection, spl_gate } => {
                 // Debug: Print when this branch is reached.
                 msg!(
-                    "Matching CombinedType with collection: {:?} and spl: {:?}",
+                    "\nMatching CombinedType with collection: {:?} and spl: {:?}",
                     gate_collection,
                     spl_gate
                 );

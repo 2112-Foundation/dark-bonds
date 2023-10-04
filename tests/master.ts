@@ -50,14 +50,21 @@ export class Bond {
 /**
  * Represents the Gate class with the specified fields.
  */
-abstract class Gate {
+export abstract class Gate {
   // Define shared properties and methods that apply to all types of Gates here.
-}
-
-class CollectionGate extends Gate {
   constructor(
     /** Address of the PDA. */
     public address: PublicKey,
+    /** Gate inedex within this IBO. */
+    public index: number
+  ) {}
+}
+
+export class CollectionGate extends Gate {
+  constructor(
+    address: PublicKey,
+    /** Gate inedex within this IBO. */
+    index: number,
     /** The mint key for the gate. */
     public mintKey: PublicKey,
     /** The master key for the gate. */
@@ -65,25 +72,35 @@ class CollectionGate extends Gate {
     /** The creator key for the gate. */
     public creatorKey: PublicKey
   ) {
-    super();
+    super(address, index);
   }
 }
 
-class CombinedGate extends Gate {
-  constructor(public collectionGat: CollectionGate, public splGate: SplGate) {
-    super();
+export class CombinedGate extends Gate {
+  constructor(
+    /** Address of the PDA. */
+    address: PublicKey,
+    /** Gate inedex within this IBO. */
+    index: number,
+    public collectionGate: CollectionGate,
+    public splGate: SplGate
+  ) {
+    super(address, index);
   }
 }
 
 /**
  * Represents the SplGate class that extends Gate.
  */
-class SplGate extends Gate {
+export class SplGate extends Gate {
   constructor(
-    public address: PublicKey,
+    /** Address of the PDA. */
+    address: PublicKey,
+    /** Gate inedex within this IBO. */
+    index: number,
     public mint: PublicKey // Example additional field
   ) {
-    super();
+    super(address, index);
   }
 }
 
@@ -105,8 +122,18 @@ export class LockUp {
     /** Has special deal on. */
     public gatePresent: boolean,
     /** Index of the gate. */
-    public gateIdx: number
+    public gates: number[]
   ) {}
+
+  /** Function that adds a viable gate index to this lock-up*/
+  addGate(gateIdx: number) {
+    this.gates.push(gateIdx);
+  }
+
+  /**  Function that removes a particulare gate index from this lock-up */
+  removeGate(gateIdx: number) {
+    this.gates = this.gates.filter((gate) => gate !== gateIdx);
+  }
 }
 
 /**
@@ -218,7 +245,7 @@ export class Ibo {
       apy,
       matureOnly,
       gateIdx !== undefined,
-      gateIdx
+      []
     );
 
     // Push to the array
@@ -242,7 +269,7 @@ export class Ibo {
 
   async addSplGate(mintKey: PublicKey): Promise<SplGate> {
     const gatePda = await this.deriveGatePda();
-    const newGate = new SplGate(gatePda, mintKey);
+    const newGate = new SplGate(gatePda, this.gateCounter, mintKey);
     this.gates.push(newGate);
     this.gateCounter++;
     return newGate;
@@ -254,7 +281,13 @@ export class Ibo {
     creatorKey: PublicKey
   ): Promise<CollectionGate> {
     const gatePda = await this.deriveGatePda();
-    const newGate = new CollectionGate(gatePda, mintKey, masterKey, creatorKey);
+    const newGate = new CollectionGate(
+      gatePda,
+      this.gateCounter,
+      mintKey,
+      masterKey,
+      creatorKey
+    );
     this.gates.push(newGate);
     this.gateCounter++;
     return newGate;
@@ -269,15 +302,21 @@ export class Ibo {
     const collectionGatePda = await this.deriveGatePda();
     const collectionGate = new CollectionGate(
       collectionGatePda,
+      this.gateCounter,
       collectionMintKey,
       collectionMasterKey,
       collectionCreatorKey
     );
 
     const splGatePda = await this.deriveGatePda();
-    const splGate = new SplGate(splGatePda, splMint);
-
-    const newGate = new CombinedGate(collectionGate, splGate);
+    const splGate = new SplGate(splGatePda, this.gateCounter, splMint);
+    const gatePda = await this.deriveGatePda();
+    const newGate = new CombinedGate(
+      gatePda,
+      this.gateCounter,
+      collectionGate,
+      splGate
+    );
     this.gates.push(newGate);
     this.gateCounter++;
     return newGate;

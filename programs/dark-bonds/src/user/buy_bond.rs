@@ -75,7 +75,7 @@ pub fn buy_bond(
 
     // Check if it has at least one access gate
     if lockup.gates.len() > 0 {
-        msg!("This lock up has associated gate");
+        msg!("This lock up has associated gates: {:?}", lockup.gates);
         let remaining_accounts_vec = ctx.remaining_accounts.to_vec();
 
         // Remaining acounts can't be empty
@@ -87,7 +87,7 @@ pub fn buy_bond(
         // Check if gate index exists within the lockup
         require!(lockup.gates.contains(&gate_idx), ErrorCode::IncorrectGateIndex);
 
-        msg!("Index gucci");
+        msg!("Index gucci. Trying out PDA derivation for gate_idx: {:?}", gate_idx);
 
         // Recheck that the pda is correct for the given gate account
         let (gate_pda, _bump) = Pubkey::find_program_address(

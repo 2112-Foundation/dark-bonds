@@ -68,8 +68,11 @@ export class Users {
     // Tops up sol
     await this.topUp(user.publicKey);
 
+    console.log("\nUser: ", user.publicKey.toBase58());
+
     // Create an ATA
     const userScAta = await this.mintSC.makeAta(user.publicKey);
+    console.log("Has ata secret: ", userScAta.address.toBase58());
     await this.mintSC.topUpSPl(userScAta.address, 100000000);
     const userStruct = new User(user.secretKey, user.publicKey, userScAta);
     this.users.push(userStruct);
