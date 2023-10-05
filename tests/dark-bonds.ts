@@ -37,9 +37,11 @@ import {
   Master,
   Bond,
   Gate,
-  CollectionGate,
-  SplGate,
-  CombinedGate,
+  // CollectionGate,
+  // SplGate,
+  // CombinedGate,
+  SplSetting,
+  CollectionSetting,
 } from "./master";
 import { User, Users } from "./user";
 import { Mint } from "./mint";
@@ -404,17 +406,23 @@ describe("dark-bonds", async () => {
       .signers([ibo.admin])
       .rpc();
 
-    let gate0: CollectionGate = await ibo.addCollectionGate(
+    // const newGate = new SplSetting(mintKey, bondsAllowed, minimumAmount);
+
+    // TODO two of these are the same, either doesnt get used in chain at all and is redundant
+    const newGateSetting = new CollectionSetting(
       collectionM.masterMint,
-      collectionM.masterMint,
+      collectionM.masterMetadata,
       collectionM.masterEdition
     );
 
     const gateType = createCollectionTypeInput(
-      gate0.masterKey,
-      gate0.masterKey,
-      gate0.creatorKey
+      collectionM.masterMint,
+      collectionM.masterMint,
+      collectionM.masterEdition
     );
+    // const si = createSplTypeInput(mintWhiteList.mint, 100, 40)
+
+    let gate0 = await ibo.addGate([newGateSetting]);
 
     const tx2 = await bondProgram.methods
       .addGate(ibo.index, lockUp3.index, [gateType])
@@ -463,8 +471,12 @@ describe("dark-bonds", async () => {
       .signers([ibo.admin])
       .rpc();
 
-    let gate1: SplGate = await ibo.addSplGate(mintWhiteList.mint);
-    const gateType = createSplTypeInput(gate1.mint, 100, 40);
+    // let gate1: SplGate = await ibo.addSplGate(mintWhiteList.mint);
+    // const gateType = createSplTypeInput(gate1.mint, 100, 40);
+
+    const newGateSetting = createSplTypeInput(mintWhiteList.mint, 100, 40);
+    const gateType = createSplTypeInput(mintWhiteList.mint, 100, 40);
+    let gate0 = await ibo.addGate([newGateSetting]);
 
     const tx2 = await bondProgram.methods
       .addGate(ibo.index, lockUp4.index, [gateType])
@@ -472,7 +484,7 @@ describe("dark-bonds", async () => {
         admin: ibo.admin.publicKey,
         ibo: ibo.address,
         lockup: lockUp4.address,
-        gate: gate1.address,
+        gate: gate0.address,
         systemProgram: anchor.web3.SystemProgram.programId,
       })
       .signers([ibo.admin])
@@ -497,6 +509,68 @@ describe("dark-bonds", async () => {
 
     lockUp4.addGate(ibo.gateCounter - 1);
   });
+
+  // it("Add combined gated lockup with SPL and collection.", async () => {
+  //   let collectionM: NftMint0 = cm.collections[0];
+  //   let lockUp5 = await ibo.addLockUp(lockUp2Period, lockUp2Apy, true, 0);
+  //   console.log("\nadded lock up with idx: ", lockUp5.index);
+
+  //   const tx = await bondProgram.methods
+  //     .addLockup(new BN(lockUp3Period), new BN(lockUp3Apy), false, pp)
+  //     .accounts({
+  //       admin: ibo.admin.publicKey,
+  //       ibo: ibo.address,
+  //       lockup: lockUp5.address,
+  //       systemProgram: anchor.web3.SystemProgram.programId,
+  //     })
+  //     .signers([ibo.admin])
+  //     .rpc();
+
+  //   let gate1: SplGate = await ibo.addSplGate(mintWhiteList.mint);
+  //   let gate0: CollectionGate = await ibo.addCollectionGate(
+  //     collectionM.masterMint,
+  //     collectionM.masterMint,
+  //     collectionM.masterEdition
+  //   );
+  //   const gateType1 = createSplTypeInput(gate1.mint, 100, 40);
+  //   const gateType2 = createCollectionTypeInput(
+  //     gate0.masterKey,
+  //     gate0.masterKey,
+  //     gate0.creatorKey
+  //   );
+
+  //   // Adding both types at once
+  //   const tx2 = await bondProgram.methods
+  //     .addGate(ibo.index, lockUp5.index, [gateType1, gateType2])
+  //     .accounts({
+  //       admin: ibo.admin.publicKey,
+  //       ibo: ibo.address,
+  //       lockup: lockUp5.address,
+  //       gate: gate1.address,
+  //       systemProgram: anchor.web3.SystemProgram.programId,
+  //     })
+  //     .signers([ibo.admin])
+  //     .rpc();
+
+  //   // Update lock up to reflect those changes
+  //   const tx3 = await bondProgram.methods
+  //     .updateGates(
+  //       ibo.index,
+  //       lockUp5.index,
+  //       [1], // 0th gate PDA
+  //       []
+  //     )
+  //     .accounts({
+  //       admin: ibo.admin.publicKey,
+  //       ibo: ibo.address,
+  //       lockup: lockUp5.address,
+  //       systemProgram: anchor.web3.SystemProgram.programId,
+  //     })
+  //     .signers([ibo.admin])
+  //     .rpc();
+
+  //   lockUp4.addGate(ibo.gateCounter - 1);
+  // });
 
   // it("Lock further lockups.", async () => {
   //   const tx_lu1 = await bondProgram.methods

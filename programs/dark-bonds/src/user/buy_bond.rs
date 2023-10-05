@@ -78,10 +78,10 @@ pub fn buy_bond(
         // Need to loop over the proveded gate indexes
 
         // Check if gate index exists within the lockup
-        // require!(lockup.gates.contains(&gate_idx), ErrorCode::IncorrectGateIndex);
+        require!(lockup.gates.contains(&gate_idx), ErrorCode::IncorrectGateIndex);
 
         msg!("This lock up has associated gates: {:?}", lockup.gates);
-        let remaining_accounts_vec = ctx.remaining_accounts.to_vec();
+        let mut remaining_accounts_vec: Vec<AccountInfo<'_>> = ctx.remaining_accounts.to_vec();
 
         // Remaining acounts can't be empty
         require!(remaining_accounts_vec.len() > 0, ErrorCode::RestrictedLockup);
@@ -105,23 +105,28 @@ pub fn buy_bond(
         msg!("Provided gate matches the account");
 
         // Extract gate accoutn content from the remaining accounts
-        let gate: Account<Gate> = Account::try_from(gate_account)?;
+        let gate_acc: Account<Gate> = Account::try_from(gate_account)?;
+
+        // Verification vector
+        let mut v_vec: Vec<AccountInfo<'_>> = verification_accounts.to_vec();
 
         // Loop over gates stored in the account
-        for (index, &gate_idx) in gate.gate_settings.iter().enumerate() {
-            // msg!("Gate idx: {:?}", gate_idx);
+        for (index, &gate_idx) in gate_acc.gate_settings.iter().enumerate() {
+            msg!("Loop item {:?}", gate_idx);
 
             // Get instance of the gate to feed it accounts
-            let gate: &GateType = gate.gate_settings
+            let gate: &GateType = gate_acc.gate_settings
                 .get(index)
                 .ok_or(ErrorCode::InvalidNFTAccountOwner)?;
 
             // msg!("Gate is gucci");
 
             // Pass whatever accounts are left to the gate
-            gate.verify(&buyer.key(), verification_accounts.to_vec())?;
+            gate.verify(&buyer.key(), v_vec.clone())?;
 
-            // Update remianing accounts
+            if index < gate_acc.gate_settings.len() - 1 {
+                v_vec.drain(gate.account_drop()..);
+            }
         }
 
         // Process each gate type provided by the user

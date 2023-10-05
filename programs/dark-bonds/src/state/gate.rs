@@ -22,6 +22,15 @@ pub enum GateType {
     },
 }
 
+impl GateType {
+    pub fn account_drop(&self) -> usize {
+        match self {
+            GateType::Collection { .. } => 3, // for CollectionType
+            GateType::Spl { .. } => 2, // for SplType
+        }
+    }
+}
+
 pub trait Verifiable<'a> {
     type Args;
     fn verify(&self, owner: &Pubkey, args: Self::Args) -> Result<bool>;
