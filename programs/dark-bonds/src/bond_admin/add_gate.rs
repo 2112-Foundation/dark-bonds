@@ -18,7 +18,7 @@ pub struct AddGate<'info> {
         seeds = ["gate".as_bytes(), ibo.key().as_ref(), &ibo.gate_counter.to_be_bytes()],
         bump,
         payer = admin,
-        space = 400
+        space = 400 // TODO fetch size based on bool
     )]
     pub gate: Account<'info, Gate>,
     pub system_program: Program<'info, System>,
