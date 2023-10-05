@@ -111,6 +111,12 @@ pub fn buy_bond(
         // Chec if of type SPL that has a cut associated
 
         // TODO process bruning so need token account and the mint, or just one of them
+
+        // Check if gate verification matches SPL one or combined
+
+        let acc_ghate: GateType = gate.verification;
+        // if gate.verification == GateType::Spl {
+        // }
     }
 
     // Ensure lock up pruchase period does not overrule the IBO pruchase period

@@ -45,6 +45,7 @@ Then you need to:
 ### Clean-up
 
 [x] change lockup to lockup  
+[x] Lock up to bond params
 [x] change ticket to bond  
 [x] In the diagram change:
 

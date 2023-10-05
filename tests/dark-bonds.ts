@@ -142,20 +142,8 @@ describe("dark-bonds", async () => {
   let lockUp3Period: number = shortBond;
   let lockUp3Apy: number = 10000000 * 100;
 
-  // NFT
-  let creatorKey: PublicKey;
-  let masterKey: PublicKey;
-  let collectionKey: PublicKey;
-  let mintKey: PublicKey;
-  let editionKey: PublicKey;
-
-  let nftTokenAccount: PublicKey;
-  let nftMetadataAccount: PublicKey;
-  let nftMasteEdition_account: PublicKey;
-
   let metaplex = new Metaplex(connection);
   metaplex.use(keypairIdentity(nftWallet));
-  let nft_handle: Nft;
 
   // Same purchase period as the IBO lockup
   let pp = await createSameAsMainIboInput();
@@ -330,9 +318,9 @@ describe("dark-bonds", async () => {
   });
 
   it("Add three different lockups.", async () => {
-    let lockUp0 = await ibo.addLockUp(lockUp0Period, lockUp0Apy, false);
-    let lockUp1 = await ibo.addLockUp(lockUp1Period, lockUp1Apy, false);
-    let lockUp2 = await ibo.addLockUp(lockUp2Period, lockUp2Apy, false);
+    let lockUp0: LockUp = await ibo.addLockUp(lockUp0Period, lockUp0Apy, false);
+    let lockUp1: LockUp = await ibo.addLockUp(lockUp1Period, lockUp1Apy, false);
+    let lockUp2: LockUp = await ibo.addLockUp(lockUp2Period, lockUp2Apy, false);
 
     let lockUp0Instruction = bondProgram.instruction.addLockup(
       new BN(lockUp0Period),
@@ -396,7 +384,12 @@ describe("dark-bonds", async () => {
   });
 
   it("Add gated lockup for collection.", async () => {
-    let lockUp3 = await ibo.addLockUp(lockUp2Period, lockUp2Apy, true, 0);
+    let lockUp3: LockUp = await ibo.addLockUp(
+      lockUp2Period,
+      lockUp2Apy,
+      true,
+      0
+    );
     console.log("\nadded lock up with idx: ", lockUp3.index);
     let collectionM: NftMint0 = cm.collections[0];
 
@@ -422,8 +415,6 @@ describe("dark-bonds", async () => {
       gate0.masterKey,
       gate0.creatorKey
     );
-
-    console.log(`\n\n\ngateType at idx ${gate0.index}:\n ${gateType}`);
 
     const tx2 = await bondProgram.methods
       .addGate(ibo.index, lockUp3.index, gateType)
@@ -455,8 +446,6 @@ describe("dark-bonds", async () => {
       .rpc();
 
     lockUp3.addGate(ibo.gateCounter - 1);
-
-    // Update it in the lock class
   });
 
   it("Add gated lockup for SPL.", async () => {
@@ -476,8 +465,6 @@ describe("dark-bonds", async () => {
 
     let gate1: SplGate = await ibo.addSplGate(mintWhiteList.mint);
     const gateType = createSplTypeInput(gate1.mint, 100, 40);
-
-    console.log(`\n\n\ngateType at idx ${gate1.index}:\n ${gateType}`);
 
     const tx2 = await bondProgram.methods
       .addGate(ibo.index, lockUp4.index, gateType)
@@ -528,19 +515,9 @@ describe("dark-bonds", async () => {
 
   it("Buyer 1 deposits funds at a rate 1", async () => {
     masterBalance = await getTokenBalance(superAdminAta_sc);
-
-    // Add a bond
-    console.log("superAdmin: ", superAdmin.publicKey.toBase58());
-
-    // Get lockup 0
+    console.log("superAdmin: ", superAdmin.publicKey.toBase58()); // Add a bond
     let lockUp: LockUp = ibo.lockups[0];
-
-    console.log("\n\nthis lockup has idx: ", lockUp.index);
-
-    console.log;
-
-    // take some user out
-    const user: User = users.users[0];
+    const user: User = users.users[0]; // take some user out
     const bond: Bond = await ibo.issueBond(ibo.bondCounter, purchaseAmount);
     user.issueBond(bond);
 
@@ -1027,7 +1004,6 @@ describe("dark-bonds", async () => {
     const lockup: LockUp = ibo.lockups[4];
 
     // ASsert it is the SPL gate
-
     console.log("\nlockup: ", lockup);
 
     // Get gate indexes available for this lockup

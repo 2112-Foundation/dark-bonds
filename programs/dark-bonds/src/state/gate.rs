@@ -10,15 +10,18 @@ pub struct Gate {
     pub verification: GateType,
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq, Eq)]
-pub enum GateOption {
-    /** Verification via NFT membership.*/
-    Collection,
-    /** Verification via SPL ownership.*/
-    Spl,
-    /** Verification via SPL ownership and NFT membership.*/
-    Combined,
-}
+// #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq, Eq)]
+// pub enum GateOption {
+//     /** Verification via NFT membership.*/
+//     Collection,
+//     /** Verification via SPL ownership.*/
+//     Spl,
+//     /** Verification via SPL ownership and NFT membership.*/
+//     Combined,
+//     // Special one of addresses either NFT mint or public key.*/
+//     // Field for taking it off once done
+//     // Combined,
+// }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq, Eq)]
 pub enum GateType {
@@ -41,7 +44,6 @@ pub trait Verifiable<'a> {
     type Args;
     fn verify(&self, owner: &Pubkey, args: Self::Args) -> Result<bool>;
 }
-
 impl<'a> Verifiable<'a> for GateType {
     type Args = Vec<AccountInfo<'a>>;
     fn verify(&self, owner: &Pubkey, args: Self::Args) -> Result<bool> {
@@ -57,24 +59,6 @@ impl<'a> Verifiable<'a> for GateType {
         }
     }
 }
-
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq, Eq)]
-pub struct CollectionType {
-    pub metadata: Pubkey,
-    pub master_mint: Pubkey,
-    pub creator: Pubkey,
-}
-
-impl CollectionType {
-    pub fn new(metadata: &Pubkey, master_mint: &Pubkey, creator: &Pubkey) -> Self {
-        Self {
-            metadata: *metadata,
-            master_mint: *master_mint,
-            creator: *creator,
-        }
-    }
-}
-
 impl<'a> Verifiable<'a> for CollectionType {
     type Args = Vec<AccountInfo<'a>>;
 
@@ -135,7 +119,6 @@ impl<'a> Verifiable<'a> for CollectionType {
         Ok(true)
     }
 }
-
 impl<'a> Verifiable<'a> for SplType {
     type Args = Vec<AccountInfo<'a>>;
     fn verify(&self, owner: &Pubkey, _args: Self::Args) -> Result<bool> {
@@ -174,6 +157,23 @@ impl<'a> Verifiable<'a> for SplType {
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq, Eq)]
+pub struct CollectionType {
+    pub metadata: Pubkey,
+    pub master_mint: Pubkey,
+    pub creator: Pubkey,
+}
+
+impl CollectionType {
+    pub fn new(metadata: &Pubkey, master_mint: &Pubkey, creator: &Pubkey) -> Self {
+        Self {
+            metadata: *metadata,
+            master_mint: *master_mint,
+            creator: *creator,
+        }
+    }
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq, Eq)]
 pub struct SplType {
     pub spl_mint: Pubkey,
     pub minimum_ownership: u64,
@@ -188,9 +188,19 @@ impl SplType {
             amount_per_token: amount_per_token,
         }
     }
-
-    pub fn take_fee(&self, amount: u64) -> Result<bool> {
+    /**Burns whitelisted token based on the converion rate */
+    /// Brief.
+    ///
+    /// Description.
+    ///
+    /// * `purchase_amount` - Amount in liquidity coin used for this purchase.
+    /// * `lockup_rate` - Conversion rate from this particular lock up.
+    pub fn burn_wl_token(&self, purchase_amount: u64, lockup_rate: u64) -> Result<bool> {
         // amount * self.amount_per_token / 100
+        // Calculate how many bond tokens they are allowed to have
+        // let amount_allowed: u64 = (amount * self.amount_per_token) / 100;
+
+        //
 
         Ok(true)
     }
