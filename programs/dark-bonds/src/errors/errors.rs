@@ -51,7 +51,7 @@ pub enum ErrorCode {
     InvalidGateAccount,
 
     // Collection gate
-    #[msg("Provided insufficient number of accounts to verify the collection")]
+    #[msg("Provided insufficient number of accounts to process the collection")]
     GateCollectionInsufficientAccounts,
     #[msg("Caller is not the NFT owner")]
     GateCollectionInvalidOwner,
@@ -66,7 +66,7 @@ pub enum ErrorCode {
     GateSplCallerNotEnoughToken,
     #[msg("SPL mint address does not match the one stored for this gate")]
     GateSplIncorrectMint,
-    #[msg("Provided insufficient number of accounts to verify the collection")]
+    #[msg("Provided insufficient number of accounts to process the collection")]
     GateSplInsufficientAccounts,
     #[msg("Token account not derived from the SPL mint")]
     GateSplInvalidTokenAccount,

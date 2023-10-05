@@ -100,7 +100,7 @@ pub mod dark_bonds {
         ctx: Context<AddGate>,
         ibo_idx: u32,
         lockup_idx: u32,
-        gate_settings: GateType
+        gate_settings: Vec<GateType>
     ) -> Result<()> {
         bond_admin::add_gate::add_gate(ctx, ibo_idx, lockup_idx, gate_settings)
     }
@@ -130,9 +130,9 @@ pub mod dark_bonds {
         lockup_idx: u32,
         ibo_idx: u64,
         liquidity_provided: u64,
-        gate_idx: u32
+        gate_idxs: u32
     ) -> Result<()> {
-        user::buy_bond::buy_bond(ctx, lockup_idx, ibo_idx, liquidity_provided, gate_idx)
+        user::buy_bond::buy_bond(ctx, lockup_idx, ibo_idx, liquidity_provided, gate_idxs)
     }
 
     // Claim tokens yielded for that specifc bond bond

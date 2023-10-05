@@ -88,7 +88,7 @@ pub fn add_nft_basket2(
     // let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
     // let tree: &mut Account<Tree> = &mut ctx.accounts.tree;
 
-    // Loop over vertices and verify them
+    // Loop over vertices and process them
 
     msg!("initialising nft basket");
 

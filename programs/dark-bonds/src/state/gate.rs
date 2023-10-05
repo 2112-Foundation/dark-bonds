@@ -6,24 +6,11 @@ use mpl_token_metadata::accounts::Metadata;
 #[account]
 #[derive(PartialEq, Eq)]
 pub struct Gate {
-    /** Type of verification.*/
-    pub verification: GateType,
+    /** Type of gate_settings.*/
+    pub gate_settings: Vec<GateType>,
 }
 
-// #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq, Eq)]
-// pub enum GateOption {
-//     /** Verification via NFT membership.*/
-//     Collection,
-//     /** Verification via SPL ownership.*/
-//     Spl,
-//     /** Verification via SPL ownership and NFT membership.*/
-//     Combined,
-//     // Special one of addresses either NFT mint or public key.*/
-//     // Field for taking it off once done
-//     // Combined,
-// }
-
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(AnchorSerialize, AnchorDeserialize, Copy, Clone, Debug, PartialEq, Eq)]
 pub enum GateType {
     /** Verification via NFT membership.*/
     Collection {
@@ -32,11 +19,6 @@ pub enum GateType {
     /** Verification via SPL ownership.*/
     Spl {
         gate: SplType,
-    },
-    /** Verification via SPL ownership and NFT membership.*/
-    Combined {
-        gate_collection: CollectionType,
-        spl_gate: SplType,
     },
 }
 
@@ -50,12 +32,6 @@ impl<'a> Verifiable<'a> for GateType {
         match self {
             GateType::Collection { gate } => gate.verify(owner, args),
             GateType::Spl { gate } => gate.verify(owner, args),
-            GateType::Combined { gate_collection, spl_gate } => {
-                // Need to splut args into first two and the rest
-                // let (first, rest) = args.split_at(2);
-                gate_collection.verify(owner, args.clone())?;
-                spl_gate.verify(owner, args)
-            }
         }
     }
 }
@@ -64,7 +40,7 @@ impl<'a> Verifiable<'a> for CollectionType {
 
     fn verify(&self, owner: &Pubkey, _args: Self::Args) -> Result<bool> {
         // verify based on membership to an NFT community
-        msg!("\n\nCollection verification");
+        msg!("\n\nCollection gate_settings");
         msg!("Provided {:?} accounts.", _args.len());
 
         if _args.len() < 3 {
@@ -115,14 +91,14 @@ impl<'a> Verifiable<'a> for CollectionType {
         require!(self.master_mint == temp.key, ErrorCode::GateCollectionNftNotFromCollection);
 
         // Ensure caller owns provided nft mint
-        msg!("Collection verification");
+        msg!("Collection gate_settings");
         Ok(true)
     }
 }
 impl<'a> Verifiable<'a> for SplType {
     type Args = Vec<AccountInfo<'a>>;
     fn verify(&self, owner: &Pubkey, _args: Self::Args) -> Result<bool> {
-        msg!("\n\nSPL verification");
+        msg!("\n\nSPL gate_settings");
         msg!("Provided {:?} accounts.", _args.len());
         if _args.len() < 2 {
             msg!("Not enough accounts provided. At least 2 required.");
@@ -156,7 +132,7 @@ impl<'a> Verifiable<'a> for SplType {
     }
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(AnchorSerialize, AnchorDeserialize, Copy, Clone, Debug, PartialEq, Eq)]
 pub struct CollectionType {
     pub metadata: Pubkey,
     pub master_mint: Pubkey,
@@ -173,7 +149,7 @@ impl CollectionType {
     }
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(AnchorSerialize, AnchorDeserialize, Copy, Clone, Debug, PartialEq, Eq)]
 pub struct SplType {
     pub spl_mint: Pubkey,
     pub minimum_ownership: u64,
@@ -207,41 +183,36 @@ impl SplType {
 }
 
 impl Gate {
-    pub fn load(&mut self, gate_input: GateType) {
+    pub fn load_gates(&mut self, gate_inputs: Vec<GateType>) {
         // Debug: Print the input at the beginning of the function.
         // msg!("Input to load2: {:?}", gate_input);
 
-        match gate_input {
-            GateType::Collection { gate } => {
-                // Debug: Print when this branch is reached.
-                msg!("\nMatching CollectionType with collection: {:?}", gate);
-                self.verification = GateType::Collection {
-                    gate,
-                };
-            }
-            // GateInput::SplType { spl } => {
-            GateType::Spl { gate } => {
-                // Debug: Print when this branch is reached.
-                msg!("\nMatching SplType with spl: {:?}", gate);
-                self.verification = GateType::Spl {
-                    gate,
-                };
-            }
-            // GateInput::CombinedType { collection, spl } => {
-            GateType::Combined { gate_collection, spl_gate } => {
-                // Debug: Print when this branch is reached.
-                msg!(
-                    "\nMatching CombinedType with collection: {:?} and spl: {:?}",
-                    gate_collection,
-                    spl_gate
-                );
-                self.verification = GateType::Combined {
-                    gate_collection: gate_collection,
-                    spl_gate: spl_gate,
-                };
+        // Loop over each of the gates and set them in the array
+
+        for &gate in gate_inputs.iter() {
+            // Debug: Print when this branch is reached.
+            // msg!("\n\nGate: {:?}", gate);
+            // self.gate_settings.push(gate.clone());
+
+            match gate {
+                GateType::Collection { gate } => {
+                    // Debug: Print when this branch is reached.
+                    msg!("\nMatching CollectionType with collection: {:?}", gate);
+                    self.gate_settings.push(GateType::Collection {
+                        gate,
+                    });
+                }
+                // GateInput::SplType { spl } => {
+                GateType::Spl { gate } => {
+                    // Debug: Print when this branch is reached.
+                    msg!("\nMatching SplType with spl: {:?}", gate);
+                    self.gate_settings.push(GateType::Spl {
+                        gate,
+                    });
+                }
             }
         }
 
-        msg!("\n\nGate loaded:\n{:?}", self.verification);
+        msg!("\n\nGate loaded:\n{:?}", self.gate_settings);
     }
 }

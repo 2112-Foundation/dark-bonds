@@ -63,7 +63,7 @@ pub fn buy_bond(
     _lockup_idx: u32,
     ibo_idx: u64,
     stable_amount_liquidity: u64,
-    gate_idx: u32
+    gate_idx: u32 // This needs to be an array of gates
 ) -> Result<()> {
     let buyer: &Signer = &mut ctx.accounts.buyer;
     let master: &mut Account<Master> = &mut ctx.accounts.master;
@@ -71,10 +71,15 @@ pub fn buy_bond(
     let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
 
     msg!("Master.master_recipient: {:?}", master.master_recipient);
-    msg!("\n\nThis lock-up {:?} has {:?} gates", lockup.key(), lockup.gates.len());
+    // msg!("\n\nThis lock-up {:?} has {:?} gates", lockup.key(), lockup.gates.len());
 
     // Check if it has at least one access gate
     if lockup.gates.len() > 0 {
+        // Need to loop over the proveded gate indexes
+
+        // Check if gate index exists within the lockup
+        // require!(lockup.gates.contains(&gate_idx), ErrorCode::IncorrectGateIndex);
+
         msg!("This lock up has associated gates: {:?}", lockup.gates);
         let remaining_accounts_vec = ctx.remaining_accounts.to_vec();
 
@@ -86,7 +91,6 @@ pub fn buy_bond(
 
         // Check if gate index exists within the lockup
         require!(lockup.gates.contains(&gate_idx), ErrorCode::IncorrectGateIndex);
-
         msg!("Index gucci. Trying out PDA derivation for gate_idx: {:?}", gate_idx);
 
         // Recheck that the pda is correct for the given gate account
@@ -98,31 +102,48 @@ pub fn buy_bond(
 
         // Correct gate has been given
         require!(&gate_pda == gate_account.key, ErrorCode::InvalidGateAccount);
+        msg!("Provided gate matches the account");
 
-        msg!("Gate is gucci");
-
-        // Extract gate from the remaining accounts
+        // Extract gate accoutn content from the remaining accounts
         let gate: Account<Gate> = Account::try_from(gate_account)?;
 
+        // Loop over gates stored in the account
+        for (index, &gate_idx) in gate.gate_settings.iter().enumerate() {
+            // msg!("Gate idx: {:?}", gate_idx);
+
+            // Get instance of the gate to feed it accounts
+            let gate: &GateType = gate.gate_settings
+                .get(index)
+                .ok_or(ErrorCode::InvalidNFTAccountOwner)?;
+
+            // msg!("Gate is gucci");
+
+            // Pass whatever accounts are left to the gate
+            gate.verify(&buyer.key(), verification_accounts.to_vec())?;
+
+            // Update remianing accounts
+        }
+
+        // Process each gate type provided by the user
+
         // Call on the gate to check the remaining accounts
-        gate.verification.verify(&buyer.key(), verification_accounts.to_vec())?;
+        // gate.gate_settings.process(&buyer.key(), verification_accounts.to_vec())?;
 
         // substract from the total amount of liquidity
         // Chec if of type SPL that has a cut associated
 
         // TODO process bruning so need token account and the mint, or just one of them
 
-        // Check if gate verification matches SPL one or combined
+        // Check if gate gate_settings matches SPL one or combined
 
-        let acc_ghate: GateType = gate.verification;
-        // if gate.verification == GateType::Spl {
+        // if gate.gate_settings == GateType::Spl {
         // }
     }
 
     // Ensure lock up pruchase period does not overrule the IBO pruchase period
     // Set start time and end time based on lock up and then check if time now is within it
 
-    // If so extarct remainign and verify it
+    // If so extarct remainign and process it
     purchase_mechanics(
         &ctx.accounts.buyer,
         &ctx.accounts.lockup,
