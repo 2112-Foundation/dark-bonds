@@ -32,7 +32,7 @@ export class Bond {
 
   async split(amount: number) {
     this.amount -= amount;
-    return await this.parent.addBond(this.lockUpIdx, amount);
+    return await this.parent.issueBond(this.lockUpIdx, amount);
   }
 
   constructor(
@@ -181,18 +181,25 @@ export class Ibo {
   /** An array of LockUp objects associated with this Ibo. */
   public bonds: Bond[] = [];
 
-  // Function that returns any bond that is marked as being on a swap
+  /**  Function that returns any bond that is marked as being on a swap */
   getBondsOnSwap(): Bond[] {
     return this.bonds.filter((bond) => bond.swapPrice > 0);
   }
 
+  /** Converts between liqduid and bont tokens using the conversion and APY for this particular lock up */
   getBondToken(lockUpIdx: number, stableAmount: number) {
     const lockUp: LockUp = this.lockups[lockUpIdx];
     const gains = lockUp.apy * stableAmount * (lockUp.period / 31536000);
     return gains;
   }
 
-  async addBond(lockUpIdx: number, amount: number) {
+  /** Adds bond entry to the ibo instance and icnremenets bond counter */
+  async issueBond(
+    /**Index of the lock up from which thsi bond will get rate and lockup period. */
+    lockUpIdx: number,
+    /** Amount in liquidity coin that the user is spending  */
+    amount: number
+  ) {
     console.log("Using bond counter: ", this.bondCounter);
     const [bondPDA] = PublicKey.findProgramAddressSync(
       [
@@ -205,6 +212,8 @@ export class Ibo {
     const bondAccount = await this.mintB.makeAta(bondPDA);
 
     // Get how much token will be locked up
+    console.log("Getting lockup idx: ", lockUpIdx);
+    console.log("Total lock-ups: ", this.lockups.length);
     const lockedBondToken = this.getBondToken(lockUpIdx, amount);
 
     console.log("Stroign in bond class: ", amount);

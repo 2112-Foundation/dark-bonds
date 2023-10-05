@@ -26,7 +26,7 @@ export class User {
     public liquidityAccount: Account
   ) {}
 
-  async addBond(bond: Bond): Promise<Bond> {
+  async issueBond(bond: Bond): Promise<Bond> {
     // Set owner of bond to be user
     bond.setOwner(
       await bond.parent.mintB.makeAta(this.publicKey),
@@ -48,7 +48,7 @@ export class Users {
   mintSc: PublicKey;
   constructor(public connection: anchor.web3.Connection, public mintSC: Mint) {}
 
-  // Transfers bond from user x to user y
+  /** Changes bond owner from user x to user y in the ownership mappings for this IBO */
   async transferBond(
     /** Index of user x */ userFromIdx: number,
     /** Index of user y */ userToIdx: number,
@@ -59,7 +59,7 @@ export class Users {
     const bond: Bond = this.users[userFromIdx].removeBond(bondIdx);
 
     // Add bond to user y
-    await this.users[userToIdx].addBond(bond);
+    await this.users[userToIdx].issueBond(bond);
   }
 
   async addUser() {
@@ -68,16 +68,14 @@ export class Users {
     // Tops up sol
     await this.topUp(user.publicKey);
 
-    console.log("\nUser: ", user.publicKey.toBase58());
-
     // Create an ATA
     const userScAta = await this.mintSC.makeAta(user.publicKey);
-    console.log("Has ata secret: ", userScAta.address.toBase58());
     await this.mintSC.topUpSPl(userScAta.address, 100000000);
     const userStruct = new User(user.secretKey, user.publicKey, userScAta);
     this.users.push(userStruct);
   }
 
+  /** Adds a batch of users to the class array and tops each up with the stable coin */
   async addUsers(users: number) {
     const promises = [];
     for (let i = 0; i < users; i++) {

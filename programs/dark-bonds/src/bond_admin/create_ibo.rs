@@ -16,7 +16,7 @@ pub struct CreateIBO<'info> {
         seeds = ["ibo_instance".as_bytes(), &master.ibo_counter.to_be_bytes()],
         bump,
         payer = admin,
-        space = 333
+        space = 333 // TODO make it not random
     )]
     pub ibo: Account<'info, Ibo>,
 

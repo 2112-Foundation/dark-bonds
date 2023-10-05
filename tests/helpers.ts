@@ -5,6 +5,45 @@ import { PublicKey } from "@metaplex-foundation/js";
 import * as anchor from "@project-serum/anchor";
 const BN = anchor.BN;
 
+export function createSameAsMainIboInput() {
+  return {
+    sameAsMainIbo: {},
+  };
+}
+
+export function createLockupPurchaseStartInput(start: number) {
+  // Ensure that 'start' is a BN instance.
+  const startBN = new BN(start);
+  return {
+    lockupPurchaseStart: {
+      start: startBN,
+    },
+  };
+}
+
+export function createLockupPurchaseEndInput(end: number) {
+  // Ensure that 'end' is a BN instance.
+  const endBN = new BN(end);
+  return {
+    lockupPurchaseEnd: {
+      end: endBN,
+    },
+  };
+}
+
+export function createLockupPurchaseCombinedInput(start: number, end: number) {
+  // Ensure that 'start' and 'end' are BN instances.
+  const startBN = new BN(start);
+  const endBN = new BN(end);
+
+  return {
+    lockupPurchaseCombined: {
+      start: startBN,
+      end: endBN,
+    },
+  };
+}
+
 export function createCollectionTypeInput(
   metadata: PublicKey,
   masterMint: PublicKey,

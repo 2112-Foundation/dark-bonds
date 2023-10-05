@@ -21,7 +21,13 @@ pub struct AddLockUp<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn add_lockup(ctx: Context<AddLockUp>, lockup_duration: i64, lockup_apy: f64) -> Result<()> {
+pub fn add_lockup(
+    ctx: Context<AddLockUp>,
+    lockup_duration: i64,
+    lockup_apy: f64,
+    mature_only: bool,
+    purchase_period: PurchasePeriod
+) -> Result<()> {
     let lockup: &mut Account<Lockup> = &mut ctx.accounts.lockup;
     let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
 
@@ -30,6 +36,10 @@ pub fn add_lockup(ctx: Context<AddLockUp>, lockup_duration: i64, lockup_apy: f64
     // Set these lockup values
     lockup.period = lockup_duration;
     lockup.apy = lockup_apy;
+    lockup.mature_only = mature_only;
+
+    // Set purchase period
+    lockup.purchase_period = purchase_period;
 
     // Increment counter
     ibo.lockup_counter += 1;

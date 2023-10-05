@@ -16,6 +16,26 @@ pub struct Lockup {
     pub mature_only: bool,
     /** Total amount to be sold under this lock-up option.*/
     pub limit: u64,
+    /** Optional period that allows to be purchased outside of the main timing.*/
+    pub purchase_period: PurchasePeriod,
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq, Eq)]
+pub enum PurchasePeriod {
+    SameAsMainIbo,
+    /** First time when this lock-up can be used.*/
+    LockupPurchaseStart {
+        start: i64,
+    },
+    /** Last time when this lock-up can be used.*/
+    LockupPurchaseEnd {
+        end: i64,
+    },
+    /** First and last time when this lock-up can be used.*/
+    LockupPurchaseCombined {
+        start: i64,
+        end: i64,
+    },
 }
 
 impl Lockup {

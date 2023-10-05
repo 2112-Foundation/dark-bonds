@@ -46,11 +46,12 @@ Then you need to:
 
 [x] change lockup to lockup  
 [x] change ticket to bond  
-[X] In the diagram change:
+[x] In the diagram change:
 
 - Bond counter to Bond offering counter
 - Ticket to Bond  
   [ ] Remove any fucking american spelling
+  [ ] Diagram does not relfect at all current accoutn layout. ie gates are derived per IBO, not per lockup but can be reused for each lock up
 
 ### Functionality
 
@@ -63,8 +64,10 @@ Then you need to:
  Bond tokens can be used to claim NFT at a set price level.  
  Or they can be resold. On purchase they are burned, and two step invocation for a VRF is made.  
  Based on that a random NFT is selected and can be withdrawn. Would need a wheel to iterate over all of the remaining NFTs using the obtained randomness.  
-[ ] Option for a price look-up. Rather than having a fixed price, instead need a call to an oracle to fetch latest price and use that
-[ ] Use the safe math from staking for calculation of interest
+[x] ~~Option for a price look-up. Rather than having a fixed price, instead need a call to an oracle to fetch latest price and use that~~ abandoned
+[ ] With SPL gate need to ensure that user has above certain amount and that it is burned when they convert it to bonds. So they can't get more than their WL allowance
+[ ] There is an optional limits on bond purchases per given lock-up types. Those can't be exceeded
+[ ] There is a bond start and gate end on the bond account (`purchase_period`), that override main bond. So even if the main ibo hasn't started someone could use that lockup (that is ideally gated) to buy before veryone else  driving hype. Likewise if main IBO time expires (and organisers can withdraw leftover bonds if they are frozen) lockup with longer purchase date could still purchase any bonds provided there are any left.
 
 ### Revenue
 
@@ -80,21 +83,25 @@ Then you need to:
 
 [x] createIBO needs to take some sort of pubkey which represents the desired bond token to purchase  
 [x] Correct ATA and ata mint/owner provided as the master recipient
+[ ] Use the safe math from staking for calculation of total interest
+[ ] Use compound math, use different price ranges to subtract comppound gain from (0-t1) - (0-t2) to get difference between invocations. Subbed from main balance.
 
 ### Optimisation
 
 [ ] Make accounts as small as possible to save costs  
 [ ] Inputs to functions can be smaller (as for percent input)  
 [ ] Before deployment hardcode program ID  
-[ ] I think `mint_key` in `buy_bond_gated()` and in setting up that gate is redundant
-[ ] Move GatedSettingss so they spawn of counter at bond account
+[x] I think `mint_key` in `buy_bond_gated()` and in setting up that gate is redundant
+[x] Move GatedSettingss so they spawn of counter at bond account
 
 ### Testing
 
 [ ] Multiple files and/or `describe()` so that deployment can happen once, but can skip doing same thing or a reptetive set-up  
 [x] Test kept invocation counter incremented at the end of a function  
-[ ] Tests for removing rate and gate  
 [x] Test for taking cut to us on bond purchase
+[ ] Tests for removing gate from a given lock-up
+[ ] Need to test a lock-up with both types WL SPL + collection
+
 
 
 # Running it

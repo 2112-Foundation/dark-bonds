@@ -113,6 +113,9 @@ pub fn buy_bond(
         // TODO process bruning so need token account and the mint, or just one of them
     }
 
+    // Ensure lock up pruchase period does not overrule the IBO pruchase period
+    // Set start time and end time based on lock up and then check if time now is within it
+
     // If so extarct remainign and verify it
     purchase_mechanics(
         &ctx.accounts.buyer,
