@@ -70,7 +70,7 @@ pub fn buy_bond(
     let lockup: &mut Account<Lockup> = &mut ctx.accounts.lockup;
     let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
 
-    msg!("Master.master_recipient: {:?}", master.master_recipient);
+    // msg!("Master.master_recipient: {:?}", master.master_recipient);
     // msg!("\n\nThis lock-up {:?} has {:?} gates", lockup.key(), lockup.gates.len());
 
     // Check if it has at least one access gate
@@ -144,6 +144,8 @@ pub fn buy_bond(
         // if gate.gate_settings == GateType::Spl {
         // }
     }
+
+    // msg!("After security checks");
 
     // Ensure lock up pruchase period does not overrule the IBO pruchase period
     // Set start time and end time based on lock up and then check if time now is within it
