@@ -188,6 +188,12 @@ impl SplType {
             amount_per_token: amount_per_token,
         }
     }
+
+    pub fn take_fee(&self, amount: u64) -> Result<bool> {
+        // amount * self.amount_per_token / 100
+
+        Ok(true)
+    }
 }
 
 impl Gate {

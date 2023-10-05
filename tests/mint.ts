@@ -32,11 +32,11 @@ export class Mint {
   }
 
   async topUpSPl(topUpAccAta: PublicKey, amount: number = 1000) {
-    console.log(
-      "\nMINT INSIDE THE ADD USERthis.mintSc: ",
-      this.mint.toBase58()
-    );
-    console.log("topping up user: ", topUpAccAta.toBase58());
+    // console.log(
+    //   "\nMINT INSIDE THE ADD USERthis.mintSc: ",
+    //   this.mint.toBase58()
+    // );
+    // console.log("topping up user: ", topUpAccAta.toBase58());
     try {
       mintTo(
         this.connection,
@@ -50,8 +50,8 @@ export class Mint {
         TOKEN_PROGRAM_ID
       );
     } catch (e) {
-      console.log("\nFailed SPL top up:\n ", e);
+      // console.log("\nFailed SPL top up:\n ", e);
     }
-    console.log("SPL topped up for : ", topUpAccAta.toBase58());
+    // console.log("SPL topped up for : ", topUpAccAta.toBase58());
   }
 }

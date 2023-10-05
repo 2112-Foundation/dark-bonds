@@ -464,7 +464,7 @@ describe("dark-bonds", async () => {
       .rpc();
 
     let gate1: SplGate = await ibo.addSplGate(mintWhiteList.mint);
-    const gateType = createSplTypeInput(gate1.mint, 0, 0);
+    const gateType = createSplTypeInput(gate1.mint, 100, 40);
 
     console.log(`\n\n\ngateType at idx ${gate1.index}:\n ${gateType}`);
 

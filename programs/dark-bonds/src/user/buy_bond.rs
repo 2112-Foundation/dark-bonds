@@ -106,6 +106,11 @@ pub fn buy_bond(
 
         // Call on the gate to check the remaining accounts
         gate.verification.verify(&buyer.key(), verification_accounts.to_vec())?;
+
+        // substract from the total amount of liquidity
+        // Chec if of type SPL that has a cut associated
+
+        // TODO process bruning so need token account and the mint, or just one of them
     }
 
     // If so extarct remainign and verify it
