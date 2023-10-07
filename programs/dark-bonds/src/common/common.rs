@@ -109,7 +109,7 @@ pub fn purchase_mechanics<'info>(
     // Convert APY, time and initial input to f64
     // Moved here
     // ------------------------------------------------------------------------------------------
-    let apy: f64 = lockup.apy / 100.0;
+    let apy: f64 = (lockup.apy as f64) / 100.0;
     let time_in_years: f64 = (lockup.period as f64) / SECONDS_YEAR;
     let initial_input: f64 = stable_amount_liquidity as f64;
 

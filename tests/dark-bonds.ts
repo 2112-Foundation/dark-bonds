@@ -1,5 +1,6 @@
 import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
+import { expect } from "chai";
 import { DarkBonds } from "../target/types/dark_bonds";
 import { PublicKey } from "@solana/web3.js";
 import {
@@ -453,7 +454,7 @@ describe("dark-bonds", async () => {
       .signers([ibo.admin])
       .rpc();
 
-    lockUp3.addGate(ibo.gateCounter - 1);
+    lockUp3.addGateIdx(ibo.gateCounter - 1);
   });
 
   it("Add gated lockup for SPL.", async () => {
@@ -475,11 +476,11 @@ describe("dark-bonds", async () => {
     // const gateType = createSplTypeInput(gate1.mint, 100, 40);
 
     const newGateSetting = createSplTypeInput(mintWhiteList.mint, 100, 40);
-    const gateType = createSplTypeInput(mintWhiteList.mint, 100, 40);
+    // const gateType = createSplTypeInput(mintWhiteList.mint, 100, 40);
     let gate0 = await ibo.addGate([newGateSetting]);
 
     const tx2 = await bondProgram.methods
-      .addGate(ibo.index, lockUp4.index, [gateType])
+      .addGate(ibo.index, lockUp4.index, [newGateSetting])
       .accounts({
         admin: ibo.admin.publicKey,
         ibo: ibo.address,
@@ -507,70 +508,91 @@ describe("dark-bonds", async () => {
       .signers([ibo.admin])
       .rpc();
 
-    lockUp4.addGate(ibo.gateCounter - 1);
+    lockUp4.addGateIdx(ibo.gateCounter - 1);
   });
 
-  // it("Add combined gated lockup with SPL and collection.", async () => {
-  //   let collectionM: NftMint0 = cm.collections[0];
-  //   let lockUp5 = await ibo.addLockUp(lockUp2Period, lockUp2Apy, true, 0);
-  //   console.log("\nadded lock up with idx: ", lockUp5.index);
+  it("Add combined gated lockup with SPL and collection.", async () => {
+    let collectionM: NftMint0 = cm.collections[0];
+    let lockUp5 = await ibo.addLockUp(lockUp2Period, lockUp2Apy, true, 0);
+    console.log("\nadded lock up with idx: ", lockUp5.index);
 
-  //   const tx = await bondProgram.methods
-  //     .addLockup(new BN(lockUp3Period), new BN(lockUp3Apy), false, pp)
-  //     .accounts({
-  //       admin: ibo.admin.publicKey,
-  //       ibo: ibo.address,
-  //       lockup: lockUp5.address,
-  //       systemProgram: anchor.web3.SystemProgram.programId,
-  //     })
-  //     .signers([ibo.admin])
-  //     .rpc();
+    const tx = await bondProgram.methods
+      .addLockup(new BN(lockUp3Period), new BN(lockUp3Apy), false, pp)
+      .accounts({
+        admin: ibo.admin.publicKey,
+        ibo: ibo.address,
+        lockup: lockUp5.address,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .signers([ibo.admin])
+      .rpc();
 
-  //   let gate1: SplGate = await ibo.addSplGate(mintWhiteList.mint);
-  //   let gate0: CollectionGate = await ibo.addCollectionGate(
-  //     collectionM.masterMint,
-  //     collectionM.masterMint,
-  //     collectionM.masterEdition
-  //   );
-  //   const gateType1 = createSplTypeInput(gate1.mint, 100, 40);
-  //   const gateType2 = createCollectionTypeInput(
-  //     gate0.masterKey,
-  //     gate0.masterKey,
-  //     gate0.creatorKey
-  //   );
+    // let gate1: SplGate = await ibo.addSplGate(mintWhiteList.mint);
+    // let gate0: CollectionGate = await ibo.addCollectionGate(
+    //   collectionM.masterMint,
+    //   collectionM.masterMint,
+    //   collectionM.masterEdition
+    // );
+    // const gateType1 = createSplTypeInput(gate1.mint, 100, 40);
+    // const gateType2 = createCollectionTypeInput(
+    //   gate0.masterKey,
+    //   gate0.masterKey,
+    //   gate0.creatorKey
+    // );
 
-  //   // Adding both types at once
-  //   const tx2 = await bondProgram.methods
-  //     .addGate(ibo.index, lockUp5.index, [gateType1, gateType2])
-  //     .accounts({
-  //       admin: ibo.admin.publicKey,
-  //       ibo: ibo.address,
-  //       lockup: lockUp5.address,
-  //       gate: gate1.address,
-  //       systemProgram: anchor.web3.SystemProgram.programId,
-  //     })
-  //     .signers([ibo.admin])
-  //     .rpc();
+    const gateType1 = createCollectionTypeInput(
+      collectionM.masterMint,
+      collectionM.masterMint,
+      collectionM.masterEdition
+    );
 
-  //   // Update lock up to reflect those changes
-  //   const tx3 = await bondProgram.methods
-  //     .updateGates(
-  //       ibo.index,
-  //       lockUp5.index,
-  //       [1], // 0th gate PDA
-  //       []
-  //     )
-  //     .accounts({
-  //       admin: ibo.admin.publicKey,
-  //       ibo: ibo.address,
-  //       lockup: lockUp5.address,
-  //       systemProgram: anchor.web3.SystemProgram.programId,
-  //     })
-  //     .signers([ibo.admin])
-  //     .rpc();
+    const gateType2 = createSplTypeInput(mintWhiteList.mint, 100, 40);
 
-  //   lockUp4.addGate(ibo.gateCounter - 1);
-  // });
+    const newGateSettingSpl = createSplTypeInput(mintWhiteList.mint, 100, 40);
+    const newGateSettingCollection = new CollectionSetting(
+      collectionM.masterMint,
+      collectionM.masterMetadata,
+      collectionM.masterEdition
+    );
+
+    // Stack gates
+    let gate1 = await ibo.addGate([
+      newGateSettingSpl,
+      newGateSettingCollection,
+    ]);
+
+    // Adding both types at once
+    const tx2 = await bondProgram.methods
+      .addGate(ibo.index, lockUp5.index, [gateType1, gateType2])
+      .accounts({
+        admin: ibo.admin.publicKey,
+        ibo: ibo.address,
+        lockup: lockUp5.address,
+        gate: gate1.address,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .signers([ibo.admin])
+      .rpc();
+
+    // Update lock up to reflect those changes
+    const tx3 = await bondProgram.methods
+      .updateGates(
+        ibo.index,
+        lockUp5.index,
+        [gate1.index], // 0th gate PDA
+        []
+      )
+      .accounts({
+        admin: ibo.admin.publicKey,
+        ibo: ibo.address,
+        lockup: lockUp5.address,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .signers([ibo.admin])
+      .rpc();
+
+    lockUp5.addGateIdx(ibo.gateCounter - 1);
+  });
 
   // it("Lock further lockups.", async () => {
   //   const tx_lu1 = await bondProgram.methods
@@ -1056,7 +1078,7 @@ describe("dark-bonds", async () => {
     console.log("\n\nGATED BUY\n\n");
   });
 
-  // IMPLEMENT SPL GATE
+  // // IMPLEMENT SPL GATE
   it("Buy SPL gated bond offered on ibo", async () => {
     console.log("Total lock-ups: ", ibo.lockups.length);
 
@@ -1075,7 +1097,12 @@ describe("dark-bonds", async () => {
 
     const gate: Gate = ibo.gates[gatesIdxs[gatesIdxs.length - 1]];
 
-    console.log("\ngate: ", gate, " at idx: ", gate.index);
+    // Assert gate is the combined type one
+    // assert(typeof Gate == gate);
+    expect(gate).to.be.instanceOf(Gate);
+    console.log("\n\nType of gane: ", typeof gate);
+
+    console.log("\ngate type: ", gate, " at idx: ", gate.index);
 
     const user: User = users.users[4];
     const bond: Bond = await ibo.issueBond(lockup.index, purchaseAmount);

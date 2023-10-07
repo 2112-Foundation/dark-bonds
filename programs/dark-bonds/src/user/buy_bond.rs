@@ -91,7 +91,7 @@ pub fn buy_bond(
 
         // Check if gate index exists within the lockup
         require!(lockup.gates.contains(&gate_idx), ErrorCode::IncorrectGateIndex);
-        msg!("Index gucci. Trying out PDA derivation for gate_idx: {:?}", gate_idx);
+        // msg!("Index gucci. Trying out PDA derivation for gate_idx: {:?}", gate_idx);
 
         // Recheck that the pda is correct for the given gate account
         let (gate_pda, _bump) = Pubkey::find_program_address(
@@ -99,6 +99,9 @@ pub fn buy_bond(
             &["gate".as_bytes(), ibo.key().as_ref(), &gate_idx.to_be_bytes()],
             &ctx.program_id
         );
+
+        msg!("Gate account    : {:?}", gate_pda);
+        msg!("gate_account.key: {:?}", gate_account.key());
 
         // Correct gate has been given
         require!(&gate_pda == gate_account.key, ErrorCode::InvalidGateAccount);

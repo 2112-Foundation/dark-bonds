@@ -69,14 +69,14 @@ pub mod dark_bonds {
     pub fn add_lockup(
         ctx: Context<AddLockUp>,
         lockup_duration: i64,
-        lockup_apy: f64,
+        lockup_apy: i64,
         mature_only: bool,
         purchase_period: PurchasePeriod
     ) -> Result<()> {
         bond_admin::add_lockup::add_lockup(
             ctx,
             lockup_duration,
-            lockup_apy,
+            lockup_apy as f64,
             mature_only,
             purchase_period
         )

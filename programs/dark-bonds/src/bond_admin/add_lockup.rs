@@ -35,7 +35,7 @@ pub fn add_lockup(
 
     // Set these lockup values
     lockup.period = lockup_duration;
-    lockup.apy = lockup_apy;
+    lockup.apy = lockup_apy as i64;
     lockup.mature_only = mature_only;
 
     // Set purchase period

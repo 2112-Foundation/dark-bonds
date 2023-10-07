@@ -9,7 +9,7 @@ pub struct Lockup {
     /** Minimum lockup period in seconds.*/
     pub period: i64,
     /** Yearly APY for this lockup.*/
-    pub apy: f64,
+    pub apy: i64,
     /** Pointers to the gates that will allow this lock up to be used.*/
     pub gates: Vec<u32>, // TODO check that is zero for normal buy
     /** Can only withdraw all at once at the end.*/

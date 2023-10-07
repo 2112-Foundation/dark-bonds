@@ -114,8 +114,8 @@ export class LockUp {
     public gates: number[]
   ) {}
 
-  /** Function that adds a viable gate index to this lock-up*/
-  addGate(gateIdx: number) {
+  /** Function that adds a variable gate index to this lock-up*/
+  addGateIdx(gateIdx: number) {
     this.gates.push(gateIdx);
   }
 

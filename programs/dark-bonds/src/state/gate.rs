@@ -49,7 +49,7 @@ impl<'a> Verifiable<'a> for CollectionType {
 
     fn verify(&self, owner: &Pubkey, _args: Self::Args) -> Result<bool> {
         // verify based on membership to an NFT community
-        msg!("\n\nCollection gate_settings");
+        // msg!("\n\nCollection gate_settings");
         msg!("Provided {:?} accounts.", _args.len());
 
         if _args.len() < 3 {
@@ -84,17 +84,17 @@ impl<'a> Verifiable<'a> for CollectionType {
 
         // Nft metadta matches the nft mint
         msg!("Mint from the metadata provided: {:?}", nft_metadata.mint);
-        msg!("Provided NFT mint: {:?}", nft_mint.key());
+        // msg!("Provided NFT mint: {:?}", nft_mint.key());
 
         // Ensure mint in the metadata matches provided mint
         require!(nft_metadata.mint == nft_mint.key(), ErrorCode::GateCollectionInvalidNftMetadata);
 
         let temp = nft_metadata.collection.unwrap();
 
-        msg!("\nmaster mint stored in class: {:?}", self.master_mint);
-        msg!("metadata mint stored in class: {:?}", self.metadata);
-        msg!("nft_metadata. colection details: {:?} ", nft_metadata.collection_details);
-        msg!("nft_metadata. colection: {:?} ", temp.key);
+        // msg!("\nmaster mint stored in class: {:?}", self.master_mint);
+        // msg!("metadata mint stored in class: {:?}", self.metadata);
+        // msg!("nft_metadata. colection details: {:?} ", nft_metadata.collection_details);
+        // msg!("nft_metadata. colection: {:?} ", temp.key);
 
         // Ensure daddy mint matches one inside nft metadata
         require!(self.master_mint == temp.key, ErrorCode::GateCollectionNftNotFromCollection);
