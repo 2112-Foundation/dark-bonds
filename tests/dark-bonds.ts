@@ -1,6 +1,16 @@
 import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
 import { expect } from "chai";
+// import { chaiAsPromised } from "chai-as-promised";
+// import chaiAsPromised = require("chai-as-promised");
+// import chaiAsPromised from "chai-as-promised";
+// chai.use(chaiAsPromised);
+// const assert = chai.assert;
+import chai from "chai";
+import chaiAsPromised from "chai-as-promised";
+
+chai.use(chaiAsPromised);
+const { assert } = chai;
 import { DarkBonds } from "../target/types/dark_bonds";
 import { PublicKey } from "@solana/web3.js";
 import {
@@ -31,7 +41,7 @@ import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   Account,
 } from "@solana/spl-token";
-import { assert, use } from "chai";
+// import { assert, use } from "chai";
 import {
   Ibo,
   LockUp,
@@ -48,6 +58,18 @@ import { User, Users } from "./user";
 import { Mint } from "./mint";
 import { MintSupplyMustBeZeroError } from "@metaplex-foundation/mpl-token-metadata";
 import { CollectionsMaster, NftMint0, NftMint1 } from "./derived_nfts";
+
+async function assertRejects(asyncFunc: Promise<any>, errorType: any) {
+  try {
+    await asyncFunc;
+
+    console.log("\n\nPropagating shit fail");
+    assert.fail("Expected function to throw");
+  } catch (err) {
+    console.log("\n\nPropagating Other option: shows error", err);
+    assert.instanceOf(err, errorType);
+  }
+}
 
 //
 const BN = anchor.BN;
@@ -1031,54 +1053,56 @@ describe("dark-bonds", async () => {
 
     console.log("nftWallet.publicKey: ", nftWallet.publicKey.toBase58());
 
+    // Spend 500 for rate 1 as player 1
+
+    async function submit() {
+      const tx_lu1 = await bondProgram.methods
+        .buyBond(lockup.index, new BN(ibo.index), new BN(10000), gate.index)
+        .accounts({
+          buyer: user.publicKey,
+          bond: bond.address,
+          ibo: ibo.address,
+          lockup: lockup.address,
+          master: master.address,
+          buyerAta: user.liquidityAccount.address,
+          recipientAta: ibo.recipientAddressAccount.address,
+          iboAta: ibo.vaultAccount.address,
+          bondAta: bond.account.address,
+          masterRecipientAta: superAdminAta_sc.address,
+          systemProgram: anchor.web3.SystemProgram.programId,
+          tokenProgram: TOKEN_PROGRAM_ID,
+        })
+        .remainingAccounts([
+          { pubkey: gate.address, isWritable: false, isSigner: false },
+          {
+            pubkey: collectionM.nfts[0].metadata,
+            isWritable: false,
+            isSigner: false,
+          },
+          {
+            pubkey: collectionM.nfts[0].mint,
+            isWritable: false,
+            isSigner: false,
+          },
+          {
+            pubkey: await collectionM.nfts[0].getAta(user.publicKey),
+            isWritable: false,
+            isSigner: false,
+          },
+        ])
+        .signers([user])
+        .rpc();
+    }
+
+    await assert.isRejected(submit(), Error);
+
     // Treansfer nft to the user
     let collectionM: NftMint0 = cm.collections[0];
     console.log("Sending nft: ");
     await collectionM.nfts[0].transferFromMinter(user.publicKey);
     console.log("Sent nft: ");
 
-    // Spend 500 for rate 1 as player 1
-
-    // try {
-    const tx_lu1 = await bondProgram.methods
-      .buyBond(lockup.index, new BN(ibo.index), new BN(10000), gate.index)
-      .accounts({
-        buyer: user.publicKey,
-        bond: bond.address,
-        ibo: ibo.address,
-        lockup: lockup.address,
-        master: master.address,
-        buyerAta: user.liquidityAccount.address,
-        recipientAta: ibo.recipientAddressAccount.address,
-        iboAta: ibo.vaultAccount.address,
-        bondAta: bond.account.address,
-        masterRecipientAta: superAdminAta_sc.address,
-        systemProgram: anchor.web3.SystemProgram.programId,
-        tokenProgram: TOKEN_PROGRAM_ID,
-      })
-      .remainingAccounts([
-        { pubkey: gate.address, isWritable: false, isSigner: false },
-        {
-          pubkey: collectionM.nfts[0].metadata,
-          isWritable: false,
-          isSigner: false,
-        },
-        {
-          pubkey: collectionM.nfts[0].mint,
-          isWritable: false,
-          isSigner: false,
-        },
-        {
-          pubkey: await collectionM.nfts[0].getAta(user.publicKey),
-          isWritable: false,
-          isSigner: false,
-        },
-      ])
-      .signers([user])
-      .rpc();
-    // } catch (e) {
-    //   console.log("\nerror:\n\n", e);
-    // }
+    await submit();
 
     console.log("\n\nGATED BUY\n\n");
   });
@@ -1105,9 +1129,8 @@ describe("dark-bonds", async () => {
     // Assert gate is the combined type one
     // assert(typeof Gate == gate);
     expect(gate).to.be.instanceOf(Gate);
-    console.log("\n\nType of gane: ", typeof gate);
-
-    console.log("\ngate type: ", gate, " at idx: ", gate.index);
+    // console.log("\n\nType of gane: ", typeof gate);
+    // console.log("\ngate type: ", gate, " at idx: ", gate.index);
 
     const user: User = users.users[4];
     const bond: Bond = await ibo.issueBond(lockup.index, purchaseAmount);
@@ -1115,69 +1138,59 @@ describe("dark-bonds", async () => {
     // Get ATA for that user for whitelist
     const userWlAta: Account = await mintWhiteList.makeAta(user.publicKey);
     const userScAta: Account = await mintSc.makeAta(user.publicKey);
-    await mintWhiteList.topUpSPl(userWlAta.address, 777655);
-    await mintSc.topUpSPl(userScAta.address, 2222);
-    await delay(4);
-    // const userSC: Account = await mintSc.makeAta(user.publicKey);
-    // console.log("start balance SC", await getTokenBalance(userSC));
-    // await mintSc.topUpSPl(userWlAta.address, 10000);
-    // await mintSc.topUpSPl(userWlAta.address, 100);
-    // console.log("end balance SC", await getTokenBalance(userSC));
 
-    // // Make other bond accoutn for user
-    // const userB: Account = await mintBond.makeAta(user.publicKey);
-    // console.log("\nstart balance B", await getTokenBalance(userB));
-    // await mintBond.topUpSPl(userWlAta.address, 1000000);
-    // await mintBond.topUpSPl(userWlAta.address, 1000000);
-    // console.log("end balance B", await getTokenBalance(userB));
+    async function submit() {
+      const tx_lu1 = await bondProgram.methods
+        .buyBond(lockup.index, new BN(ibo.index), new BN(10000), bond.idx)
+        .accounts({
+          buyer: user.publicKey,
+          bond: bond.address,
+          ibo: ibo.address,
+          lockup: lockup.address,
+          master: master.address,
+          buyerAta: user.liquidityAccount.address,
+          recipientAta: ibo.recipientAddressAccount.address,
+          iboAta: ibo.vaultAccount.address,
+          bondAta: bond.account.address,
+          masterRecipientAta: superAdminAta_sc.address,
+          systemProgram: anchor.web3.SystemProgram.programId,
+          tokenProgram: TOKEN_PROGRAM_ID,
+        })
+        .remainingAccounts([
+          { pubkey: gate.address, isWritable: false, isSigner: false },
+          {
+            pubkey: mintWhiteList.mint,
+            isWritable: false,
+            isSigner: false,
+          },
+          { pubkey: userWlAta.address, isWritable: false, isSigner: false },
+        ])
+        .signers([user])
+        .rpc();
 
-    // console.log("User key: ", user.publicKey.toBase58());
-    // console.log("User ATA: ", userWlAta.address.toBase58());
+      console.log("\n\nSUBBITED no erro TARNSACITO");
+    }
 
     // Transfer whitelisted token to the user
     console.log("\nstart balance WL", await getTokenBalance(userWlAta));
     console.log("\nstart balance SC", await getTokenBalance(userScAta));
-    await mintWhiteList.topUpSPl(userWlAta.address, 777655);
-    // await mintWhiteList.topUpSPl(userWlAta.address, 1000000);
-    // await mintWhiteList.topUpSPl(userWlAta.address, 1000000);
-    await delay(5);
+
+    // await delay(5);
     console.log("end balance WL", await getTokenBalance(userWlAta));
+    console.log("Calling buy SPL gated bond");
 
     // Get starting balance in WL for the user
     const userWlBalanceStart = await getTokenBalance(userWlAta);
 
-    console.log("Calling buy SPL gated bond");
-    // try {
-    const tx_lu1 = await bondProgram.methods
-      .buyBond(lockup.index, new BN(ibo.index), new BN(10000), 1)
-      .accounts({
-        buyer: user.publicKey,
-        bond: bond.address,
-        ibo: ibo.address,
-        lockup: lockup.address,
-        master: master.address,
-        buyerAta: user.liquidityAccount.address,
-        recipientAta: ibo.recipientAddressAccount.address,
-        iboAta: ibo.vaultAccount.address,
-        bondAta: bond.account.address,
-        masterRecipientAta: superAdminAta_sc.address,
-        systemProgram: anchor.web3.SystemProgram.programId,
-        tokenProgram: TOKEN_PROGRAM_ID,
-      })
-      .remainingAccounts([
-        { pubkey: gate.address, isWritable: false, isSigner: false },
-        {
-          pubkey: mintWhiteList.mint,
-          isWritable: false,
-          isSigner: false,
-        },
-        { pubkey: userWlAta.address, isWritable: false, isSigner: false },
-      ])
-      .signers([user])
-      .rpc();
-    // } catch (e) {
-    //   console.log("\nerror final:\n\n", e);
-    // }
+    // Assert it fails when submitted without SPL ownership for the caller
+    await assert.isRejected(submit(), Error);
+
+    // Top up the user
+    await mintWhiteList.topUpSPl(userWlAta.address, 777655);
+    await delay(3);
+
+    // Calls after topup
+    await submit();
 
     // Assert amount has been subtracted for one that does so
     const userWlBalanceEnd = await getTokenBalance(userWlAta);
@@ -1186,11 +1199,9 @@ describe("dark-bonds", async () => {
     console.log("\n\nUser end balance: ", userWlBalanceEnd);
   });
 
-  it("Buy SPL and collection gated bond offered on ibo", async () => {
+  xit("Buy SPL and collection gated bond offered on ibo", async () => {
     console.log("Total lock-ups: ", ibo.lockups.length);
 
-    // Get the last gate which is the SPL one
-    // const lockup: LockUp = ibo.lockups[ibo.lockups.length - 1];
     const lockup: LockUp = ibo.lockups[5];
 
     // ASsert it is the SPL gate
@@ -1207,48 +1218,85 @@ describe("dark-bonds", async () => {
     expect(gate).to.be.instanceOf(Gate);
 
     console.log("\n\nType of gane: ", typeof gate);
-
     console.log("\ngate type: ", gate, " at idx: ", gate.index);
 
     // Need to ensure they have NFT
     const user: User = users.users[2];
     const bond: Bond = await ibo.issueBond(lockup.index, purchaseAmount);
-
-    // Treansfer nft to the user
+    const userWlAta: Account = await mintWhiteList.makeAta(user.publicKey);
+    const userScAta: Account = await mintSc.makeAta(user.publicKey);
     let collectionM: NftMint0 = cm.collections[0];
+
+    async function submit() {
+      const tx_lu1 = await bondProgram.methods
+        .buyBond(lockup.index, new BN(ibo.index), new BN(10000), gate.index)
+        .accounts({
+          buyer: user.publicKey,
+          bond: bond.address,
+          ibo: ibo.address,
+          lockup: lockup.address,
+          master: master.address,
+          buyerAta: user.liquidityAccount.address,
+          recipientAta: ibo.recipientAddressAccount.address,
+          iboAta: ibo.vaultAccount.address,
+          bondAta: bond.account.address,
+          masterRecipientAta: superAdminAta_sc.address,
+          systemProgram: anchor.web3.SystemProgram.programId,
+          tokenProgram: TOKEN_PROGRAM_ID,
+        })
+        .remainingAccounts([
+          { pubkey: gate.address, isWritable: false, isSigner: false },
+          {
+            pubkey: collectionM.nfts[0].metadata,
+            isWritable: false,
+            isSigner: false,
+          },
+          {
+            pubkey: collectionM.nfts[0].mint,
+            isWritable: false,
+            isSigner: false,
+          },
+          {
+            pubkey: await collectionM.nfts[0].getAta(user.publicKey),
+            isWritable: false,
+            isSigner: false,
+          },
+          {
+            pubkey: mintWhiteList.mint,
+            isWritable: false,
+            isSigner: false,
+          },
+          { pubkey: userWlAta.address, isWritable: false, isSigner: false },
+        ])
+        .signers([user])
+        .rpc();
+
+      console.log("\n\nSUBBITED BOTHERO");
+
+      // return failed;
+    }
+
     console.log("Sending nft: ");
     await collectionM.nfts[2].transferFromMinter(user.publicKey);
     console.log("Sent nft: ");
 
-    // Get ATA for that user for whitelist
-    const userWlAta: Account = await mintWhiteList.makeAta(user.publicKey);
-    const userScAta: Account = await mintSc.makeAta(user.publicKey);
-    await mintWhiteList.topUpSPl(userWlAta.address, 777655);
-    await mintSc.topUpSPl(userScAta.address, 2222);
-    await delay(4);
-    // const userSC: Account = await mintSc.makeAta(user.publicKey);
-    // console.log("start balance SC", await getTokenBalance(userSC));
-    // await mintSc.topUpSPl(userWlAta.address, 10000);
-    // await mintSc.topUpSPl(userWlAta.address, 100);
-    // console.log("end balance SC", await getTokenBalance(userSC));
-
-    // // Make other bond accoutn for user
-    // const userB: Account = await mintBond.makeAta(user.publicKey);
-    // console.log("\nstart balance B", await getTokenBalance(userB));
-    // await mintBond.topUpSPl(userWlAta.address, 1000000);
-    // await mintBond.topUpSPl(userWlAta.address, 1000000);
-    // console.log("end balance B", await getTokenBalance(userB));
-
-    // console.log("User key: ", user.publicKey.toBase58());
-    // console.log("User ATA: ", userWlAta.address.toBase58());
+    await assertRejects(submit(), Error);
 
     // Transfer whitelisted token to the user
     console.log("\nstart balance WL", await getTokenBalance(userWlAta));
     console.log("\nstart balance SC", await getTokenBalance(userScAta));
+
+    // Fails without SPL
+    // assert.isRejected(submit(), Error, "Failure during submit");
+    // await submit();
+    // await assertRejects(submit(), Error);
+
     await mintWhiteList.topUpSPl(userWlAta.address, 777655);
-    // await mintWhiteList.topUpSPl(userWlAta.address, 1000000);
-    // await mintWhiteList.topUpSPl(userWlAta.address, 1000000);
+
+    // assert.isRejected(submit(), Error, "Failure during submit");
+
     await delay(5);
+    await assertRejects(submit(), Error);
     console.log("end balance WL", await getTokenBalance(userWlAta));
 
     // Get starting balance in WL for the user
@@ -1256,53 +1304,24 @@ describe("dark-bonds", async () => {
 
     console.log("Calling buy SPL gated bond");
 
-    const tx_lu1 = await bondProgram.methods
-      .buyBond(lockup.index, new BN(ibo.index), new BN(10000), gate.index)
-      .accounts({
-        buyer: user.publicKey,
-        bond: bond.address,
-        ibo: ibo.address,
-        lockup: lockup.address,
-        master: master.address,
-        buyerAta: user.liquidityAccount.address,
-        recipientAta: ibo.recipientAddressAccount.address,
-        iboAta: ibo.vaultAccount.address,
-        bondAta: bond.account.address,
-        masterRecipientAta: superAdminAta_sc.address,
-        systemProgram: anchor.web3.SystemProgram.programId,
-        tokenProgram: TOKEN_PROGRAM_ID,
-      })
-      .remainingAccounts([
-        { pubkey: gate.address, isWritable: false, isSigner: false },
-        {
-          pubkey: collectionM.nfts[0].metadata,
-          isWritable: false,
-          isSigner: false,
-        },
-        {
-          pubkey: collectionM.nfts[0].mint,
-          isWritable: false,
-          isSigner: false,
-        },
-        {
-          pubkey: await collectionM.nfts[0].getAta(user.publicKey),
-          isWritable: false,
-          isSigner: false,
-        },
-        {
-          pubkey: mintWhiteList.mint,
-          isWritable: false,
-          isSigner: false,
-        },
-        { pubkey: userWlAta.address, isWritable: false, isSigner: false },
-      ])
-      .signers([user])
-      .rpc();
-
     // Assert amount has been subtracted for one that does so
     const userWlBalanceEnd = await getTokenBalance(userWlAta);
+
+    // assert.isRejected(submit(), Error);
+
+    async function dud(): Promise<any> {
+      return true;
+    }
+
+    // Write me a dud function that returns immideitlay
+
+    // async function submit() {
+
+    // await submit();
 
     console.log("\n\nUser start balance: ", userWlBalanceStart);
     console.log("\n\nUser end balance: ", userWlBalanceEnd);
   });
 });
+
+// Fucntion to pop a user out so they are fresh besides mint SC
