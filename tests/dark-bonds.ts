@@ -1012,13 +1012,12 @@ describe("dark-bonds", async () => {
     // Get gate indexes available for this lockup
     const gatesIdxs: number[] = lockup.gates;
 
-    console.log("Total gates for this lock-up: ", gatesIdxs.length);
+    console.log("\n\nTotal gates for this lock-up: ", gatesIdxs.length);
     console.log("gatesIdxs: ", gatesIdxs);
-
     console.log("lockup: ", lockup);
 
     // Get gate
-    const gate: Gate = ibo.gates[ibo.gateCounter - 2];
+    const gate: Gate = ibo.gates[gatesIdxs[0]];
 
     // Need to ensure they have NFT
     const user: User = users.users[5];
@@ -1036,7 +1035,7 @@ describe("dark-bonds", async () => {
 
     try {
       const tx_lu1 = await bondProgram.methods
-        .buyBond(lockup.index, new BN(ibo.index), new BN(10000), 0)
+        .buyBond(lockup.index, new BN(ibo.index), new BN(10000), gate.index)
         .accounts({
           buyer: user.publicKey,
           bond: bond.address,
@@ -1181,7 +1180,3 @@ describe("dark-bonds", async () => {
     console.log("\n\nUser end balance: ", userWlBalanceEnd);
   });
 });
-
-// TODO
-// There is no option not to prove a gate right now
-// Can solve it with enums...
