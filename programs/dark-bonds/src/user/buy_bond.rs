@@ -100,12 +100,12 @@ pub fn buy_bond(
             &ctx.program_id
         );
 
-        msg!("Gate account    : {:?}", gate_pda);
-        msg!("gate_account.key: {:?}", gate_account.key());
+        // msg!("Gate account    : {:?}", gate_pda);
+        // msg!("gate_account.key: {:?}", gate_account.key());
 
         // Correct gate has been given
         require!(&gate_pda == gate_account.key, ErrorCode::InvalidGateAccount);
-        msg!("Provided gate matches the account");
+        // msg!("Provided gate matches the account");
 
         // Extract gate accoutn content from the remaining accounts
         let gate_acc: Account<Gate> = Account::try_from(gate_account)?;
@@ -113,45 +113,37 @@ pub fn buy_bond(
         // Verification vector
         let mut v_vec: Vec<AccountInfo<'_>> = verification_accounts.to_vec();
 
+        // msg!("Gates length {:?}:\n{:?}", gate_acc.gate_settings.len(), gate_acc.gate_settings);
+
         // Loop over gates stored in the account
         for (index, &gate_idx) in gate_acc.gate_settings.iter().enumerate() {
-            msg!("Loop item {:?}", gate_idx);
+            // msg!("Loop item {:?} at index {:?}", gate_idx, index);
+
+            // Loop all the addresses
+            for (i, acc) in v_vec.iter().enumerate() {
+                msg!("Remaining account {:?} at index {:?}", acc.key, i);
+            }
 
             // Get instance of the gate to feed it accounts
             let gate: &GateType = gate_acc.gate_settings
                 .get(index)
                 .ok_or(ErrorCode::InvalidNFTAccountOwner)?;
 
-            // msg!("Gate is gucci");
-
             // Pass whatever accounts are left to the gate
             gate.verify(&buyer.key(), v_vec.clone())?;
 
             if index < gate_acc.gate_settings.len() - 1 {
-                v_vec.drain(gate.account_drop()..);
+                v_vec.drain(..gate.account_drop());
             }
         }
-
-        // Process each gate type provided by the user
-
-        // Call on the gate to check the remaining accounts
-        // gate.gate_settings.process(&buyer.key(), verification_accounts.to_vec())?;
-
-        // substract from the total amount of liquidity
-        // Chec if of type SPL that has a cut associated
-
-        // TODO process bruning so need token account and the mint, or just one of them
-
-        // Check if gate gate_settings matches SPL one or combined
-
-        // if gate.gate_settings == GateType::Spl {
-        // }
     }
 
     // msg!("After security checks");
 
     // Ensure lock up pruchase period does not overrule the IBO pruchase period
     // Set start time and end time based on lock up and then check if time now is within it
+
+    // Need to
 
     // If so extarct remainign and process it
     purchase_mechanics(

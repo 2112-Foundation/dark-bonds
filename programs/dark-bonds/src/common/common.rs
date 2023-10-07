@@ -137,16 +137,16 @@ pub fn purchase_mechanics<'info>(
     // Ensure there are enough tokens TODO
     require!(bond_token_left >= total_gains, ErrorCode::BondsSoldOut);
 
-    msg!("bond_token_left: {:?}", bond_token_left);
-    msg!("full bond value: {:?}", total_gains);
-    msg!("full bond stable_amount_liquidity: {:?}", stable_amount_liquidity);
+    // msg!("bond_token_left: {:?}", bond_token_left);
+    // msg!("full bond value: {:?}", total_gains);
+    // msg!("full bond stable_amount_liquidity: {:?}", stable_amount_liquidity);
 
     // Work out split ratio
     let total_leftover = (stable_amount_liquidity * (10000 - PURCHASE_CUT)) / 10000;
     let total_cut = stable_amount_liquidity - total_leftover;
 
-    msg!("total_cut: {:?}", total_cut);
-    msg!("total_leftover: {:?}", total_leftover);
+    // msg!("total_cut: {:?}", total_cut);
+    // msg!("total_leftover: {:?}", total_leftover);
 
     // Transfer liquidity coin to us
     token::transfer(

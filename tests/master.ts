@@ -13,6 +13,19 @@ import {
 import { Mint } from "./mint";
 import { now } from "@metaplex-foundation/js";
 
+import {
+  loadKeypairFromFile,
+  delay,
+  roughlyEqual,
+  createCollectionTypeInput,
+  createSplTypeInput,
+  createCombinedTypeInput,
+  createSameAsMainIboInput,
+  createLockupPurchaseStartInput,
+  createLockupPurchaseEndInput,
+  createLockupPurchaseCombinedInput,
+} from "./helpers";
+
 export class Bond {
   swapPrice: number = 0;
   ownerBondAccount: Account;
@@ -63,7 +76,10 @@ export class Gate {
   }
 }
 
-export abstract class GateSetting {}
+export abstract class GateSetting {
+  // Write me an abstract class that returns the struct I need to pass forward
+  // abstract createInput(): {};
+}
 
 export class CollectionSetting extends GateSetting {
   constructor(
@@ -76,21 +92,35 @@ export class CollectionSetting extends GateSetting {
   ) {
     super();
   }
+  /** Get struct for submission as argument */
+  // createInput(): {} {
+  //   return createCollectionTypeInput(
+  //     this.mintKey,
+  //     this.masterKey,
+  //     this.creatorKey
+  //   );
+  // }
 }
 
 export class SplSetting extends GateSetting {
   constructor(
-    /** Address of the  token account. */
-    // public tokenAccount: PublicKey,
     /** Address of the Mint. */
     public mint: PublicKey, // Example additional field
     /** Minnimum SPL balance needed for the gate. */
-    public minnimumAccount: Number, // Example additional field
+    public minnimumAccount: number, // Example additional field
     /** Address of the Mint. */
-    public bondsAllowed: Number // Example additional field
+    public bondsAllowed: number // Example additional field
   ) {
     super();
   }
+  // /** Get struct for submission as argument */
+  // createInput(): {} {
+  //   return createSplTypeInput(
+  //     this.mint,
+  //     this.minnimumAccount,
+  //     this.bondsAllowed
+  //   );
+  // }
 }
 
 /**

@@ -100,7 +100,7 @@ impl<'a> Verifiable<'a> for CollectionType {
         require!(self.master_mint == temp.key, ErrorCode::GateCollectionNftNotFromCollection);
 
         // Ensure caller owns provided nft mint
-        msg!("Collection gate_settings");
+        msg!("verified collection gate_settings");
         Ok(true)
     }
 }
@@ -134,8 +134,10 @@ impl<'a> Verifiable<'a> for SplType {
             ErrorCode::GateSplCallerNotEnoughToken
         );
 
-        msg!("User has: {:?}", spl_token_account.amount);
-        msg!("User passed SPL verication");
+        // msg!("User has: {:?}", spl_token_account.amount);
+        // msg!("User passed SPL verication");
+
+        msg!("verified SPL gate_settings");
 
         Ok(true)
     }
@@ -200,7 +202,7 @@ impl Gate {
 
         for &gate in gate_inputs.iter() {
             // Debug: Print when this branch is reached.
-            // msg!("\n\nGate: {:?}", gate);
+            msg!("\n\nGate: {:?}", gate);
             // self.gate_settings.push(gate.clone());
 
             match gate {
