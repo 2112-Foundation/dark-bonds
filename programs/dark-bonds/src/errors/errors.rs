@@ -87,6 +87,8 @@ pub enum ErrorCode {
     GateSplInsufficientAccounts,
     #[msg("Token account not derived from the SPL mint")]
     GateSplInvalidTokenAccount,
+    #[msg("Not enough tokens to burn for this amount of bond token")]
+    GateSplNotEnoughWlTokens,
     #[msg("Caller is not the owner of the token account")]
     GateSplInvalidOwner,
     #[msg("Provided gate index is not included in this lockup")]

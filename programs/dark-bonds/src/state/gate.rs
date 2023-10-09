@@ -10,6 +10,12 @@ pub struct Gate {
     pub gate_settings: Vec<GateType>,
 }
 
+// Size in bytes
+pub enum LockSize {
+    CollectionLock = 100,
+    SplLock = 50,
+}
+
 #[derive(AnchorSerialize, AnchorDeserialize, Copy, Clone, Debug, PartialEq, Eq)]
 pub enum GateType {
     /** Verification via NFT membership.*/
@@ -183,36 +189,33 @@ impl SplType {
 }
 
 impl Gate {
-    pub fn load_gates(&mut self, gate_inputs: Vec<GateType>) {
-        // Debug: Print the input at the beginning of the function.
-        // msg!("Input to load2: {:?}", gate_input);
+    pub fn load_gate_lock(&mut self, gate_inputs: Vec<GateType>) -> usize {
+        // Keep a track of how much in size the account shoudl increase
+        let mut size_increase: usize = 0;
 
         // Loop over each of the gates and set them in the array
-
         for &gate in gate_inputs.iter() {
             // Debug: Print when this branch is reached.
             msg!("\n\nGate: {:?}", gate);
-            // self.gate_settings.push(gate.clone());
 
             match gate {
                 GateType::Collection { gate } => {
-                    // Debug: Print when this branch is reached.
                     msg!("\nMatching CollectionType with collection: {:?}", gate);
                     self.gate_settings.push(GateType::Collection {
                         gate,
                     });
+                    size_increase += LockSize::CollectionLock as usize;
                 }
-                // GateInput::SplType { spl } => {
                 GateType::Spl { gate } => {
-                    // Debug: Print when this branch is reached.
                     msg!("\nMatching SplType with spl: {:?}", gate);
                     self.gate_settings.push(GateType::Spl {
                         gate,
                     });
+                    size_increase += LockSize::SplLock as usize;
                 }
             }
         }
 
-        msg!("\n\nGate loaded:\n{:?}", self.gate_settings);
+        size_increase
     }
 }

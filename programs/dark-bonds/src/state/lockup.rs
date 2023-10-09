@@ -2,10 +2,6 @@ use anchor_lang::prelude::*;
 use crate::errors::errors::ErrorCode;
 use crate::common::*;
 
-// Those PDAs are spun off the main Ibo PDA by the reuser
-// Only used to fill out the bond details
-// After that not accessed
-
 #[account]
 pub struct Lockup {
     /** Minimum lockup period in seconds.*/

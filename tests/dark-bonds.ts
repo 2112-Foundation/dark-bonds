@@ -72,11 +72,9 @@ console.log("\nStart of dark bonds tests\n");
 // need to add a class for different types of gates insice the master class
 
 describe("dark-bonds", async () => {
-  // Configure the client to use the local cluster.
   anchor.setProvider(anchor.AnchorProvider.env());
   const provider = anchor.getProvider();
   const connection = provider.connection;
-
   const LAMPORTS_PER_SOL = 1000000000;
 
   async function getTokenBalance(ata: Account) {
@@ -141,10 +139,8 @@ describe("dark-bonds", async () => {
   let liveDate: number = 1683718579;
   let swapCut = 200; // aka 2.0 %
   let purchaseAmount = 500;
-  let megaPurchase = 10000000;
 
   // Lock ups
-
   let lockUp0Period: number = 31536000; // 1 year
   let lockUp0Apy: number = 1.2 * 100;
   let lockUp1Period: number = 63072000; // 2 years
@@ -152,20 +148,11 @@ describe("dark-bonds", async () => {
   let lockUp2Period: number = DAY_SECONDS;
   let lockUp2Apy: number = 10000000 * 100;
 
-  // GatedSettingsd
-  let lockUp3Period: number = shortBond;
-  let lockUp3Apy: number = 10000000 * 100;
-
   let metaplex = new Metaplex(connection);
   metaplex.use(keypairIdentity(nftWallet));
 
   // Same purchase period as the IBO lockup
   let pp = await createSameAsMainIboInput();
-
-  // testing
-  let bond_counter = 0;
-  let lockup_counter = 0;
-  let masterBalance = 0;
 
   before(async () => {
     await Promise.all([
@@ -188,9 +175,7 @@ describe("dark-bonds", async () => {
       // Mint of 1 index 1
       console.log("Adding collection: ", i);
       await cm.initializeCollection(uri);
-
       console.log("Preminting");
-      // Mint whole collection
       await cm.collections[i].premintNFTs(nfts_per_collections);
     }
 
@@ -289,9 +274,7 @@ describe("dark-bonds", async () => {
     );
 
     console.log("ibo.ata: ", ibo.vaultAccount.address.toBase58());
-
     await mintBond.topUpSPl(ibo.vaultAccount.address, 1000000000000000);
-
     console.log("Minted");
 
     const tx = await bondProgram.methods
@@ -395,8 +378,6 @@ describe("dark-bonds", async () => {
       .signers([ibo.admin])
       .rpc();
 
-    // const newGate = new SplSetting(mintKey, bondsAllowed, minimumAmount);
-
     // TODO two of these are the same, either doesnt get used in chain at all and is redundant
     const newGateSetting = new CollectionSetting(
       collectionM.masterMint,
@@ -461,14 +442,10 @@ describe("dark-bonds", async () => {
       .signers([ibo.admin])
       .rpc();
 
-    // let gate1: SplGate = await ibo.addSplGate(mintWhiteList.mint);
-    // const gateType = createSplTypeInput(gate1.mint, 100, 40);
-
     const newGateSetting = createSplTypeInput(mintWhiteList.mint, 100, 40);
-    // const gateType = createSplTypeInput(mintWhiteList.mint, 100, 40);
     let gate1 = await ibo.addGate([newGateSetting]);
 
-    console.log("\n\nTHIS GATE INDEX: ", gate1.index);
+    console.log("\n\nTHIS GATE INDEX: ", newGateSetting);
 
     const tx2 = await bondProgram.methods
       .addGate(ibo.index, lockUp4.index, [newGateSetting])
@@ -517,19 +494,6 @@ describe("dark-bonds", async () => {
       })
       .signers([ibo.admin])
       .rpc();
-
-    // let gate1: SplGate = await ibo.addSplGate(mintWhiteList.mint);
-    // let gate0: CollectionGate = await ibo.addCollectionGate(
-    //   collectionM.masterMint,
-    //   collectionM.masterMint,
-    //   collectionM.masterEdition
-    // );
-    // const gateType1 = createSplTypeInput(gate1.mint, 100, 40);
-    // const gateType2 = createCollectionTypeInput(
-    //   gate0.masterKey,
-    //   gate0.masterKey,
-    //   gate0.creatorKey
-    // );
 
     const gateType1 = createCollectionTypeInput(
       collectionM.masterMint,
@@ -1130,10 +1094,10 @@ describe("dark-bonds", async () => {
           { pubkey: gate.address, isWritable: true, isSigner: false },
           {
             pubkey: mintWhiteList.mint,
-            isWritable: false,
+            isWritable: true,
             isSigner: false,
           },
-          { pubkey: userWlAta.address, isWritable: false, isSigner: false },
+          { pubkey: userWlAta.address, isWritable: true, isSigner: false },
         ])
         .signers([user])
         .rpc();
@@ -1238,10 +1202,10 @@ describe("dark-bonds", async () => {
           },
           {
             pubkey: mintWhiteList.mint,
-            isWritable: false,
+            isWritable: true,
             isSigner: false,
           },
-          { pubkey: userWlAta.address, isWritable: false, isSigner: false },
+          { pubkey: userWlAta.address, isWritable: true, isSigner: false },
         ])
         .signers([user])
         .rpc();

@@ -18,14 +18,12 @@ pub struct AddGate<'info> {
         seeds = ["gate".as_bytes(), ibo.key().as_ref(), &ibo.gate_counter.to_be_bytes()],
         bump,
         payer = admin,
-        space = 400 // TODO fetch size based on bool
+        space = 400
     )]
     pub gate: Account<'info, Gate>,
     pub system_program: Program<'info, System>,
 }
 
-// Need to feed acounts to set in within th gate
-// TODO first or second argument is redundant
 pub fn add_gate(
     ctx: Context<AddGate>,
     _ibo_idx: u32,
@@ -34,22 +32,7 @@ pub fn add_gate(
 ) -> Result<()> {
     let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
     let gate: &mut Account<Gate> = &mut ctx.accounts.gate;
-
-    // msg!("\nsetting gate option of: {:?}", gate_option);
-
-    // Set the type
-    // gate_settings.set_type(gate_option);
-
-    // // Load remaining accounts to a gate
-    // gate_settings.load_accounts(accounts);
-
-    // msg!("\n\n\n\n\n\n\n\n\ngate_settings: {:?}", gate_settings);
-
-    gate.load_gates(gate_settings);
-
-    // // Increment individuall gate counter
-    // // Gate is not a part of the IBO, so it has its own counter
+    gate.load_gate_lock(gate_settings);
     ibo.gate_counter += 1;
-
     Ok(())
 }

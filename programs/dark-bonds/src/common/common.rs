@@ -1,7 +1,6 @@
 use crate::errors::errors::ErrorCode;
 use crate::state::*;
 use anchor_lang::prelude::*;
-use anchor_spl::token::{ self, Token, TokenAccount, Transfer };
 use spl_math::precise_number::PreciseNumber;
 
 use solana_program::pubkey::Pubkey;
@@ -89,16 +88,13 @@ pub fn mark_end<'info>(vertex: &mut Account<'info, Vertex>, max_depth: u8, this_
     }
 }
 
+/** Splits liquidity fee between master and IBO admin */
 pub fn calculate_cut_and_remainder(amount: u64, cut_percentage: f64) -> Result<(u64, u64)> {
-    msg!("cut percetn: {:?}", cut_percentage);
-
     // Validate percentage
     require!(cut_percentage > 0.0 || cut_percentage < 100.0, ErrorCode::WorngCutTMP);
 
     // Convert u64 to u128 for internal calculations
     let amount_128 = amount as u128;
-
-    msg!("here");
 
     // Calculate the cut and check for potential overflow
     let cut_128 = (((amount_128 as f64) * cut_percentage) / 100.0).round() as u128;
@@ -111,7 +107,7 @@ pub fn calculate_cut_and_remainder(amount: u64, cut_percentage: f64) -> Result<(
     Ok((cut, remainder))
 }
 
-/** Check whether at least a day has elapsed since the last withdraw */
+/** Converts liqduity amoutn to bonds based on exchange rate */
 pub fn conversion(amount_liqduity: &u64, _exchange_rate: &u64) -> Result<u64> {
     // Conversion of parameters to PreciseNumber
     let liquidity_in: PreciseNumber = PreciseNumber::new(*amount_liqduity as u128).ok_or(

@@ -32,13 +32,11 @@ pub fn add_lockup(
     let lockup: &mut Account<Lockup> = &mut ctx.accounts.lockup;
     let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
 
-    msg!("\nsetting APY of: {:?}", lockup_apy);
-
     // Ensure APY and lockup duration are non-zero
     msg!("lockup duration: {:?}", lockup_duration);
     require!(lockup_duration >= SECONDS_IN_A_DAY, ErrorCode::LockupDurationUnderDay);
-    lockup.period = lockup_duration;
     require!(lockup_apy >= 0.0, ErrorCode::LockupZeroApy);
+    lockup.period = lockup_duration;
     lockup.apy = lockup_apy;
 
     // Set additional settings

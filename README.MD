@@ -84,8 +84,8 @@ Then you need to:
 
 [x] createIBO needs to take some sort of pubkey which represents the desired bond token to purchase  
 [x] Correct ATA and ata mint/owner provided as the master recipient
-[ ] Use the safe math from staking for calculation of total interest
-[ ] Use compound math, use different price ranges to subtract comppound gain from (0-t1) - (0-t2) to get difference between invocations. Subbed from main balance.
+[x] Use the safe math from staking for calculation of total interest
+[x] ~~Use compound math, use different price ranges to subtract comppound gain from (0-t1) - (0-t2) to get difference between invocations. Subbed from main balance.~~ fuck it.
 
 ### Optimisation
 
