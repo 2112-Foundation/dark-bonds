@@ -69,7 +69,7 @@ pub mod dark_bonds {
     pub fn add_lockup(
         ctx: Context<AddLockUp>,
         lockup_duration: i64,
-        lockup_apy: i64,
+        lockup_apy: f64,
         mature_only: bool,
         purchase_period: PurchasePeriod
     ) -> Result<()> {
@@ -125,8 +125,8 @@ pub mod dark_bonds {
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Provide liquidity for bonds for a given bond offering
-    pub fn buy_bond(
-        ctx: Context<BuyBond>,
+    pub fn buy_bond<'a, 'b, 'c, 'info>(
+        ctx: Context<'a, 'b, 'c, 'info, BuyBond<'info>>,
         lockup_idx: u32,
         ibo_idx: u64,
         liquidity_provided: u64,

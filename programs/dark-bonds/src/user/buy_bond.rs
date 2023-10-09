@@ -1,11 +1,14 @@
 use crate::errors::errors::ErrorCode;
 use crate::state::*;
-use anchor_lang::prelude::*;
-use anchor_spl::{ associated_token::AssociatedToken, token::{ Token, TokenAccount } };
-
-use solana_program::pubkey::Pubkey;
-
 use crate::common::*;
+// use anchor_lang::{ prelude::*, system_program::Transfer };
+use anchor_spl::{
+    associated_token::AssociatedToken,
+    token::{ self, Token, TokenAccount, Transfer, Burn, Mint },
+};
+
+// use anchor_spl::token::{ self, Token, TokenAccount, Transfer };
+use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
 #[instruction(lockup_idx: u32)]
@@ -55,23 +58,107 @@ pub struct BuyBond<'info> {
     pub system_program: Program<'info, System>,
 }
 
-// PDA for acceptable mints
-// Extra cut for deposit which goes on to make LP in raydium
+impl<'info> BuyBond<'info> {
+    fn transfer_buyer(&self, bond_amount: u64, ibo_idx: u64, program_id: &Pubkey) -> Result<()> {
+        let (_, bump) = anchor_lang::prelude::Pubkey::find_program_address(
+            &["ibo_instance".as_bytes(), &ibo_idx.to_be_bytes()],
+            program_id
+        );
+        let seeds = &["ibo_instance".as_bytes(), &ibo_idx.to_be_bytes(), &[bump]];
 
-pub fn buy_bond(
-    ctx: Context<BuyBond>,
+        // Transfer bond to the vested account
+        token::transfer(
+            CpiContext::new_with_signer(
+                self.token_program.to_account_info(),
+                Transfer {
+                    from: self.ibo_ata.to_account_info(),
+                    to: self.bond_ata.to_account_info(),
+                    authority: self.ibo.to_account_info(),
+                },
+                &[seeds]
+            ),
+            bond_amount
+        )?;
+        Ok(())
+    }
+
+    fn transfer_liquidity(
+        &self,
+        amount: u64,
+        recipient_ata: &Account<'info, TokenAccount>
+    ) -> Result<()> {
+        token::transfer(
+            CpiContext::new(self.token_program.to_account_info(), Transfer {
+                from: self.buyer_ata.to_account_info(),
+                to: recipient_ata.to_account_info(),
+                authority: self.buyer.to_account_info(),
+            }),
+            amount
+        )?;
+        // msg!("\nTransfer liqudiity");
+        Ok(())
+    }
+
+    fn burn_wl(
+        &self,
+        amount_to_burn: u64,
+        mint: Account<'info, Mint>,
+        from: Account<'info, TokenAccount>
+    ) -> Result<()> {
+        token::burn(
+            CpiContext::new(self.token_program.to_account_info(), Burn {
+                mint: mint.to_account_info(),
+                from: from.to_account_info(),
+                authority: self.buyer.to_account_info(),
+            }),
+            amount_to_burn // settings.case_fee
+        )?;
+        Ok(())
+    }
+}
+
+// impl<'a> Verifiable<'a>
+pub fn buy_bond<'a, 'b, 'c, 'info>(
+    ctx: Context<'a, 'b, 'c, 'info, BuyBond<'info>>,
     _lockup_idx: u32,
     ibo_idx: u64,
-    stable_amount_liquidity: u64,
+    amount_liquidity: u64,
     gate_idx: u32 // This needs to be an array of gates
 ) -> Result<()> {
-    let buyer: &Signer = &mut ctx.accounts.buyer;
-    let master: &mut Account<Master> = &mut ctx.accounts.master;
-    let lockup: &mut Account<Lockup> = &mut ctx.accounts.lockup;
-    let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
+    let accounts: &mut BuyBond = ctx.accounts;
+    let buyer: &Signer = &mut accounts.buyer;
+    let master: &mut Account<Master> = &mut accounts.master;
+    let lockup: &mut Account<Lockup> = &mut accounts.lockup;
+    let ibo: &mut Account<Ibo> = &mut accounts.ibo;
+    let bond: &mut Account<Bond> = &mut accounts.bond;
+    let token_program: &mut Program<'_, Token> = &mut accounts.token_program;
+
+    // let ggg = ctx.accounts.transfer_liquidity(); //amount, recipient_ata)
+
+    // let recipient_ata: &mut Box<Account<'_, TokenAccount>> = &mut ctx.accounts.recipient_ata;
+    // let master_recipient_ata: &mut Box<
+    //     Account<'_, TokenAccount>
+    // > = &mut ctx.accounts.master_recipient_ata;
+
+    // let ctxa: &mut BuyBond<'_> = &mut ctx.accounts;
 
     // msg!("Master.master_recipient: {:?}", master.master_recipient);
     // msg!("\n\nThis lock-up {:?} has {:?} gates", lockup.key(), lockup.gates.len());
+
+    msg!("After security checks");
+
+    // Calcilate bond amount based on the stable amount provided
+    let (cut, remainder) = calculate_cut_and_remainder(amount_liquidity, PURCHASE_CUT).unwrap();
+
+    msg!("\ncut  : {:?}\n remainder: {:?}", cut, remainder);
+
+    // Set exchange rate
+    let bond_amount: u64 = conversion(&amount_liquidity, &ibo.fixed_exchange_rate)?;
+
+    msg!("\n\nbond_amount from conversion : {:?}", bond_amount);
+
+    // Compound the bond amount
+    let bond_amount: u64 = lockup.compounded_amount(bond_amount)?;
 
     // Check if it has at least one access gate
     if lockup.gates.len() > 0 {
@@ -80,7 +167,7 @@ pub fn buy_bond(
         // Check if gate index exists within the lockup
         require!(lockup.gates.contains(&gate_idx), ErrorCode::IncorrectGateIndex);
 
-        msg!("This lock up has associated gates: {:?}", lockup.gates);
+        // msg!("This lock up has associated gates: {:?}", lockup.gates);
         let mut remaining_accounts_vec: Vec<AccountInfo<'_>> = ctx.remaining_accounts.to_vec();
 
         // Remaining acounts can't be empty
@@ -120,17 +207,45 @@ pub fn buy_bond(
             // msg!("Loop item {:?} at index {:?}", gate_idx, index);
 
             // Loop all the addresses
-            for (i, acc) in v_vec.iter().enumerate() {
-                msg!("Remaining account {:?} at index {:?}", acc.key, i);
-            }
+            // for (i, acc) in v_vec.iter().enumerate() {
+            //     msg!("Remaining account {:?} at index {:?}", acc.key, i);
+            // }
 
             // Get instance of the gate to feed it accounts
             let gate: &GateType = gate_acc.gate_settings
                 .get(index)
                 .ok_or(ErrorCode::InvalidNFTAccountOwner)?;
 
+            // let buyer_clone: Signer<'_> = accounts.buyer.clone();
             // Pass whatever accounts are left to the gate
-            gate.verify(&buyer.key(), v_vec.clone())?;
+            gate.verify(&buyer, v_vec.clone())?;
+
+            // Call burn token function if it is the SPL one and flagged as having a conversion
+            match gate {
+                GateType::Spl { gate } => {
+                    // Mint mathes the one stored
+                    {
+                        let account1: &AccountInfo<'_> = &v_vec[0];
+                        let account2: &AccountInfo<'_> = &v_vec[1];
+                        let amount_to_burn: u64 = bond_amount * gate.amount_per_token;
+                        let mint: Account<'info, Mint> = Account::try_from(&account1)?;
+                        let spl_token_account: Account<'info, TokenAccount> = Account::try_from(
+                            &account2
+                        )?;
+                        // accounts.burn_wl(amount_to_burn, mint.clone(), spl_token_account.clone())?;
+
+                        token::burn(
+                            CpiContext::new(token_program.to_account_info(), Burn {
+                                mint: mint.to_account_info(),
+                                from: spl_token_account.to_account_info(),
+                                authority: buyer.to_account_info(),
+                            }),
+                            amount_to_burn // settings.case_fee
+                        )?;
+                    }
+                }
+                _ => {}
+            }
 
             if index < gate_acc.gate_settings.len() - 1 {
                 v_vec.drain(..gate.account_drop());
@@ -138,29 +253,34 @@ pub fn buy_bond(
         }
     }
 
-    // msg!("After security checks");
+    // Within the purchase period
+    require!(lockup.within_sale(ibo.live_date, ibo.end_date), ErrorCode::NotWithinSale);
 
-    // Ensure lock up pruchase period does not overrule the IBO pruchase period
-    // Set start time and end time based on lock up and then check if time now is within it
+    msg!("bond_amount compounded  : {:?}", bond_amount);
 
-    // Need to
+    // Check that there are tokens left in that lockup
+    lockup.tokens_left(bond_amount)?;
 
-    // If so extarct remainign and process it
-    purchase_mechanics(
-        &ctx.accounts.buyer,
-        &ctx.accounts.lockup,
-        ibo,
-        &mut ctx.accounts.bond,
-        &mut ctx.accounts.ibo_ata,
-        &mut ctx.accounts.bond_ata,
-        &mut ctx.accounts.buyer_ata,
-        &mut ctx.accounts.recipient_ata,
-        &mut ctx.accounts.master_recipient_ata,
-        &ctx.accounts.token_program,
-        &ctx.program_id,
-        ibo_idx,
-        stable_amount_liquidity
-    )?;
+    msg!("Balance recipient ata: {:?}", accounts.recipient_ata.amount);
 
+    // Increment bonud counter
+    ibo.bond_counter += 1;
+
+    // Set total redeemable for that bond
+    bond.total_claimable = bond_amount;
+    bond.maturity_date = lockup.compute_bond_completion_date();
+
+    // Transfer liquidity coin cut to us
+    accounts.transfer_liquidity(cut, &accounts.master_recipient_ata)?;
+    msg!("Transfered cut to master");
+    accounts.transfer_liquidity(remainder, &accounts.recipient_ata)?;
+    msg!("Transfered remainder to recipient");
+
+    // Send bond calculated amonut to buyer
+    msg!("Transfering {:?} from account with {:?}", bond_amount, accounts.ibo_ata.amount);
+    accounts.transfer_buyer(bond_amount, ibo_idx, &ctx.program_id)?;
+    msg!("Transfered bond to buyer");
+
+    msg!("\nEnd of BuyBond");
     Ok(())
 }

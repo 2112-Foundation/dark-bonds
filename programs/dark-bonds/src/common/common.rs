@@ -2,11 +2,9 @@ use crate::errors::errors::ErrorCode;
 use crate::state::*;
 use anchor_lang::prelude::*;
 use anchor_spl::token::{ self, Token, TokenAccount, Transfer };
+use spl_math::precise_number::PreciseNumber;
 
 use solana_program::pubkey::Pubkey;
-
-const SECONDS_YEAR: f64 = 31536000.0;
-const PURCHASE_CUT: u64 = 500; // equivalent to 5%
 
 pub fn recursive_pda_derivation(
     ibo: &Pubkey,
@@ -91,109 +89,44 @@ pub fn mark_end<'info>(vertex: &mut Account<'info, Vertex>, max_depth: u8, this_
     }
 }
 
-pub fn purchase_mechanics<'info>(
-    buyer: &Signer<'info>,
-    lockup: &Account<'info, Lockup>,
-    ibo: &mut Account<'info, Ibo>,
-    bond: &mut Account<'info, Bond>,
-    ibo_ata: &Account<'info, TokenAccount>,
-    bond_ata: &Account<'info, TokenAccount>,
-    buyer_ata: &Account<'info, TokenAccount>,
-    recipient_ata: &Account<'info, TokenAccount>,
-    master_recipient_ata: &Account<'info, TokenAccount>,
-    token_program: &Program<'info, Token>,
-    program_id: &Pubkey,
-    ibo_idx: u64,
-    stable_amount_liquidity: u64
-) -> Result<()> {
-    // Convert APY, time and initial input to f64
-    // Moved here
-    // ------------------------------------------------------------------------------------------
-    let apy: f64 = (lockup.apy as f64) / 100.0;
-    let time_in_years: f64 = (lockup.period as f64) / SECONDS_YEAR;
-    let initial_input: f64 = stable_amount_liquidity as f64;
+pub fn calculate_cut_and_remainder(amount: u64, cut_percentage: f64) -> Result<(u64, u64)> {
+    msg!("cut percetn: {:?}", cut_percentage);
 
-    msg!("\n\n\tliquidity provided: {:?}", stable_amount_liquidity);
-    msg!("apy: {:?}", apy);
-    msg!("time_in_years: {:?}", time_in_years);
-    msg!("self.period : {:?}", lockup.period);
+    // Validate percentage
+    require!(cut_percentage > 0.0 || cut_percentage < 100.0, ErrorCode::WorngCutTMP);
 
-    // Calculate total value using compound interest formula
-    let total_balance: f64 = initial_input * apy.powf(time_in_years);
-    msg!("total balance: {:?}", total_balance);
+    // Convert u64 to u128 for internal calculations
+    let amount_128 = amount as u128;
 
-    // Total earnings is the total value minus the initial input
-    let profit: f64 = total_balance - initial_input;
-    msg!("total profit: {:?}", profit);
-    // msg!("yearly earnings: {:?}", profit);
+    msg!("here");
 
-    let total_gains: u64 = profit as u64;
+    // Calculate the cut and check for potential overflow
+    let cut_128 = (((amount_128 as f64) * cut_percentage) / 100.0).round() as u128;
 
-    // ------------------------------------------------------------------------------------------
-    //
-    // Get balance within the bond main
-    let bond_token_left: u64 = ibo_ata.amount;
+    let cut = cut_128 as u64;
 
-    // Ensure there are enough tokens TODO
-    require!(bond_token_left >= total_gains, ErrorCode::BondsSoldOut);
+    // Calculate the remainder and check for potential overflow
+    let remainder = amount.checked_sub(cut).ok_or("Overflow during remainder calculation").unwrap();
 
-    // msg!("bond_token_left: {:?}", bond_token_left);
-    // msg!("full bond value: {:?}", total_gains);
-    // msg!("full bond stable_amount_liquidity: {:?}", stable_amount_liquidity);
+    Ok((cut, remainder))
+}
 
-    // Work out split ratio
-    let total_leftover = (stable_amount_liquidity * (10000 - PURCHASE_CUT)) / 10000;
-    let total_cut = stable_amount_liquidity - total_leftover;
-
-    // msg!("total_cut: {:?}", total_cut);
-    // msg!("total_leftover: {:?}", total_leftover);
-
-    // Transfer liquidity coin to us
-    token::transfer(
-        CpiContext::new(token_program.to_account_info(), Transfer {
-            from: buyer_ata.to_account_info(),
-            to: master_recipient_ata.to_account_info(),
-            authority: buyer.to_account_info(),
-        }),
-        total_cut
+/** Check whether at least a day has elapsed since the last withdraw */
+pub fn conversion(amount_liqduity: &u64, _exchange_rate: &u64) -> Result<u64> {
+    // Conversion of parameters to PreciseNumber
+    let liquidity_in: PreciseNumber = PreciseNumber::new(*amount_liqduity as u128).ok_or(
+        error!(ErrorCode::ConversionFailed)
+    )?;
+    let exchange_rate: PreciseNumber = PreciseNumber::new(*_exchange_rate as u128).ok_or(
+        error!(ErrorCode::ConversionFailed)
     )?;
 
-    // Transfer liquidity coin to the specified ibo account
-    token::transfer(
-        CpiContext::new(token_program.to_account_info(), Transfer {
-            from: buyer_ata.to_account_info(),
-            to: recipient_ata.to_account_info(),
-            authority: buyer.to_account_info(),
-        }),
-        total_leftover
-    )?;
+    // Multuply amount lqiudity by exhcange rate, cast as u64 and return it
+    let amount_stable: u64 = liquidity_in
+        .checked_mul(&exchange_rate)
+        .ok_or(error!(ErrorCode::ConversionFailed))?
+        .to_imprecise()
+        .ok_or(error!(ErrorCode::ConversionFailed))? as u64;
 
-    // Rederive the bump
-    let (_, bump) = anchor_lang::prelude::Pubkey::find_program_address(
-        &["ibo_instance".as_bytes(), &ibo_idx.to_be_bytes()],
-        program_id
-    );
-    let seeds = &["ibo_instance".as_bytes(), &ibo_idx.to_be_bytes(), &[bump]];
-
-    // Transfer bond to the vested account
-    token::transfer(
-        CpiContext::new(token_program.to_account_info(), Transfer {
-            from: ibo_ata.to_account_info(),
-            to: bond_ata.to_account_info(),
-            authority: ibo.to_account_info(),
-        }).with_signer(&[seeds]),
-        total_gains
-    )?;
-
-    // msg!("desired stable mint: {:?}", ibo.liquidity_token);
-    // msg!("provided mint: {:?}", ctx.accounts.recipient_ata.mint);
-
-    // Create a new bond instance PDA
-    let maturity_stamp: i64 = lockup.compute_bond_completion_date();
-    bond.new(buyer.key(), maturity_stamp, total_gains, lockup.mature_only, ibo.bond_counter);
-
-    // Increment counter of all the issued bonds
-    ibo.bond_counter += 1;
-
-    Ok(())
+    Ok(amount_stable)
 }

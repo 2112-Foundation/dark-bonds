@@ -1,5 +1,6 @@
 use crate::errors::errors::ErrorCode;
 use crate::state::*;
+use crate::common::*;
 use anchor_lang::prelude::*;
 
 use solana_program::pubkey::Pubkey;
@@ -33,15 +34,18 @@ pub fn add_lockup(
 
     msg!("\nsetting APY of: {:?}", lockup_apy);
 
-    // Set these lockup values
+    // Ensure APY and lockup duration are non-zero
+    msg!("lockup duration: {:?}", lockup_duration);
+    require!(lockup_duration >= SECONDS_IN_A_DAY, ErrorCode::LockupDurationUnderDay);
     lockup.period = lockup_duration;
-    lockup.apy = lockup_apy as i64;
-    lockup.mature_only = mature_only;
+    require!(lockup_apy >= 0.0, ErrorCode::LockupZeroApy);
+    lockup.apy = lockup_apy;
 
-    // Set purchase period
+    // Set additional settings
+    lockup.mature_only = mature_only;
     lockup.purchase_period = purchase_period;
 
-    // Increment counter
+    // Increment available lockups counter
     ibo.lockup_counter += 1;
     Ok(())
 }

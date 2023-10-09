@@ -58,18 +58,7 @@ import { User, Users } from "./user";
 import { Mint } from "./mint";
 import { MintSupplyMustBeZeroError } from "@metaplex-foundation/mpl-token-metadata";
 import { CollectionsMaster, NftMint0, NftMint1 } from "./derived_nfts";
-
-async function assertRejects(asyncFunc: Promise<any>, errorType: any) {
-  try {
-    await asyncFunc;
-
-    console.log("\n\nPropagating shit fail");
-    assert.fail("Expected function to throw");
-  } catch (err) {
-    console.log("\n\nPropagating Other option: shows error", err);
-    assert.instanceOf(err, errorType);
-  }
-}
+const DAY_SECONDS: number = 86400;
 
 //
 const BN = anchor.BN;
@@ -160,7 +149,7 @@ describe("dark-bonds", async () => {
   let lockUp0Apy: number = 1.2 * 100;
   let lockUp1Period: number = 63072000; // 2 years
   let lockUp1Apy: number = 1.2 * 100;
-  let lockUp2Period: number = shortBond;
+  let lockUp2Period: number = DAY_SECONDS;
   let lockUp2Apy: number = 10000000 * 100;
 
   // GatedSettingsd
@@ -248,24 +237,6 @@ describe("dark-bonds", async () => {
       topUp(nftWallet.publicKey),
       users.addUsers(10),
     ]);
-
-    // console.log(
-    //   "\n\nUser 0 has publick key: ",
-    //   users.users[0].publicKey.toBase58()
-    // );
-
-    // console.log(
-    //   "User 0 has ata: ",
-    //   users.users[0].liquidityAccount.address.toBase58()
-    // );
-
-    // console.log(
-    //   "\nstart balance SC user 0",
-    //   await getTokenBalance(users.users[0].liquidityAccount)
-    // );
-    // await mintSc.topUpSPl(users.users[0].liquidityAccount.address, 6666);
-    // await delay(1);
-    // await mintSc.topUpSPl(users.users[0].liquidityAccount.address, 100);
 
     console.log(
       "\nend balance SC user 0",
@@ -409,17 +380,12 @@ describe("dark-bonds", async () => {
   });
 
   it("Add gated lockup for collection.", async () => {
-    let lockUp3: LockUp = await ibo.addLockUp(
-      lockUp2Period,
-      lockUp2Apy,
-      true,
-      0
-    );
+    let lockUp3: LockUp = await ibo.addLockUp(DAY_SECONDS, lockUp2Apy, true, 0);
     console.log("\nadded lock up with idx: ", lockUp3.index);
     let collectionM: NftMint0 = cm.collections[0];
 
     const tx = await bondProgram.methods
-      .addLockup(new BN(lockUp3Period), new BN(lockUp3Apy), false, pp)
+      .addLockup(new BN(lockUp3.period), new BN(lockUp3.apy), false, pp)
       .accounts({
         admin: ibo.admin.publicKey,
         ibo: ibo.address,
@@ -485,7 +451,7 @@ describe("dark-bonds", async () => {
     console.log("\nadded lock up with idx: ", lockUp4.index);
 
     const tx = await bondProgram.methods
-      .addLockup(new BN(lockUp3Period), new BN(lockUp3Apy), false, pp)
+      .addLockup(new BN(lockUp4.period), new BN(lockUp4.apy), false, pp)
       .accounts({
         admin: ibo.admin.publicKey,
         ibo: ibo.address,
@@ -542,7 +508,7 @@ describe("dark-bonds", async () => {
     console.log("\nadded lock up with idx: ", lockUp5.index);
 
     const tx = await bondProgram.methods
-      .addLockup(new BN(lockUp3Period), new BN(lockUp3Apy), false, pp)
+      .addLockup(new BN(lockUp5.period), new BN(lockUp5.apy), false, pp)
       .accounts({
         admin: ibo.admin.publicKey,
         ibo: ibo.address,
@@ -1073,7 +1039,7 @@ describe("dark-bonds", async () => {
           tokenProgram: TOKEN_PROGRAM_ID,
         })
         .remainingAccounts([
-          { pubkey: gate.address, isWritable: false, isSigner: false },
+          { pubkey: gate.address, isWritable: true, isSigner: false },
           {
             pubkey: collectionM.nfts[0].metadata,
             isWritable: false,
@@ -1094,6 +1060,7 @@ describe("dark-bonds", async () => {
         .rpc();
     }
 
+    // rejects without NFT
     await assert.isRejected(submit(), Error);
 
     // Treansfer nft to the user
@@ -1101,8 +1068,11 @@ describe("dark-bonds", async () => {
     console.log("Sending nft: ");
     await collectionM.nfts[0].transferFromMinter(user.publicKey);
     console.log("Sent nft: ");
-
-    await submit();
+    try {
+      await submit();
+    } catch (e) {
+      console.log("\n\n\nerror:\n", e);
+    }
 
     console.log("\n\nGATED BUY\n\n");
   });
@@ -1157,7 +1127,7 @@ describe("dark-bonds", async () => {
           tokenProgram: TOKEN_PROGRAM_ID,
         })
         .remainingAccounts([
-          { pubkey: gate.address, isWritable: false, isSigner: false },
+          { pubkey: gate.address, isWritable: true, isSigner: false },
           {
             pubkey: mintWhiteList.mint,
             isWritable: false,
@@ -1188,9 +1158,14 @@ describe("dark-bonds", async () => {
     // Top up the user
     await mintWhiteList.topUpSPl(userWlAta.address, 777655);
     await delay(3);
+    await submit();
 
     // Calls after topup
-    await submit();
+    // try {
+    //   await submit();
+    // } catch (e) {
+    //   console.log("\n\n\nerror:\n", e);
+    // }
 
     // Assert amount has been subtracted for one that does so
     const userWlBalanceEnd = await getTokenBalance(userWlAta);
@@ -1199,7 +1174,7 @@ describe("dark-bonds", async () => {
     console.log("\n\nUser end balance: ", userWlBalanceEnd);
   });
 
-  xit("Buy SPL and collection gated bond offered on ibo", async () => {
+  it("Buy SPL and collection gated bond offered on ibo", async () => {
     console.log("Total lock-ups: ", ibo.lockups.length);
 
     const lockup: LockUp = ibo.lockups[5];
@@ -1270,33 +1245,22 @@ describe("dark-bonds", async () => {
         ])
         .signers([user])
         .rpc();
-
-      console.log("\n\nSUBBITED BOTHERO");
-
-      // return failed;
     }
 
-    console.log("Sending nft: ");
+    // Fails due to missing NFT
+    await assert.isRejected(submit(), Error);
+    // Sending nft
     await collectionM.nfts[2].transferFromMinter(user.publicKey);
-    console.log("Sent nft: ");
 
-    await assertRejects(submit(), Error);
-
-    // Transfer whitelisted token to the user
-    console.log("\nstart balance WL", await getTokenBalance(userWlAta));
-    console.log("\nstart balance SC", await getTokenBalance(userScAta));
-
-    // Fails without SPL
-    // assert.isRejected(submit(), Error, "Failure during submit");
-    // await submit();
-    // await assertRejects(submit(), Error);
-
+    // Fails due to missing SPL
+    await assert.isRejected(submit(), Error);
+    // Mint wl SPL
     await mintWhiteList.topUpSPl(userWlAta.address, 777655);
 
-    // assert.isRejected(submit(), Error, "Failure during submit");
+    await delay(2);
 
-    await delay(5);
-    await assertRejects(submit(), Error);
+    await submit();
+
     console.log("end balance WL", await getTokenBalance(userWlAta));
 
     // Get starting balance in WL for the user
@@ -1307,21 +1271,7 @@ describe("dark-bonds", async () => {
     // Assert amount has been subtracted for one that does so
     const userWlBalanceEnd = await getTokenBalance(userWlAta);
 
-    // assert.isRejected(submit(), Error);
-
-    async function dud(): Promise<any> {
-      return true;
-    }
-
-    // Write me a dud function that returns immideitlay
-
-    // async function submit() {
-
-    // await submit();
-
     console.log("\n\nUser start balance: ", userWlBalanceStart);
     console.log("\n\nUser end balance: ", userWlBalanceEnd);
   });
 });
-
-// Fucntion to pop a user out so they are fresh besides mint SC

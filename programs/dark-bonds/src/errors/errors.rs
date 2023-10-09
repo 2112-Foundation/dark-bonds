@@ -3,6 +3,8 @@ use anchor_lang::prelude::*;
 pub enum ErrorCode {
     #[msg("Need 24h between withdraws")]
     WithdrawTooEarly,
+    #[msg("Wrong cut?")]
+    WorngCutTMP,
     #[msg("Can not add or remove lockup type")]
     RatesLocked,
     #[msg("Can not add or remove gate type")]
@@ -44,11 +46,26 @@ pub enum ErrorCode {
     #[msg("Couldnt up the number")]
     ConversionFailed,
 
+    // Lokcup
+    #[msg("Lockup duration cant be zero")]
+    LockupDurationZero,
+    #[msg("Lockup duration needs to be more than a day")]
+    LockupDurationUnderDay,
+    #[msg("APY can't be zero")]
+    LockupZeroApy,
+    #[msg("Can't purchase a bond due to no sale right now")]
+    NotWithinSale,
+
     // new
     #[msg("Provided wrong gate option")]
     InvalidGateOption,
     #[msg("Provided wrong gate PDA")]
     InvalidGateAccount,
+
+    #[msg("No more tokens under this lockup")]
+    LockupLimitExceeded,
+    #[msg("Invalid percent APY")]
+    WrongAPY,
 
     // Collection gate
     #[msg("Provided insufficient number of accounts to process the collection")]
