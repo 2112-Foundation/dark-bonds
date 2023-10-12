@@ -68,7 +68,7 @@ Then you need to:
 [x] ~~Option for a price look-up. Rather than having a fixed price, instead need a call to an oracle to fetch latest price and use that~~ abandoned
 [ ] With SPL gate need to ensure that user has above certain amount and that it is burned when they convert it to bonds. So they can't get more than their WL allowance
 [ ] There is an optional limits on bond purchases per given lock-up types. Those can't be exceeded
-[ ] There is a bond start and gate end on the bond account (`purchase_period`), that override main bond. So even if the main ibo hasn't started someone could use that lockup (that is ideally gated) to buy before veryone else  driving hype. Likewise if main IBO time expires (and organisers can withdraw leftover bonds if they are frozen) lockup with longer purchase date could still purchase any bonds provided there are any left.
+[ ] There is a bond start and gate end on the bond account (`purchase_period`), that override main bond. So even if the main ibo hasn't started someone could use that lockup (that is ideally gated) to buy before veryone else driving hype. Likewise if main IBO time expires (and organisers can withdraw leftover bonds if they are frozen) lockup with longer purchase date could still purchase any bonds provided there are any left.
 
 ### Revenue
 
@@ -103,10 +103,7 @@ Then you need to:
 [ ] Tests for removing gate from a given lock-up
 [ ] Need to test a lock-up with both types WL SPL + collection
 
-
-
 # Running it
-
 
 It runs now on 1.16.3
 
@@ -120,13 +117,47 @@ Need this to build:
 
 Tests work too.
 
-
 ~~Can't build with `anchor build` so use `cargo build`, `anchor deploy` works though.~~
-
 
 Kill existing instance
 
-kill -9 $(lsof -t -i:9900)  
-
+kill -9 $(lsof -t -i:9900)
 
 Kill all npm or node `pkill -9 -f "node|npm"`
+
+# NextJs
+
+This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+
+## Getting Started
+
+First, run the development server:
+
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+
+This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+
+## Learn More
+
+To learn more about Next.js, take a look at the following resources:
+
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.

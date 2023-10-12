@@ -1,0 +1,22 @@
+{
+  "tokens": [
+    {
+      "id": 8221,
+      "name": "Token 1",
+      "supply": "1000000",
+      "bondtype": "SPL",
+      "issuedate": "01/09/23",
+      "expirydate": "01/09/24",
+      "apy": "9"
+    },
+    {
+      "id": 8223,
+      "name": "Token 2",
+      "supply": "3005000",
+      "bondtype": "EPL",
+      "issuedate": "30/12/23",
+      "expirydate": "30/12/24",
+      "apy": "25"
+    }
+  ]
+}
