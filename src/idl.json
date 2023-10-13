@@ -1,0 +1,1527 @@
+{
+  "version": "0.1.0",
+  "name": "dark_bonds",
+  "instructions": [
+    {
+      "name": "init",
+      "accounts": [
+        {
+          "name": "superadmin",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "master",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "createIbo",
+      "accounts": [
+        {
+          "name": "admin",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "ibo",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "master",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "fixedExchangeRate",
+          "type": "u64"
+        },
+        {
+          "name": "liveDate",
+          "type": "i64"
+        },
+        {
+          "name": "endDate",
+          "type": "i64"
+        },
+        {
+          "name": "swapCut",
+          "type": "u32"
+        },
+        {
+          "name": "liquidityToken",
+          "type": "publicKey"
+        },
+        {
+          "name": "recipient",
+          "type": "publicKey"
+        }
+      ]
+    },
+    {
+      "name": "addLockup",
+      "accounts": [
+        {
+          "name": "admin",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "ibo",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "lockup",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "lockupDuration",
+          "type": "i64"
+        },
+        {
+          "name": "lockupApy",
+          "type": "i64"
+        },
+        {
+          "name": "matureOnly",
+          "type": "bool"
+        },
+        {
+          "name": "purchasePeriod",
+          "type": {
+            "defined": "PurchasePeriod"
+          }
+        }
+      ]
+    },
+    {
+      "name": "removeLockup",
+      "accounts": [
+        {
+          "name": "admin",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "ibo",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "lockup",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "updateGates",
+      "accounts": [
+        {
+          "name": "admin",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "ibo",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "lockup",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "iboIdx",
+          "type": "u32"
+        },
+        {
+          "name": "lockupIdx",
+          "type": "u32"
+        },
+        {
+          "name": "gatesAdd",
+          "type": {
+            "vec": "u32"
+          }
+        },
+        {
+          "name": "gatesRemove",
+          "type": {
+            "vec": "u32"
+          }
+        }
+      ]
+    },
+    {
+      "name": "addGate",
+      "accounts": [
+        {
+          "name": "admin",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "ibo",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "lockup",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "gate",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "iboIdx",
+          "type": "u32"
+        },
+        {
+          "name": "lockupIdx",
+          "type": "u32"
+        },
+        {
+          "name": "gateSettings",
+          "type": {
+            "vec": {
+              "defined": "GateType"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "removeGate",
+      "accounts": [
+        {
+          "name": "admin",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "ibo",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "lockup",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "gate",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "iboIdx",
+          "type": "u32"
+        },
+        {
+          "name": "lockupIdx",
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "lock",
+      "accounts": [
+        {
+          "name": "admin",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "ibo",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "lockWithdraws",
+          "type": "bool"
+        },
+        {
+          "name": "lockLockupAddition",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "buyBond",
+      "accounts": [
+        {
+          "name": "buyer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "bond",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ibo",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "master",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "lockup",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "buyerAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "recipientAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "iboAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "bondAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "masterRecipientAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "lockupIdx",
+          "type": "u32"
+        },
+        {
+          "name": "iboIdx",
+          "type": "u64"
+        },
+        {
+          "name": "liquidityProvided",
+          "type": "u64"
+        },
+        {
+          "name": "gateIdxs",
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "claim",
+      "accounts": [
+        {
+          "name": "bondOwner",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "bond",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "bondOwnerAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "bondAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "iboAddress",
+          "type": "publicKey"
+        },
+        {
+          "name": "iboIdx",
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "split",
+      "accounts": [
+        {
+          "name": "owner",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "bond",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "bondAtaOld",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "bondAtaNew",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "newBond",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "master",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ibo",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "percentNew",
+          "type": "u16"
+        },
+        {
+          "name": "iboAddress",
+          "type": "publicKey"
+        },
+        {
+          "name": "bondIdx",
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "setSwap",
+      "accounts": [
+        {
+          "name": "owner",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "bond",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "sellPrice",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "buySwap",
+      "accounts": [
+        {
+          "name": "buyer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "bond",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "master",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ibo",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "buyerAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "sellerAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "masterRecipientAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "iboAdminAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "addTree",
+      "accounts": [
+        {
+          "name": "admin",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "ibo",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tree",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "iboIdx",
+          "type": "u32"
+        },
+        {
+          "name": "treeIdx",
+          "type": "u8"
+        },
+        {
+          "name": "depth",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "addVertex0",
+      "accounts": [
+        {
+          "name": "admin",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "ibo",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tree",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "vertex0",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "iboIdx",
+          "type": "u32"
+        },
+        {
+          "name": "treeIdx",
+          "type": "u8"
+        },
+        {
+          "name": "vertexIdx0",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "addVertex1",
+      "accounts": [
+        {
+          "name": "admin",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "ibo",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tree",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "vertex0",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "vertex1",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "iboIdx",
+          "type": "u32"
+        },
+        {
+          "name": "treeIdx",
+          "type": "u8"
+        },
+        {
+          "name": "vertexIdx0",
+          "type": "u8"
+        },
+        {
+          "name": "vertexIdx1",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "addVertex2",
+      "accounts": [
+        {
+          "name": "admin",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "ibo",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tree",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "vertex0",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "vertex1",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "vertex2",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "iboIdx",
+          "type": "u32"
+        },
+        {
+          "name": "treeIdx",
+          "type": "u8"
+        },
+        {
+          "name": "vertexIdx0",
+          "type": "u8"
+        },
+        {
+          "name": "vertexIdx1",
+          "type": "u8"
+        },
+        {
+          "name": "vertexIdx2",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "addNftBasket2",
+      "accounts": [
+        {
+          "name": "admin",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "ibo",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tree",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "nftBasket",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vertex0",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "vertex1",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "vertex2",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "iboIdx",
+          "type": "u32"
+        },
+        {
+          "name": "treeIdx",
+          "type": "u8"
+        },
+        {
+          "name": "vertexIdx0",
+          "type": "u8"
+        },
+        {
+          "name": "vertexIdx1",
+          "type": "u8"
+        },
+        {
+          "name": "vertexIdx2",
+          "type": "u8"
+        },
+        {
+          "name": "nftBasketIdx",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "loadNfts",
+      "accounts": [
+        {
+          "name": "admin",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "ibo",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tree",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "nftBasket",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "iboIdx",
+          "type": "u32"
+        },
+        {
+          "name": "treeIdx",
+          "type": "u8"
+        },
+        {
+          "name": "vertexIdx0",
+          "type": "u8"
+        },
+        {
+          "name": "vertexIdx1",
+          "type": "u8"
+        },
+        {
+          "name": "vertexIdx2",
+          "type": "u8"
+        },
+        {
+          "name": "nftBasketIdx",
+          "type": "u8"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Bond",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "docs": ["Public key of the owner that can sell/split this bond."],
+            "type": "publicKey"
+          },
+          {
+            "name": "idx",
+            "docs": [
+              "Index of the bonc_counter at the ibo state account at the instance this bond was created."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "swapPrice",
+            "docs": [
+              "Swap: if non zero someone can exucte it with a transfer otherwise not for sale. Exchange using underlying liqudiity token."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "totalClaimable",
+            "docs": ["Total amount that can be made at maturity."],
+            "type": "u64"
+          },
+          {
+            "name": "maturityDate",
+            "docs": [
+              "Data in seconds since the epoch when full bond value can be withdrawn."
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "lastClaimed",
+            "docs": ["Last redemption date in seconds since the epoch."],
+            "type": "i64"
+          },
+          {
+            "name": "bondStart",
+            "docs": ["Bond creation date in seconds since the epoch."],
+            "type": "i64"
+          },
+          {
+            "name": "matureOnly",
+            "docs": ["Redemption possible only once full maturity is reached."],
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Gate",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "gateSettings",
+            "docs": ["Type of gate_settings."],
+            "type": {
+              "vec": {
+                "defined": "GateType"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Ibo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "lockupsLocked",
+            "docs": [
+              "After being set to true, IBO admin can't add further lock-ups."
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "withdrawsLocked",
+            "docs": [
+              "After being set to true, IBO admin can't withdraw underlying token until end of the IBO set by end_date"
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "fixedExchangeRate",
+            "docs": [
+              "Fixed rate of conversion between underlying token and liquidity coin.\n        Set by the IBO deployers at the initalisation of the IBO.\n        Allows to bypass innability to add jupiter."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "swapCut",
+            "type": "u64"
+          },
+          {
+            "name": "liveDate",
+            "docs": ["Date after which bonds can be purchased."],
+            "type": "i64"
+          },
+          {
+            "name": "endDate",
+            "docs": ["Date after which bonds can not be purchased."],
+            "type": "i64"
+          },
+          {
+            "name": "liquidityToken",
+            "docs": ["Mint of the token in which bonds will be redeemed."],
+            "type": "publicKey"
+          },
+          {
+            "name": "underlyingToken",
+            "docs": ["Mint of the token which will be used to purchase bonds."],
+            "type": "publicKey"
+          },
+          {
+            "name": "recipientAddress",
+            "docs": ["Receives a cut of the provided liquidity token amount."],
+            "type": "publicKey"
+          },
+          {
+            "name": "admin",
+            "docs": [
+              "Admin of the ibo which can:\n     - add/remove gates\n     - add/remove lockups\n     - change exchanged rate"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "lockupCounter",
+            "docs": [
+              "Total number of indidividual bond option types created for this IBO."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "bondCounter",
+            "docs": ["Total number of bonds issued under this IBO."],
+            "type": "u32"
+          },
+          {
+            "name": "gateCounter",
+            "docs": [
+              "Total number of gates which restrict which lock up option can be used to purchase the bond."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "nftCounter",
+            "type": "u32"
+          },
+          {
+            "name": "nftBasePrice",
+            "type": "u64"
+          },
+          {
+            "name": "treeCounter",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Lockup",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "period",
+            "docs": ["Minimum lockup period in seconds."],
+            "type": "i64"
+          },
+          {
+            "name": "apy",
+            "docs": ["Yearly APY for this lockup."],
+            "type": "i64"
+          },
+          {
+            "name": "gates",
+            "docs": [
+              "Pointers to the gates that will allow this lock up to be used."
+            ],
+            "type": {
+              "vec": "u32"
+            }
+          },
+          {
+            "name": "matureOnly",
+            "docs": ["Can only withdraw all at once at the end."],
+            "type": "bool"
+          },
+          {
+            "name": "limit",
+            "docs": ["Total amount to be sold under this lock-up option."],
+            "type": "u64"
+          },
+          {
+            "name": "purchasePeriod",
+            "docs": [
+              "Optional period that allows to be purchased outside of the main timing."
+            ],
+            "type": {
+              "defined": "PurchasePeriod"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Master",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "iboCounter",
+            "docs": ["Counter for all of the IBOs intialised to date."],
+            "type": "u64"
+          },
+          {
+            "name": "masterCut",
+            "docs": ["Cut take of each bond issuance transaction."],
+            "type": "u64"
+          },
+          {
+            "name": "admin",
+            "docs": ["Master admin that can."],
+            "type": "publicKey"
+          },
+          {
+            "name": "masterRecipient",
+            "docs": ["Receives all the cuts."],
+            "type": "publicKey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "NftBasket",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "fillIdx",
+            "type": "u16"
+          },
+          {
+            "name": "data",
+            "type": {
+              "vec": {
+                "defined": "NftEntry"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Tree",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "treeIdx",
+            "type": "u16"
+          },
+          {
+            "name": "depth",
+            "type": "u8"
+          },
+          {
+            "name": "totalNfts",
+            "type": "u32"
+          },
+          {
+            "name": "vertexCounter",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Vertex",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "end",
+            "type": "bool"
+          },
+          {
+            "name": "subIdx",
+            "type": "u8"
+          },
+          {
+            "name": "empty",
+            "type": {
+              "array": ["u8", 10]
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "types": [
+    {
+      "name": "CollectionType",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "metadata",
+            "type": "publicKey"
+          },
+          {
+            "name": "masterMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "creator",
+            "type": "publicKey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "SplType",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "splMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "minimumOwnership",
+            "type": "u64"
+          },
+          {
+            "name": "amountPerToken",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "NftEntry",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "address",
+            "type": "publicKey"
+          },
+          {
+            "name": "taken",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "GateType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Collection",
+            "fields": [
+              {
+                "name": "gate",
+                "type": {
+                  "defined": "CollectionType"
+                }
+              }
+            ]
+          },
+          {
+            "name": "Spl",
+            "fields": [
+              {
+                "name": "gate",
+                "type": {
+                  "defined": "SplType"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "PurchasePeriod",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "SameAsMainIbo"
+          },
+          {
+            "name": "LockupPurchaseStart",
+            "fields": [
+              {
+                "name": "start",
+                "type": "i64"
+              }
+            ]
+          },
+          {
+            "name": "LockupPurchaseEnd",
+            "fields": [
+              {
+                "name": "end",
+                "type": "i64"
+              }
+            ]
+          },
+          {
+            "name": "LockupPurchaseCombined",
+            "fields": [
+              {
+                "name": "start",
+                "type": "i64"
+              },
+              {
+                "name": "end",
+                "type": "i64"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "WithdrawTooEarly",
+      "msg": "Need 24h between withdraws"
+    },
+    {
+      "code": 6001,
+      "name": "RatesLocked",
+      "msg": "Can not add or remove lockup type"
+    },
+    {
+      "code": 6002,
+      "name": "GatedSettingssLocked",
+      "msg": "Can not add or remove gate type"
+    },
+    {
+      "code": 6003,
+      "name": "BondsSoldOut",
+      "msg": "There aren't enought tokens left for this bond allocation. Try again with a smaller amount"
+    },
+    {
+      "code": 6004,
+      "name": "NotForSale",
+      "msg": "This bond is not for sale"
+    },
+    {
+      "code": 6005,
+      "name": "NotBondOwner",
+      "msg": "Signing account is not the owner of this bond"
+    },
+    {
+      "code": 6006,
+      "name": "NotIBOAdmin",
+      "msg": "Signing account is not IBO admin"
+    },
+    {
+      "code": 6007,
+      "name": "RestrictedLockup",
+      "msg": "Purchase requires seperate function call with NTF ownership proof"
+    },
+    {
+      "code": 6008,
+      "name": "InvalidNFTAccountOwner",
+      "msg": "The owner of the NFT token account is not the user"
+    },
+    {
+      "code": 6009,
+      "name": "InvalidNFTAccountMint",
+      "msg": "The mint of the NFT token account is not the expected mint"
+    },
+    {
+      "code": 6010,
+      "name": "InvalidNFTAccountAmount",
+      "msg": "The amount of the NFT token account is not 1"
+    },
+    {
+      "code": 6011,
+      "name": "InvalidMasterEdition",
+      "msg": "The NFT master edition account is not valid"
+    },
+    {
+      "code": 6012,
+      "name": "InvalidMetadata",
+      "msg": "The NFT metadata account is not valid"
+    },
+    {
+      "code": 6013,
+      "name": "InvalidCreator",
+      "msg": "The creator of the NFT is not the expected creator or is not verified"
+    },
+    {
+      "code": 6014,
+      "name": "WithdrawLocked",
+      "msg": "Can not withdraw until IBO is over"
+    },
+    {
+      "code": 6015,
+      "name": "InvalidRecursiveIdx",
+      "msg": "Provided wrong number to the derivation"
+    },
+    {
+      "code": 6016,
+      "name": "WrongVertexAccount",
+      "msg": "Provided wrong vertex"
+    },
+    {
+      "code": 6017,
+      "name": "MissingVertexAccount",
+      "msg": "Provided wrong number of vertex accounts"
+    },
+    {
+      "code": 6018,
+      "name": "IncorrectRatioRemaining",
+      "msg": "Accounts after vertices need to be in multiple of three"
+    },
+    {
+      "code": 6019,
+      "name": "ConversionFailed",
+      "msg": "Couldnt up the number"
+    },
+    {
+      "code": 6020,
+      "name": "InvalidGateOption",
+      "msg": "Provided wrong gate option"
+    },
+    {
+      "code": 6021,
+      "name": "InvalidGateAccount",
+      "msg": "Provided wrong gate PDA"
+    },
+    {
+      "code": 6022,
+      "name": "GateCollectionInsufficientAccounts",
+      "msg": "Provided insufficient number of accounts to process the collection"
+    },
+    {
+      "code": 6023,
+      "name": "GateCollectionInvalidOwner",
+      "msg": "Caller is not the NFT owner"
+    },
+    {
+      "code": 6024,
+      "name": "GateCollectionInvalidTokenAccount",
+      "msg": "Token account not derived from the NFT mint"
+    },
+    {
+      "code": 6025,
+      "name": "GateCollectionInvalidNftMetadata",
+      "msg": "Mint does not match mint stored in the metadata"
+    },
+    {
+      "code": 6026,
+      "name": "GateCollectionNftNotFromCollection",
+      "msg": "Provided NFT is not a member of this collection"
+    },
+    {
+      "code": 6027,
+      "name": "GateSplCallerNotEnoughToken",
+      "msg": "Buyer does not own the enough SPL necessary for this gate"
+    },
+    {
+      "code": 6028,
+      "name": "GateSplIncorrectMint",
+      "msg": "SPL mint address does not match the one stored for this gate"
+    },
+    {
+      "code": 6029,
+      "name": "GateSplInsufficientAccounts",
+      "msg": "Provided insufficient number of accounts to process the collection"
+    },
+    {
+      "code": 6030,
+      "name": "GateSplInvalidTokenAccount",
+      "msg": "Token account not derived from the SPL mint"
+    },
+    {
+      "code": 6031,
+      "name": "GateSplInvalidOwner",
+      "msg": "Caller is not the owner of the token account"
+    },
+    {
+      "code": 6032,
+      "name": "IncorrectGateIndex",
+      "msg": "Provided gate index is not included in this lockup"
+    }
+  ],
+  "metadata": {
+    "address": "CkAJr4F6zYzDL2ov5uZgJFtupqzSsSuPXgh1Paed7K6n"
+  }
+}
