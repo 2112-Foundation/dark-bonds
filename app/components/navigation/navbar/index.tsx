@@ -6,10 +6,12 @@ import { BiSolidBook, BiLaptop } from "react-icons/bi";
 import { FaWallet } from "react-icons/fa";
 import styles from "./Navbar.module.css";
 import "../../../../app/globals.css";
+import { usePathname } from "next/navigation";
 // import Logo from "./Logo";
 // import Button from "./Button";
 
 const Navbar = () => {
+  const pathname = usePathname();
   return (
     <div className="flex items-center w-full h-20 bg-sable-green-page-bg top-0 px-5">
       <div className="foo flex justify-between container mx-auto px-5 h-full">
@@ -35,34 +37,37 @@ const Navbar = () => {
                 <BiSolidBook />
               </Link>
             </li>
-            <li className="border-solid border-[1px] border-sable-green-text px-1 rounded-md">
-              <Link
-                href="/app"
-                className="flex items-center text-[20px]"
-                style={{ fontFamily: "Mono" }}
-              >
-                <div className="mx-2">
-                  <BiLaptop />
+            {pathname == "/" && (
+              <li className="border-solid border-[1px] border-sable-green-text px-1 rounded-md">
+                <Link
+                  href="/app"
+                  className="flex items-center text-[18px] p-1"
+                  style={{ fontFamily: "Mono" }}
+                >
+                  <div className="mx-2">
+                    <BiLaptop />
+                  </div>
+                  APP
+                </Link>
+              </li>
+            )}
+            {pathname == "/app" && (
+              <li className="border-solid border-[1px] border-sable-green-text px-1 rounded-md">
+                <div
+                  onClick={() => {
+                    console.log("Hello");
+                  }}
+                  className="flex items-center text-[16px] p-1"
+                  style={{ fontFamily: "Mono" }}
+                >
+                  <div className="mx-2">
+                    <FaWallet />
+                  </div>
+                  LOGIN
                 </div>
-                APP
-              </Link>
-            </li>
-            <li className="border-solid border-[1px] border-sable-green-text px-1 rounded-md">
-              <div
-                onClick={() => {
-                  console.log("Hello");
-                }}
-                className="flex items-center text-[20px]"
-                style={{ fontFamily: "Mono" }}
-              >
-                <div className="mx-2">
-                  <FaWallet />
-                </div>
-                LOGIN
-              </div>
-            </li>
+              </li>
+            )}
           </ul>
-          {/* <Button /> */}
         </div>
       </div>
     </div>
