@@ -7,11 +7,21 @@ import { FaWallet } from "react-icons/fa";
 import styles from "./Navbar.module.css";
 import "../../../../app/globals.css";
 import { usePathname } from "next/navigation";
-// import Logo from "./Logo";
-// import Button from "./Button";
+import {
+  useWallet,
+  WalletProvider,
+  ConnectionProvider,
+} from "@solana/wallet-adapter-react";
+import {
+  WalletDisconnectButton,
+  WalletModalProvider,
+  WalletMultiButton,
+} from "@solana/wallet-adapter-react-ui";
+require("@solana/wallet-adapter-react-ui/styles.css");
 
 const Navbar = () => {
   const pathname = usePathname();
+  const wallet = useWallet();
   return (
     <div className="flex items-center w-full h-20 bg-sable-green-page-bg top-0 px-5">
       <div className="foo flex justify-between container mx-auto px-5 h-full">
@@ -67,6 +77,9 @@ const Navbar = () => {
                 </div>
               </li>
             )}
+            <WalletMultiButton />
+            {/* {wallet.connected && <WalletMultiButton />} */}
+            {/* {wallet.connected && <WalletDisconnectButton />} */}
           </ul>
         </div>
       </div>

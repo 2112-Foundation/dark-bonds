@@ -1,8 +1,7 @@
-import Navbar from "./components/navigation/navbar";
-import Footer from "./components/navigation/footer";
 import "./globals.css";
 import { Montserrat } from "next/font/google";
-import { ReduxProvider } from "./redux/provider";
+import { PhantomWalletAdapter } from "@solana/wallet-adapter-wallets";
+import { Providers } from "./providers";
 
 const inter = Montserrat({
   subsets: ["latin"],
@@ -23,11 +22,8 @@ export default function RootLayout({
   return (
     <html lang="en" className="bg-sable-green-page-bg">
       <body className={`${inter.className} foo bg-black-100 no-scrollbar`}>
-        <ReduxProvider>
-          <Navbar />
-          {children}
-          <Footer />
-        </ReduxProvider>
+        {/* export to providers class as layout w. metadata cannot be client */}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
