@@ -15,7 +15,7 @@ pub use common::*;
 pub use user::*;
 pub use super_admin::*;
 
-declare_id!("8ZP1cSpVPVPp5aeake5f1BtgW1xv1e39zkoG8bWobbwV");
+declare_id!("CkAJr4F6zYzDL2ov5uZgJFtupqzSsSuPXgh1Paed7K6n");
 
 #[program]
 pub mod dark_bonds {
