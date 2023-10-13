@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import Link from "next/link";
 import { IoLogoOctocat } from "react-icons/io";
@@ -45,6 +46,20 @@ const Navbar = () => {
                 </div>
                 APP
               </Link>
+            </li>
+            <li className="border-solid border-[1px] border-sable-green-text px-1 rounded-md">
+              <div
+                onClick={() => {
+                  console.log("Hello");
+                }}
+                className="flex items-center text-[20px]"
+                style={{ fontFamily: "Mono" }}
+              >
+                <div className="mx-2">
+                  <FaWallet />
+                </div>
+                LOGIN
+              </div>
             </li>
           </ul>
           {/* <Button /> */}
