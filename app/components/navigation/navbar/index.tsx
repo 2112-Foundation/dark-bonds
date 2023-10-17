@@ -4,20 +4,24 @@ import Link from "next/link";
 import { IoLogoOctocat } from "react-icons/io";
 import { BiSolidBook, BiLaptop } from "react-icons/bi";
 import { FaWallet } from "react-icons/fa";
-import styles from "./Navbar.module.css";
 import "../../../../app/globals.css";
 import { usePathname } from "next/navigation";
-import {
-  useWallet,
-  WalletProvider,
-  ConnectionProvider,
-} from "@solana/wallet-adapter-react";
-import {
-  WalletDisconnectButton,
-  WalletModalProvider,
-  WalletMultiButton,
-} from "@solana/wallet-adapter-react-ui";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 require("@solana/wallet-adapter-react-ui/styles.css");
+
+const buttonStyles = {
+  backgroundColor: "#141D1D",
+  color: "#00FF9F",
+  border: "1px solid",
+  padding: "0px 10px",
+  borderRadius: "5px",
+  fontSize: "16px",
+  cursor: "pointer",
+  fontFamily: "Mono",
+  height: "35px",
+  display: "flex",
+};
 
 const Navbar = () => {
   const pathname = usePathname();
@@ -62,24 +66,20 @@ const Navbar = () => {
               </li>
             )}
             {pathname == "/app" && (
-              <li className="border-solid border-[1px] border-sable-green-text px-1 rounded-md">
-                <div
-                  onClick={() => {
-                    console.log("Hello");
-                  }}
-                  className="flex items-center text-[16px] p-1"
-                  style={{ fontFamily: "Mono" }}
-                >
-                  <div className="mx-2">
-                    <FaWallet />
+              <WalletMultiButton style={buttonStyles}>
+                {wallet.connected ? null : (
+                  <div
+                    className="flex items-center"
+                    style={{ fontFamily: "Mono" }}
+                  >
+                    <div className="mx-2">
+                      <FaWallet />
+                    </div>
+                    LOGIN
                   </div>
-                  LOGIN
-                </div>
-              </li>
+                )}
+              </WalletMultiButton>
             )}
-            <WalletMultiButton />
-            {/* {wallet.connected && <WalletMultiButton />} */}
-            {/* {wallet.connected && <WalletDisconnectButton />} */}
           </ul>
         </div>
       </div>
