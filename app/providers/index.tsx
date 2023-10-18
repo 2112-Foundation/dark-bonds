@@ -32,7 +32,7 @@ interface Props {
 export function Providers({ children, ...props }: Props) {
   return (
     <ConnectionProvider endpoint="http://127.0.0.1:8899">
-      <WalletProvider wallets={wallets}>
+      <WalletProvider wallets={wallets} autoConnect={true}>
         <WalletModalProvider>
           <ReduxProvider>
             <Navbar />
