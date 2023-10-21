@@ -2,8 +2,6 @@ use anchor_lang::prelude::*;
 use crate::errors::errors::ErrorCode;
 use crate::common::*;
 
-pub const SCALE: f64 = 1000.0;
-
 #[account]
 pub struct Lockup {
     /** Minimum lockup period in seconds.*/

@@ -1,6 +1,7 @@
 pub const SECONDS_YEAR: i64 = 31536000;
 pub const SECONDS_IN_A_DAY: i64 = 86400;
 pub const PURCHASE_CUT: f64 = 5.5; // equivalent to 5%
+pub const SCALE: f64 = 1000.0;
 
 // Account sizes
 pub const PRE: usize = 8;

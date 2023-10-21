@@ -132,7 +132,10 @@ pub fn buy_bond<'a, 'b, 'c, 'info>(
     require!(lockup.within_sale(ibo.live_date, ibo.end_date), ErrorCode::NotWithinSale);
 
     // Calcilate bond amount based on the stable amount provided
-    let (cut, remainder) = calculate_cut_and_remainder(amount_liquidity, PURCHASE_CUT).unwrap();
+    let (cut, remainder) = calculate_cut_and_remainder(
+        amount_liquidity,
+        (master.cuts.purchase_cut as f64) / SCALE
+    ).unwrap();
 
     msg!("\ncut  : {:?}\n remainder: {:?}", cut, remainder);
 

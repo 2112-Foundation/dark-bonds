@@ -27,6 +27,7 @@ pub fn add_lockup(
     lockup_duration: i64,
     lockup_apy: u64,
     mature_only: bool,
+    limit: u64,
     purchase_period: PurchasePeriod
 ) -> Result<()> {
     let lockup: &mut Account<Lockup> = &mut ctx.accounts.lockup;
@@ -46,6 +47,11 @@ pub fn add_lockup(
     // Set additional settings
     lockup.mature_only = mature_only;
     lockup.purchase_period = purchase_period;
+
+    // Set total limit
+    if limit > 0 {
+        lockup.limit = Some(limit);
+    }
 
     // Increment available lockups counter
     ibo.lockup_counter += 1;

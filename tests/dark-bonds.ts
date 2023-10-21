@@ -330,6 +330,7 @@ describe("dark-bonds", async () => {
       new BN(lockUp0Period),
       new BN(lockUp0Apy),
       false,
+      new BN(0),
       pp,
       {
         accounts: {
@@ -345,6 +346,7 @@ describe("dark-bonds", async () => {
       new BN(lockUp1Period),
       new BN(lockUp1Apy),
       false,
+      new BN(0),
       pp,
       {
         accounts: {
@@ -360,6 +362,7 @@ describe("dark-bonds", async () => {
       new BN(lockUp2Period),
       new BN(lockUp2Apy),
       false,
+      new BN(0),
       pp,
       {
         accounts: {
@@ -398,7 +401,13 @@ describe("dark-bonds", async () => {
     console.log("Master addres: ", master.address.toBase58());
 
     const tx = await bondProgram.methods
-      .addLockup(new BN(lockUp3.period), new BN(lockUp3.apy), false, pp)
+      .addLockup(
+        new BN(lockUp3.period),
+        new BN(lockUp3.apy),
+        false,
+        new BN(0),
+        pp
+      )
       .accounts({
         admin: ibo.admin.publicKey,
         ibo: ibo.address,
@@ -465,7 +474,13 @@ describe("dark-bonds", async () => {
     console.log("\nadded lock up with idx: ", lockUp4.index);
 
     const tx = await bondProgram.methods
-      .addLockup(new BN(lockUp4.period), new BN(lockUp4.apy), false, pp)
+      .addLockup(
+        new BN(lockUp4.period),
+        new BN(lockUp4.apy),
+        false,
+        new BN(0),
+        pp
+      )
       .accounts({
         admin: ibo.admin.publicKey,
         ibo: ibo.address,
@@ -521,7 +536,13 @@ describe("dark-bonds", async () => {
     console.log("\nadded lock up with idx: ", lockUp5.index);
 
     const tx = await bondProgram.methods
-      .addLockup(new BN(lockUp5.period), new BN(lockUp5.apy), false, pp)
+      .addLockup(
+        new BN(lockUp5.period),
+        new BN(lockUp5.apy),
+        false,
+        new BN(0),
+        pp
+      )
       .accounts({
         admin: ibo.admin.publicKey,
         ibo: ibo.address,

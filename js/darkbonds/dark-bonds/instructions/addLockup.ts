@@ -18,6 +18,7 @@ export type AddLockupInstructionArgs = {
   lockupDuration: beet.bignum
   lockupApy: beet.bignum
   matureOnly: boolean
+  limit: beet.bignum
   purchasePeriod: PurchasePeriod
 }
 /**
@@ -35,6 +36,7 @@ export const addLockupStruct = new beet.FixableBeetArgsStruct<
     ['lockupDuration', beet.i64],
     ['lockupApy', beet.u64],
     ['matureOnly', beet.bool],
+    ['limit', beet.u64],
     ['purchasePeriod', purchasePeriodBeet],
   ],
   'AddLockupInstructionArgs'

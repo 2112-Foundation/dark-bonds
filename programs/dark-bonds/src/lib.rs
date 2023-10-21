@@ -126,6 +126,7 @@ pub mod dark_bonds {
         lockup_duration: i64,
         lockup_apy: u64,
         mature_only: bool,
+        limit: u64,
         purchase_period: PurchasePeriod
     ) -> Result<()> {
         admin::add_lockup::add_lockup(
@@ -133,6 +134,7 @@ pub mod dark_bonds {
             lockup_duration,
             lockup_apy,
             mature_only,
+            limit,
             purchase_period
         )
     }
