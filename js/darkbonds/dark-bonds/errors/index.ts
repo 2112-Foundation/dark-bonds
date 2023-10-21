@@ -5,11 +5,11 @@
  * See: https://github.com/metaplex-foundation/solita
  */
 
-type ErrorWithCode = Error & { code: number }
-type MaybeErrorWithCode = ErrorWithCode | null | undefined
+type ErrorWithCode = Error & { code: number };
+type MaybeErrorWithCode = ErrorWithCode | null | undefined;
 
-const createErrorFromCodeLookup: Map<number, () => ErrorWithCode> = new Map()
-const createErrorFromNameLookup: Map<string, () => ErrorWithCode> = new Map()
+const createErrorFromCodeLookup: Map<number, () => ErrorWithCode> = new Map();
+const createErrorFromNameLookup: Map<string, () => ErrorWithCode> = new Map();
 
 /**
  * WithdrawTooEarly: 'Need 24h between withdraws'
@@ -18,146 +18,149 @@ const createErrorFromNameLookup: Map<string, () => ErrorWithCode> = new Map()
  * @category generated
  */
 export class WithdrawTooEarlyError extends Error {
-  readonly code: number = 0x1770
-  readonly name: string = 'WithdrawTooEarly'
+  readonly code: number = 0x1770;
+  readonly name: string = "WithdrawTooEarly";
   constructor() {
-    super('Need 24h between withdraws')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, WithdrawTooEarlyError)
+    super("Need 24h between withdraws");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, WithdrawTooEarlyError);
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x1770, () => new WithdrawTooEarlyError())
+createErrorFromCodeLookup.set(0x1770, () => new WithdrawTooEarlyError());
 createErrorFromNameLookup.set(
-  'WithdrawTooEarly',
+  "WithdrawTooEarly",
   () => new WithdrawTooEarlyError()
-)
+);
 
 /**
- * RatesLocked: 'Can not add or remove lockup type'
+ * IboRatesLocked: 'Can not add or remove lockup type'
  *
  * @category Errors
  * @category generated
  */
 export class RatesLockedError extends Error {
-  readonly code: number = 0x1771
-  readonly name: string = 'RatesLocked'
+  readonly code: number = 0x1771;
+  readonly name: string = "IboRatesLocked";
   constructor() {
-    super('Can not add or remove lockup type')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, RatesLockedError)
+    super("Can not add or remove lockup type");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, RatesLockedError);
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x1771, () => new RatesLockedError())
-createErrorFromNameLookup.set('RatesLocked', () => new RatesLockedError())
+createErrorFromCodeLookup.set(0x1771, () => new RatesLockedError());
+createErrorFromNameLookup.set("IboRatesLocked", () => new RatesLockedError());
 
 /**
- * GatedSettingssLocked: 'Can not add or remove gate type'
+ * IboGatedSettingsLocked: 'Can not add or remove gate type'
  *
  * @category Errors
  * @category generated
  */
 export class GatedSettingssLockedError extends Error {
-  readonly code: number = 0x1772
-  readonly name: string = 'GatedSettingssLocked'
+  readonly code: number = 0x1772;
+  readonly name: string = "IboGatedSettingsLocked";
   constructor() {
-    super('Can not add or remove gate type')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, GatedSettingssLockedError)
+    super("Can not add or remove gate type");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, GatedSettingssLockedError);
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x1772, () => new GatedSettingssLockedError())
+createErrorFromCodeLookup.set(0x1772, () => new GatedSettingssLockedError());
 createErrorFromNameLookup.set(
-  'GatedSettingssLocked',
+  "IboGatedSettingsLocked",
   () => new GatedSettingssLockedError()
-)
+);
 
 /**
- * BondsSoldOut: 'There aren't enought tokens left for this bond allocation. Try again with a smaller amount'
+ * IboBondsSoldOut: 'There aren't enought tokens left for this bond allocation. Try again with a smaller amount'
  *
  * @category Errors
  * @category generated
  */
 export class BondsSoldOutError extends Error {
-  readonly code: number = 0x1773
-  readonly name: string = 'BondsSoldOut'
+  readonly code: number = 0x1773;
+  readonly name: string = "IboBondsSoldOut";
   constructor() {
     super(
       "There aren't enought tokens left for this bond allocation. Try again with a smaller amount"
-    )
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, BondsSoldOutError)
+    );
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, BondsSoldOutError);
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x1773, () => new BondsSoldOutError())
-createErrorFromNameLookup.set('BondsSoldOut', () => new BondsSoldOutError())
+createErrorFromCodeLookup.set(0x1773, () => new BondsSoldOutError());
+createErrorFromNameLookup.set("IboBondsSoldOut", () => new BondsSoldOutError());
 
 /**
- * NotForSale: 'This bond is not for sale'
+ * BondNotForSale: 'This bond is not for sale'
  *
  * @category Errors
  * @category generated
  */
 export class NotForSaleError extends Error {
-  readonly code: number = 0x1774
-  readonly name: string = 'NotForSale'
+  readonly code: number = 0x1774;
+  readonly name: string = "BondNotForSale";
   constructor() {
-    super('This bond is not for sale')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, NotForSaleError)
+    super("This bond is not for sale");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, NotForSaleError);
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x1774, () => new NotForSaleError())
-createErrorFromNameLookup.set('NotForSale', () => new NotForSaleError())
+createErrorFromCodeLookup.set(0x1774, () => new NotForSaleError());
+createErrorFromNameLookup.set("BondNotForSale", () => new NotForSaleError());
 
 /**
- * NotBondOwner: 'Signing account is not the owner of this bond'
+ * BondNotBondOwner: 'Signing account is not the owner of this bond'
  *
  * @category Errors
  * @category generated
  */
 export class NotBondOwnerError extends Error {
-  readonly code: number = 0x1775
-  readonly name: string = 'NotBondOwner'
+  readonly code: number = 0x1775;
+  readonly name: string = "BondNotBondOwner";
   constructor() {
-    super('Signing account is not the owner of this bond')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, NotBondOwnerError)
+    super("Signing account is not the owner of this bond");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, NotBondOwnerError);
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x1775, () => new NotBondOwnerError())
-createErrorFromNameLookup.set('NotBondOwner', () => new NotBondOwnerError())
+createErrorFromCodeLookup.set(0x1775, () => new NotBondOwnerError());
+createErrorFromNameLookup.set(
+  "BondNotBondOwner",
+  () => new NotBondOwnerError()
+);
 
 /**
- * NotIBOAdmin: 'Signing account is not IBO admin'
+ * IboNotdmin: 'Signing account is not IBO admin'
  *
  * @category Errors
  * @category generated
  */
 export class NotIBOAdminError extends Error {
-  readonly code: number = 0x1776
-  readonly name: string = 'NotIBOAdmin'
+  readonly code: number = 0x1776;
+  readonly name: string = "IboNotdmin";
   constructor() {
-    super('Signing account is not IBO admin')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, NotIBOAdminError)
+    super("Signing account is not IBO admin");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, NotIBOAdminError);
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x1776, () => new NotIBOAdminError())
-createErrorFromNameLookup.set('NotIBOAdmin', () => new NotIBOAdminError())
+createErrorFromCodeLookup.set(0x1776, () => new NotIBOAdminError());
+createErrorFromNameLookup.set("IboNotdmin", () => new NotIBOAdminError());
 
 /**
  * RestrictedLockup: 'Purchase requires seperate function call with NTF ownership proof'
@@ -166,21 +169,21 @@ createErrorFromNameLookup.set('NotIBOAdmin', () => new NotIBOAdminError())
  * @category generated
  */
 export class RestrictedLockupError extends Error {
-  readonly code: number = 0x1777
-  readonly name: string = 'RestrictedLockup'
+  readonly code: number = 0x1777;
+  readonly name: string = "RestrictedLockup";
   constructor() {
-    super('Purchase requires seperate function call with NTF ownership proof')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, RestrictedLockupError)
+    super("Purchase requires seperate function call with NTF ownership proof");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, RestrictedLockupError);
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x1777, () => new RestrictedLockupError())
+createErrorFromCodeLookup.set(0x1777, () => new RestrictedLockupError());
 createErrorFromNameLookup.set(
-  'RestrictedLockup',
+  "RestrictedLockup",
   () => new RestrictedLockupError()
-)
+);
 
 /**
  * InvalidNFTAccountOwner: 'The owner of the NFT token account is not the user'
@@ -189,21 +192,21 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class InvalidNFTAccountOwnerError extends Error {
-  readonly code: number = 0x1778
-  readonly name: string = 'InvalidNFTAccountOwner'
+  readonly code: number = 0x1778;
+  readonly name: string = "InvalidNFTAccountOwner";
   constructor() {
-    super('The owner of the NFT token account is not the user')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, InvalidNFTAccountOwnerError)
+    super("The owner of the NFT token account is not the user");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, InvalidNFTAccountOwnerError);
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x1778, () => new InvalidNFTAccountOwnerError())
+createErrorFromCodeLookup.set(0x1778, () => new InvalidNFTAccountOwnerError());
 createErrorFromNameLookup.set(
-  'InvalidNFTAccountOwner',
+  "InvalidNFTAccountOwner",
   () => new InvalidNFTAccountOwnerError()
-)
+);
 
 /**
  * InvalidNFTAccountMint: 'The mint of the NFT token account is not the expected mint'
@@ -212,21 +215,21 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class InvalidNFTAccountMintError extends Error {
-  readonly code: number = 0x1779
-  readonly name: string = 'InvalidNFTAccountMint'
+  readonly code: number = 0x1779;
+  readonly name: string = "InvalidNFTAccountMint";
   constructor() {
-    super('The mint of the NFT token account is not the expected mint')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, InvalidNFTAccountMintError)
+    super("The mint of the NFT token account is not the expected mint");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, InvalidNFTAccountMintError);
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x1779, () => new InvalidNFTAccountMintError())
+createErrorFromCodeLookup.set(0x1779, () => new InvalidNFTAccountMintError());
 createErrorFromNameLookup.set(
-  'InvalidNFTAccountMint',
+  "InvalidNFTAccountMint",
   () => new InvalidNFTAccountMintError()
-)
+);
 
 /**
  * InvalidNFTAccountAmount: 'The amount of the NFT token account is not 1'
@@ -235,21 +238,21 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class InvalidNFTAccountAmountError extends Error {
-  readonly code: number = 0x177a
-  readonly name: string = 'InvalidNFTAccountAmount'
+  readonly code: number = 0x177a;
+  readonly name: string = "InvalidNFTAccountAmount";
   constructor() {
-    super('The amount of the NFT token account is not 1')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, InvalidNFTAccountAmountError)
+    super("The amount of the NFT token account is not 1");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, InvalidNFTAccountAmountError);
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x177a, () => new InvalidNFTAccountAmountError())
+createErrorFromCodeLookup.set(0x177a, () => new InvalidNFTAccountAmountError());
 createErrorFromNameLookup.set(
-  'InvalidNFTAccountAmount',
+  "InvalidNFTAccountAmount",
   () => new InvalidNFTAccountAmountError()
-)
+);
 
 /**
  * InvalidMasterEdition: 'The NFT master edition account is not valid'
@@ -258,21 +261,21 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class InvalidMasterEditionError extends Error {
-  readonly code: number = 0x177b
-  readonly name: string = 'InvalidMasterEdition'
+  readonly code: number = 0x177b;
+  readonly name: string = "InvalidMasterEdition";
   constructor() {
-    super('The NFT master edition account is not valid')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, InvalidMasterEditionError)
+    super("The NFT master edition account is not valid");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, InvalidMasterEditionError);
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x177b, () => new InvalidMasterEditionError())
+createErrorFromCodeLookup.set(0x177b, () => new InvalidMasterEditionError());
 createErrorFromNameLookup.set(
-  'InvalidMasterEdition',
+  "InvalidMasterEdition",
   () => new InvalidMasterEditionError()
-)
+);
 
 /**
  * InvalidMetadata: 'The NFT metadata account is not valid'
@@ -281,21 +284,21 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class InvalidMetadataError extends Error {
-  readonly code: number = 0x177c
-  readonly name: string = 'InvalidMetadata'
+  readonly code: number = 0x177c;
+  readonly name: string = "InvalidMetadata";
   constructor() {
-    super('The NFT metadata account is not valid')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, InvalidMetadataError)
+    super("The NFT metadata account is not valid");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, InvalidMetadataError);
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x177c, () => new InvalidMetadataError())
+createErrorFromCodeLookup.set(0x177c, () => new InvalidMetadataError());
 createErrorFromNameLookup.set(
-  'InvalidMetadata',
+  "InvalidMetadata",
   () => new InvalidMetadataError()
-)
+);
 
 /**
  * InvalidCreator: 'The creator of the NFT is not the expected creator or is not verified'
@@ -304,20 +307,23 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class InvalidCreatorError extends Error {
-  readonly code: number = 0x177d
-  readonly name: string = 'InvalidCreator'
+  readonly code: number = 0x177d;
+  readonly name: string = "InvalidCreator";
   constructor() {
     super(
-      'The creator of the NFT is not the expected creator or is not verified'
-    )
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, InvalidCreatorError)
+      "The creator of the NFT is not the expected creator or is not verified"
+    );
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, InvalidCreatorError);
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x177d, () => new InvalidCreatorError())
-createErrorFromNameLookup.set('InvalidCreator', () => new InvalidCreatorError())
+createErrorFromCodeLookup.set(0x177d, () => new InvalidCreatorError());
+createErrorFromNameLookup.set(
+  "InvalidCreator",
+  () => new InvalidCreatorError()
+);
 
 /**
  * WithdrawLocked: 'Can not withdraw until IBO is over'
@@ -326,18 +332,21 @@ createErrorFromNameLookup.set('InvalidCreator', () => new InvalidCreatorError())
  * @category generated
  */
 export class WithdrawLockedError extends Error {
-  readonly code: number = 0x177e
-  readonly name: string = 'WithdrawLocked'
+  readonly code: number = 0x177e;
+  readonly name: string = "WithdrawLocked";
   constructor() {
-    super('Can not withdraw until IBO is over')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, WithdrawLockedError)
+    super("Can not withdraw until IBO is over");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, WithdrawLockedError);
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x177e, () => new WithdrawLockedError())
-createErrorFromNameLookup.set('WithdrawLocked', () => new WithdrawLockedError())
+createErrorFromCodeLookup.set(0x177e, () => new WithdrawLockedError());
+createErrorFromNameLookup.set(
+  "WithdrawLocked",
+  () => new WithdrawLockedError()
+);
 
 /**
  * InvalidRecursiveIdx: 'Provided wrong number to the derivation'
@@ -346,21 +355,21 @@ createErrorFromNameLookup.set('WithdrawLocked', () => new WithdrawLockedError())
  * @category generated
  */
 export class InvalidRecursiveIdxError extends Error {
-  readonly code: number = 0x177f
-  readonly name: string = 'InvalidRecursiveIdx'
+  readonly code: number = 0x177f;
+  readonly name: string = "InvalidRecursiveIdx";
   constructor() {
-    super('Provided wrong number to the derivation')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, InvalidRecursiveIdxError)
+    super("Provided wrong number to the derivation");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, InvalidRecursiveIdxError);
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x177f, () => new InvalidRecursiveIdxError())
+createErrorFromCodeLookup.set(0x177f, () => new InvalidRecursiveIdxError());
 createErrorFromNameLookup.set(
-  'InvalidRecursiveIdx',
+  "InvalidRecursiveIdx",
   () => new InvalidRecursiveIdxError()
-)
+);
 
 /**
  * WrongVertexAccount: 'Provided wrong vertex'
@@ -369,21 +378,21 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class WrongVertexAccountError extends Error {
-  readonly code: number = 0x1780
-  readonly name: string = 'WrongVertexAccount'
+  readonly code: number = 0x1780;
+  readonly name: string = "WrongVertexAccount";
   constructor() {
-    super('Provided wrong vertex')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, WrongVertexAccountError)
+    super("Provided wrong vertex");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, WrongVertexAccountError);
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x1780, () => new WrongVertexAccountError())
+createErrorFromCodeLookup.set(0x1780, () => new WrongVertexAccountError());
 createErrorFromNameLookup.set(
-  'WrongVertexAccount',
+  "WrongVertexAccount",
   () => new WrongVertexAccountError()
-)
+);
 
 /**
  * MissingVertexAccount: 'Provided wrong number of vertex accounts'
@@ -392,21 +401,21 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class MissingVertexAccountError extends Error {
-  readonly code: number = 0x1781
-  readonly name: string = 'MissingVertexAccount'
+  readonly code: number = 0x1781;
+  readonly name: string = "MissingVertexAccount";
   constructor() {
-    super('Provided wrong number of vertex accounts')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, MissingVertexAccountError)
+    super("Provided wrong number of vertex accounts");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, MissingVertexAccountError);
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x1781, () => new MissingVertexAccountError())
+createErrorFromCodeLookup.set(0x1781, () => new MissingVertexAccountError());
 createErrorFromNameLookup.set(
-  'MissingVertexAccount',
+  "MissingVertexAccount",
   () => new MissingVertexAccountError()
-)
+);
 
 /**
  * IncorrectRatioRemaining: 'Accounts after vertices need to be in multiple of three'
@@ -415,21 +424,21 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class IncorrectRatioRemainingError extends Error {
-  readonly code: number = 0x1782
-  readonly name: string = 'IncorrectRatioRemaining'
+  readonly code: number = 0x1782;
+  readonly name: string = "IncorrectRatioRemaining";
   constructor() {
-    super('Accounts after vertices need to be in multiple of three')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, IncorrectRatioRemainingError)
+    super("Accounts after vertices need to be in multiple of three");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, IncorrectRatioRemainingError);
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x1782, () => new IncorrectRatioRemainingError())
+createErrorFromCodeLookup.set(0x1782, () => new IncorrectRatioRemainingError());
 createErrorFromNameLookup.set(
-  'IncorrectRatioRemaining',
+  "IncorrectRatioRemaining",
   () => new IncorrectRatioRemainingError()
-)
+);
 
 /**
  * ConversionFailed: 'Couldnt up the number'
@@ -438,67 +447,67 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class ConversionFailedError extends Error {
-  readonly code: number = 0x1783
-  readonly name: string = 'ConversionFailed'
+  readonly code: number = 0x1783;
+  readonly name: string = "ConversionFailed";
   constructor() {
-    super('Couldnt up the number')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, ConversionFailedError)
+    super("Couldnt up the number");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, ConversionFailedError);
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x1783, () => new ConversionFailedError())
+createErrorFromCodeLookup.set(0x1783, () => new ConversionFailedError());
 createErrorFromNameLookup.set(
-  'ConversionFailed',
+  "ConversionFailed",
   () => new ConversionFailedError()
-)
+);
 
 /**
- * InvalidGateOption: 'Provided wrong gate option'
+ * PurchaseInvalidGateOption: 'Provided wrong gate option'
  *
  * @category Errors
  * @category generated
  */
 export class InvalidGateOptionError extends Error {
-  readonly code: number = 0x1784
-  readonly name: string = 'InvalidGateOption'
+  readonly code: number = 0x1784;
+  readonly name: string = "PurchaseInvalidGateOption";
   constructor() {
-    super('Provided wrong gate option')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, InvalidGateOptionError)
+    super("Provided wrong gate option");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, InvalidGateOptionError);
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x1784, () => new InvalidGateOptionError())
+createErrorFromCodeLookup.set(0x1784, () => new InvalidGateOptionError());
 createErrorFromNameLookup.set(
-  'InvalidGateOption',
+  "PurchaseInvalidGateOption",
   () => new InvalidGateOptionError()
-)
+);
 
 /**
- * InvalidGateAccount: 'Provided wrong gate PDA'
+ * PurchaseInvalidGateAccount: 'Provided wrong gate PDA'
  *
  * @category Errors
  * @category generated
  */
 export class InvalidGateAccountError extends Error {
-  readonly code: number = 0x1785
-  readonly name: string = 'InvalidGateAccount'
+  readonly code: number = 0x1785;
+  readonly name: string = "PurchaseInvalidGateAccount";
   constructor() {
-    super('Provided wrong gate PDA')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, InvalidGateAccountError)
+    super("Provided wrong gate PDA");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, InvalidGateAccountError);
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x1785, () => new InvalidGateAccountError())
+createErrorFromCodeLookup.set(0x1785, () => new InvalidGateAccountError());
 createErrorFromNameLookup.set(
-  'InvalidGateAccount',
+  "PurchaseInvalidGateAccount",
   () => new InvalidGateAccountError()
-)
+);
 
 /**
  * GateCollectionInsufficientAccounts: 'Provided insufficient number of accounts to process the collection'
@@ -507,12 +516,12 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class GateCollectionInsufficientAccountsError extends Error {
-  readonly code: number = 0x1786
-  readonly name: string = 'GateCollectionInsufficientAccounts'
+  readonly code: number = 0x1786;
+  readonly name: string = "GateCollectionInsufficientAccounts";
   constructor() {
-    super('Provided insufficient number of accounts to process the collection')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, GateCollectionInsufficientAccountsError)
+    super("Provided insufficient number of accounts to process the collection");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, GateCollectionInsufficientAccountsError);
     }
   }
 }
@@ -520,11 +529,11 @@ export class GateCollectionInsufficientAccountsError extends Error {
 createErrorFromCodeLookup.set(
   0x1786,
   () => new GateCollectionInsufficientAccountsError()
-)
+);
 createErrorFromNameLookup.set(
-  'GateCollectionInsufficientAccounts',
+  "GateCollectionInsufficientAccounts",
   () => new GateCollectionInsufficientAccountsError()
-)
+);
 
 /**
  * GateCollectionInvalidOwner: 'Caller is not the NFT owner'
@@ -533,12 +542,12 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class GateCollectionInvalidOwnerError extends Error {
-  readonly code: number = 0x1787
-  readonly name: string = 'GateCollectionInvalidOwner'
+  readonly code: number = 0x1787;
+  readonly name: string = "GateCollectionInvalidOwner";
   constructor() {
-    super('Caller is not the NFT owner')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, GateCollectionInvalidOwnerError)
+    super("Caller is not the NFT owner");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, GateCollectionInvalidOwnerError);
     }
   }
 }
@@ -546,11 +555,11 @@ export class GateCollectionInvalidOwnerError extends Error {
 createErrorFromCodeLookup.set(
   0x1787,
   () => new GateCollectionInvalidOwnerError()
-)
+);
 createErrorFromNameLookup.set(
-  'GateCollectionInvalidOwner',
+  "GateCollectionInvalidOwner",
   () => new GateCollectionInvalidOwnerError()
-)
+);
 
 /**
  * GateCollectionInvalidTokenAccount: 'Token account not derived from the NFT mint'
@@ -559,12 +568,12 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class GateCollectionInvalidTokenAccountError extends Error {
-  readonly code: number = 0x1788
-  readonly name: string = 'GateCollectionInvalidTokenAccount'
+  readonly code: number = 0x1788;
+  readonly name: string = "GateCollectionInvalidTokenAccount";
   constructor() {
-    super('Token account not derived from the NFT mint')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, GateCollectionInvalidTokenAccountError)
+    super("Token account not derived from the NFT mint");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, GateCollectionInvalidTokenAccountError);
     }
   }
 }
@@ -572,11 +581,11 @@ export class GateCollectionInvalidTokenAccountError extends Error {
 createErrorFromCodeLookup.set(
   0x1788,
   () => new GateCollectionInvalidTokenAccountError()
-)
+);
 createErrorFromNameLookup.set(
-  'GateCollectionInvalidTokenAccount',
+  "GateCollectionInvalidTokenAccount",
   () => new GateCollectionInvalidTokenAccountError()
-)
+);
 
 /**
  * GateCollectionInvalidNftMetadata: 'Mint does not match mint stored in the metadata'
@@ -585,12 +594,12 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class GateCollectionInvalidNftMetadataError extends Error {
-  readonly code: number = 0x1789
-  readonly name: string = 'GateCollectionInvalidNftMetadata'
+  readonly code: number = 0x1789;
+  readonly name: string = "GateCollectionInvalidNftMetadata";
   constructor() {
-    super('Mint does not match mint stored in the metadata')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, GateCollectionInvalidNftMetadataError)
+    super("Mint does not match mint stored in the metadata");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, GateCollectionInvalidNftMetadataError);
     }
   }
 }
@@ -598,11 +607,11 @@ export class GateCollectionInvalidNftMetadataError extends Error {
 createErrorFromCodeLookup.set(
   0x1789,
   () => new GateCollectionInvalidNftMetadataError()
-)
+);
 createErrorFromNameLookup.set(
-  'GateCollectionInvalidNftMetadata',
+  "GateCollectionInvalidNftMetadata",
   () => new GateCollectionInvalidNftMetadataError()
-)
+);
 
 /**
  * GateCollectionNftNotFromCollection: 'Provided NFT is not a member of this collection'
@@ -611,12 +620,12 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class GateCollectionNftNotFromCollectionError extends Error {
-  readonly code: number = 0x178a
-  readonly name: string = 'GateCollectionNftNotFromCollection'
+  readonly code: number = 0x178a;
+  readonly name: string = "GateCollectionNftNotFromCollection";
   constructor() {
-    super('Provided NFT is not a member of this collection')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, GateCollectionNftNotFromCollectionError)
+    super("Provided NFT is not a member of this collection");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, GateCollectionNftNotFromCollectionError);
     }
   }
 }
@@ -624,11 +633,11 @@ export class GateCollectionNftNotFromCollectionError extends Error {
 createErrorFromCodeLookup.set(
   0x178a,
   () => new GateCollectionNftNotFromCollectionError()
-)
+);
 createErrorFromNameLookup.set(
-  'GateCollectionNftNotFromCollection',
+  "GateCollectionNftNotFromCollection",
   () => new GateCollectionNftNotFromCollectionError()
-)
+);
 
 /**
  * GateSplCallerNotEnoughToken: 'Buyer does not own the enough SPL necessary for this gate'
@@ -637,12 +646,12 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class GateSplCallerNotEnoughTokenError extends Error {
-  readonly code: number = 0x178b
-  readonly name: string = 'GateSplCallerNotEnoughToken'
+  readonly code: number = 0x178b;
+  readonly name: string = "GateSplCallerNotEnoughToken";
   constructor() {
-    super('Buyer does not own the enough SPL necessary for this gate')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, GateSplCallerNotEnoughTokenError)
+    super("Buyer does not own the enough SPL necessary for this gate");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, GateSplCallerNotEnoughTokenError);
     }
   }
 }
@@ -650,11 +659,11 @@ export class GateSplCallerNotEnoughTokenError extends Error {
 createErrorFromCodeLookup.set(
   0x178b,
   () => new GateSplCallerNotEnoughTokenError()
-)
+);
 createErrorFromNameLookup.set(
-  'GateSplCallerNotEnoughToken',
+  "GateSplCallerNotEnoughToken",
   () => new GateSplCallerNotEnoughTokenError()
-)
+);
 
 /**
  * GateSplIncorrectMint: 'SPL mint address does not match the one stored for this gate'
@@ -663,21 +672,21 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class GateSplIncorrectMintError extends Error {
-  readonly code: number = 0x178c
-  readonly name: string = 'GateSplIncorrectMint'
+  readonly code: number = 0x178c;
+  readonly name: string = "GateSplIncorrectMint";
   constructor() {
-    super('SPL mint address does not match the one stored for this gate')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, GateSplIncorrectMintError)
+    super("SPL mint address does not match the one stored for this gate");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, GateSplIncorrectMintError);
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x178c, () => new GateSplIncorrectMintError())
+createErrorFromCodeLookup.set(0x178c, () => new GateSplIncorrectMintError());
 createErrorFromNameLookup.set(
-  'GateSplIncorrectMint',
+  "GateSplIncorrectMint",
   () => new GateSplIncorrectMintError()
-)
+);
 
 /**
  * GateSplInsufficientAccounts: 'Provided insufficient number of accounts to process the collection'
@@ -686,12 +695,12 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class GateSplInsufficientAccountsError extends Error {
-  readonly code: number = 0x178d
-  readonly name: string = 'GateSplInsufficientAccounts'
+  readonly code: number = 0x178d;
+  readonly name: string = "GateSplInsufficientAccounts";
   constructor() {
-    super('Provided insufficient number of accounts to process the collection')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, GateSplInsufficientAccountsError)
+    super("Provided insufficient number of accounts to process the collection");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, GateSplInsufficientAccountsError);
     }
   }
 }
@@ -699,11 +708,11 @@ export class GateSplInsufficientAccountsError extends Error {
 createErrorFromCodeLookup.set(
   0x178d,
   () => new GateSplInsufficientAccountsError()
-)
+);
 createErrorFromNameLookup.set(
-  'GateSplInsufficientAccounts',
+  "GateSplInsufficientAccounts",
   () => new GateSplInsufficientAccountsError()
-)
+);
 
 /**
  * GateSplInvalidTokenAccount: 'Token account not derived from the SPL mint'
@@ -712,12 +721,12 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class GateSplInvalidTokenAccountError extends Error {
-  readonly code: number = 0x178e
-  readonly name: string = 'GateSplInvalidTokenAccount'
+  readonly code: number = 0x178e;
+  readonly name: string = "GateSplInvalidTokenAccount";
   constructor() {
-    super('Token account not derived from the SPL mint')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, GateSplInvalidTokenAccountError)
+    super("Token account not derived from the SPL mint");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, GateSplInvalidTokenAccountError);
     }
   }
 }
@@ -725,11 +734,11 @@ export class GateSplInvalidTokenAccountError extends Error {
 createErrorFromCodeLookup.set(
   0x178e,
   () => new GateSplInvalidTokenAccountError()
-)
+);
 createErrorFromNameLookup.set(
-  'GateSplInvalidTokenAccount',
+  "GateSplInvalidTokenAccount",
   () => new GateSplInvalidTokenAccountError()
-)
+);
 
 /**
  * GateSplInvalidOwner: 'Caller is not the owner of the token account'
@@ -738,21 +747,21 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class GateSplInvalidOwnerError extends Error {
-  readonly code: number = 0x178f
-  readonly name: string = 'GateSplInvalidOwner'
+  readonly code: number = 0x178f;
+  readonly name: string = "GateSplInvalidOwner";
   constructor() {
-    super('Caller is not the owner of the token account')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, GateSplInvalidOwnerError)
+    super("Caller is not the owner of the token account");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, GateSplInvalidOwnerError);
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x178f, () => new GateSplInvalidOwnerError())
+createErrorFromCodeLookup.set(0x178f, () => new GateSplInvalidOwnerError());
 createErrorFromNameLookup.set(
-  'GateSplInvalidOwner',
+  "GateSplInvalidOwner",
   () => new GateSplInvalidOwnerError()
-)
+);
 
 /**
  * IncorrectGateIndex: 'Provided gate index is not included in this lockup'
@@ -761,21 +770,21 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class IncorrectGateIndexError extends Error {
-  readonly code: number = 0x1790
-  readonly name: string = 'IncorrectGateIndex'
+  readonly code: number = 0x1790;
+  readonly name: string = "IncorrectGateIndex";
   constructor() {
-    super('Provided gate index is not included in this lockup')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, IncorrectGateIndexError)
+    super("Provided gate index is not included in this lockup");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, IncorrectGateIndexError);
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x1790, () => new IncorrectGateIndexError())
+createErrorFromCodeLookup.set(0x1790, () => new IncorrectGateIndexError());
 createErrorFromNameLookup.set(
-  'IncorrectGateIndex',
+  "IncorrectGateIndex",
   () => new IncorrectGateIndexError()
-)
+);
 
 /**
  * Attempts to resolve a custom program error from the provided error code.
@@ -783,8 +792,8 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export function errorFromCode(code: number): MaybeErrorWithCode {
-  const createError = createErrorFromCodeLookup.get(code)
-  return createError != null ? createError() : null
+  const createError = createErrorFromCodeLookup.get(code);
+  return createError != null ? createError() : null;
 }
 
 /**
@@ -793,6 +802,6 @@ export function errorFromCode(code: number): MaybeErrorWithCode {
  * @category generated
  */
 export function errorFromName(name: string): MaybeErrorWithCode {
-  const createError = createErrorFromNameLookup.get(name)
-  return createError != null ? createError() : null
+  const createError = createErrorFromNameLookup.get(name);
+  return createError != null ? createError() : null;
 }

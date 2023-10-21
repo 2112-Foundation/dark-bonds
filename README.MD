@@ -69,6 +69,8 @@ Then you need to:
 [ ] With SPL gate need to ensure that user has above certain amount and that it is burned when they convert it to bonds. So they can't get more than their WL allowance
 [ ] There is an optional limits on bond purchases per given lock-up types. Those can't be exceeded
 [ ] There is a bond start and gate end on the bond account (`purchase_period`), that override main bond. So even if the main ibo hasn't started someone could use that lockup (that is ideally gated) to buy before veryone else  driving hype. Likewise if main IBO time expires (and organisers can withdraw leftover bonds if they are frozen) lockup with longer purchase date could still purchase any bonds provided there are any left.
+[ ] Optional string to describe this project including links to the website etc
+[ ] Delegate for claiming, but not selling
 
 ### Revenue
 

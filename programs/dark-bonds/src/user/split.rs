@@ -11,7 +11,7 @@ pub struct Split<'info> {
     #[account(mut)]
     pub owner: Signer<'info>,
     // Only owner can split
-    #[account(mut, has_one = owner @ErrorCode::NotBondOwner)]
+    #[account(mut, has_one = owner @ErrorCode::BondNotBondOwner)]
     pub bond: Account<'info, Bond>,
     #[account(mut)]
     pub bond_ata_old: Box<Account<'info, TokenAccount>>,

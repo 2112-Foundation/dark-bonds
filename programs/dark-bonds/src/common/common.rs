@@ -98,12 +98,10 @@ pub fn calculate_cut_and_remainder(amount: u64, cut_percentage: f64) -> Result<(
 
     // Calculate the cut and check for potential overflow
     let cut_128 = (((amount_128 as f64) * cut_percentage) / 100.0).round() as u128;
-
     let cut = cut_128 as u64;
 
     // Calculate the remainder and check for potential overflow
     let remainder = amount.checked_sub(cut).ok_or("Overflow during remainder calculation").unwrap();
-
     Ok((cut, remainder))
 }
 

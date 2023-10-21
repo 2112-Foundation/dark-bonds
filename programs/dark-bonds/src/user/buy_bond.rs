@@ -1,13 +1,11 @@
 use crate::errors::errors::ErrorCode;
 use crate::state::*;
 use crate::common::*;
-// use anchor_lang::{ prelude::*, system_program::Transfer };
 use anchor_spl::{
     associated_token::AssociatedToken,
     token::{ self, Token, TokenAccount, Transfer, Burn, Mint },
 };
 
-// use anchor_spl::token::{ self, Token, TokenAccount, Transfer };
 use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
@@ -29,28 +27,25 @@ pub struct BuyBond<'info> {
     pub master: Account<'info, Master>,
 
     #[account(
-        mut, // Might modify total used up for this lock up
+        mut,
         seeds = ["lockup".as_bytes(), ibo.key().as_ref(), &lockup_idx.to_be_bytes()],
-        bump
-        // constraint = lockup.gate_counter == 0 @ErrorCode::RestrictedLockup
+        bump        
     )]
     pub lockup: Account<'info, Lockup>,
 
-    // purchse token
-    // Provided ATA has to be same mint as the one set in ibo
+    // Provided token account for the buyer has to be same mint as the one set in ibo
     #[account(mut, token::mint = ibo.liquidity_token, token::authority = buyer)]
     pub buyer_ata: Box<Account<'info, TokenAccount>>,
     #[account(mut)]
     pub recipient_ata: Box<Account<'info, TokenAccount>>,
+    #[account(mut, token::mint = ibo.liquidity_token, token::authority = master.master_recipient)]
+    pub master_recipient_ata: Box<Account<'info, TokenAccount>>, // Matches specified owner and mint
 
-    // bond token
     #[account(mut)]
     pub ibo_ata: Box<Account<'info, TokenAccount>>,
     // Check for bond substitution attack
     #[account(mut, token::authority = bond)]
     pub bond_ata: Box<Account<'info, TokenAccount>>,
-    #[account(mut, token::mint = ibo.liquidity_token, token::authority = master.master_recipient)]
-    pub master_recipient_ata: Box<Account<'info, TokenAccount>>, // Matches specified owner and mint
 
     pub token_program: Program<'info, Token>,
     pub associated_token_program: Program<'info, AssociatedToken>,
@@ -59,7 +54,7 @@ pub struct BuyBond<'info> {
 }
 
 impl<'info> BuyBond<'info> {
-    fn transfer_buyer(&self, bond_amount: u64, ibo_idx: u64, program_id: &Pubkey) -> Result<()> {
+    fn transfer_bond(&self, bond_amount: u64, ibo_idx: u64, program_id: &Pubkey) -> Result<()> {
         let (_, bump) = anchor_lang::prelude::Pubkey::find_program_address(
             &["ibo_instance".as_bytes(), &ibo_idx.to_be_bytes()],
             program_id
@@ -95,7 +90,6 @@ impl<'info> BuyBond<'info> {
             }),
             amount
         )?;
-        // msg!("\nTransfer liqudiity");
         Ok(())
     }
 }
@@ -133,7 +127,8 @@ pub fn buy_bond<'a, 'b, 'c, 'info>(
     let bond: &mut Account<Bond> = &mut accounts.bond;
     let token_program: &mut Program<'_, Token> = &mut accounts.token_program;
 
-    msg!("After security checks");
+    // Within the purchase period
+    require!(lockup.within_sale(ibo.live_date, ibo.end_date), ErrorCode::NotWithinSale);
 
     // Calcilate bond amount based on the stable amount provided
     let (cut, remainder) = calculate_cut_and_remainder(amount_liquidity, PURCHASE_CUT).unwrap();
@@ -151,7 +146,7 @@ pub fn buy_bond<'a, 'b, 'c, 'info>(
     // Check if it has at least one access gate
     if lockup.gates.len() > 0 {
         // Check if gate index exists within the lockup
-        require!(lockup.gates.contains(&gate_idx), ErrorCode::IncorrectGateIndex);
+        require!(lockup.gates.contains(&gate_idx), ErrorCode::PurchaseInvalidGateOption);
 
         // Remaining acounts can't be empty
         let remaining_accounts_vec: Vec<AccountInfo<'_>> = ctx.remaining_accounts.to_vec();
@@ -160,18 +155,14 @@ pub fn buy_bond<'a, 'b, 'c, 'info>(
             .split_first()
             .ok_or(ProgramError::InvalidArgument)?;
 
-        // Check if gate index exists within the lockup
-        require!(lockup.gates.contains(&gate_idx), ErrorCode::IncorrectGateIndex);
-
         // Recheck that the pda is correct for the given gate account
         let (gate_pda, _bump) = Pubkey::find_program_address(
-            // &[question.key().as_ref(), &[idx as u8]],
             &["gate".as_bytes(), ibo.key().as_ref(), &gate_idx.to_be_bytes()],
             &ctx.program_id
         );
 
         // Correct gate has been given
-        require!(&gate_pda == gate_account.key, ErrorCode::InvalidGateAccount);
+        require!(&gate_pda == gate_account.key, ErrorCode::PurchaseInvalidGateAccount);
 
         // Extract gate accoutn content from the remaining accounts
         let gate_acc: Account<Gate> = Account::try_from(gate_account)?;
@@ -184,7 +175,7 @@ pub fn buy_bond<'a, 'b, 'c, 'info>(
             // Get instance of the gate to feed it accounts
             let gate: &GateType = gate_acc.gate_settings
                 .get(index)
-                .ok_or(ErrorCode::InvalidNFTAccountOwner)?;
+                .ok_or(ErrorCode::PurchaseWrongGateStored)?;
 
             // Pass whatever accounts are left to the gate
             gate.verify(&buyer, v_vec.clone())?;
@@ -209,7 +200,6 @@ pub fn buy_bond<'a, 'b, 'c, 'info>(
                             spl_token_account.amount > amount_to_burn,
                             ErrorCode::GateSplNotEnoughWlTokens
                         );
-
                         burn_wl(amount_to_burn, &mint, &spl_token_account, token_program, buyer)?;
                     }
                 }
@@ -220,9 +210,6 @@ pub fn buy_bond<'a, 'b, 'c, 'info>(
             }
         }
     }
-
-    // Within the purchase period
-    require!(lockup.within_sale(ibo.live_date, ibo.end_date), ErrorCode::NotWithinSale);
 
     msg!("bond_amount compounded  : {:?}", bond_amount_comp);
 
@@ -237,6 +224,7 @@ pub fn buy_bond<'a, 'b, 'c, 'info>(
     // Set total redeemable for that bond
     bond.total_claimable = bond_amount_comp;
     bond.maturity_date = lockup.compute_bond_completion_date();
+    bond.owner = buyer.key();
 
     // Transfer liquidity coin cut to us
     accounts.transfer_liquidity(cut, &accounts.master_recipient_ata)?;
@@ -246,7 +234,7 @@ pub fn buy_bond<'a, 'b, 'c, 'info>(
 
     // Send bond calculated amonut to buyer
     msg!("Transfering {:?} from account with {:?}", bond_amount_comp, accounts.ibo_ata.amount);
-    accounts.transfer_buyer(bond_amount_comp, ibo_idx, &ctx.program_id)?;
+    accounts.transfer_bond(bond_amount_comp, ibo_idx, &ctx.program_id)?;
     msg!("Transfered bond to buyer");
 
     msg!("\nEnd of BuyBond");

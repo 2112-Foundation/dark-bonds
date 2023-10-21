@@ -100,28 +100,3 @@ impl Bond {
     }
     // Claim but with safe math
 }
-
-// 1683842
-
-// TODO: Need to standardise input to seconds or miliseconds
-
-// Old
-// pub fn claim_amount(&self) -> u64 {
-//     // Need to calculate time since last claim
-//     let time_elapsed: i64 = Clock::get().unwrap().unix_timestamp - self.last_claimed;
-//     msg!("time_elapsed: {:?}", time_elapsed);
-
-//     // Need to work out total time from start to maturity
-//     let total_time: i64 = self.maturity_date - self.bond_start;
-//     msg!("total_time: {:?}", total_time);
-
-//     // Need work out the ratio of total time
-//     let ratio: f64 = (time_elapsed as f64) / (total_time as f64);
-//     msg!("ratio: {:?}", ratio);
-
-//     msg!("total_claimable: {:?}", self.total_claimable);
-//     msg!("claiming this time: {:?}", ratio * (self.total_claimable as f64));
-
-//     // Multiplly ratio by total that is to gain
-//     return (ratio * (self.total_claimable as f64)) as u64;
-// }

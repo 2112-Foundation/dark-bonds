@@ -35,11 +35,11 @@ pub fn claim(ctx: Context<Claim>, ibo_address: Pubkey, bond_idx: u32) -> Result<
     msg!("\n\nProvided bond idx: {:?}", bond_idx);
     msg!("Stored bond idx: {:?}", bond.idx);
 
-    // Ensure can only withdraw once a day
+    // Ensure can only withdraw once a day TODO leave it in only when going to prod
     // require!(bond.time_elapsed(), ErrorCode::WithdrawTooEarly);
 
     // Ensure the bond is not one of those where you can only claim it all at the end
-    // require!(!bond.claim_all, ErrorCode::ClaimAllBond);
+    require!(!bond.mature_only, ErrorCode::BondMatureOnly);
 
     // Calculate balance that can be witdhrawn
     let claimable_now = if Clock::get().unwrap().unix_timestamp > bond.maturity_date {

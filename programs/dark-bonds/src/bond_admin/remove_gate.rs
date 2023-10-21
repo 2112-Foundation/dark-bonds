@@ -9,7 +9,7 @@ use solana_program::pubkey::Pubkey;
 pub struct RemoveGatedSettings<'info> {
     #[account(mut)]
     pub admin: Signer<'info>,
-    #[account(mut, has_one = admin, constraint = ibo.lockups_locked == false @ErrorCode::GatedSettingssLocked)]
+    #[account(mut, has_one = admin, constraint = ibo.lockups_locked == false @ErrorCode::IboGatedSettingsLocked)]
     pub ibo: Account<'info, Ibo>,
     #[account(seeds = ["lockup".as_bytes(), ibo.key().as_ref(), &lockup_idx.to_be_bytes()], bump)]
     pub lockup: Account<'info, Lockup>,

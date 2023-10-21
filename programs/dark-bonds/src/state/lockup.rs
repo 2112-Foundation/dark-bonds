@@ -8,8 +8,8 @@ pub struct Lockup {
     pub period: i64,
     /** Yearly APY for this lockup.*/
     pub apy: f64,
-    /** Pointers to the gates that will allow this lock up to be used.*/
-    pub gates: Vec<u32>, // TODO check that is zero for normal buy
+    /** Pointers to the gates that will allow this lockup to be used.*/
+    pub gates: Vec<u32>,
     /** Can only withdraw all at once at the end.*/
     pub mature_only: bool,
     /** Total amount to be sold under this lock-up option.*/
@@ -78,8 +78,6 @@ impl Lockup {
                 definite_end = end;
             }
         }
-
-        // Assert it is within the range now
         time_now < definite_start || time_now > definite_end
     }
 

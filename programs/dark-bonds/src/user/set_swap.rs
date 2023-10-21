@@ -6,7 +6,7 @@ use anchor_lang::prelude::*;
 pub struct SetSwap<'info> {
     #[account(mut)]
     pub owner: Signer<'info>,
-    #[account(mut, has_one = owner @ErrorCode::NotBondOwner)]
+    #[account(mut, has_one = owner @ErrorCode::BondNotBondOwner)]
     pub bond: Account<'info, Bond>,
 }
 
