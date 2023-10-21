@@ -629,53 +629,53 @@ describe("dark-bonds", async () => {
     // Check calculation of bond to receive is correct
   });
 
-  // it("Claim test 1", async () => {
-  //   // console.log("bond: ", bond2.toBase58());
+  it("Claim test 1", async () => {
+    // console.log("bond: ", bond2.toBase58());
 
-  //   let user: User = users.users[0];
-  //   let bond: Bond = user.bonds[0];
+    let user: User = users.users[0];
+    let bond: Bond = user.bonds[0];
 
-  //   console.log("bond.account.address: ", bond.account.address);
+    console.log("bond.account.address: ", bond.account.address);
 
-  //   let bondBalanceStart = await getTokenBalance(bond.account);
-  //   let bond1_state = await bondProgram.account.bond.fetch(bond.address);
-  //   let bondStartTime = parseInt(bond1_state.bondStart.toString());
+    let bondBalanceStart = await getTokenBalance(bond.account);
+    let bond1_state = await bondProgram.account.bond.fetch(bond.address);
+    let bondStartTime = parseInt(bond1_state.bondStart.toString());
 
-  //   let time_now_s = new Date().getTime() / 1000;
+    let time_now_s = new Date().getTime() / 1000;
 
-  //   console.log("bond started: ", bondStartTime);
-  //   console.log("bond end at:  ", bondStartTime + shortBond);
-  //   console.log("time now:     ", time_now_s);
-  //   let time_elapsed = time_now_s - bondStartTime;
-  //   console.log("time elapsed: ", time_elapsed);
+    console.log("bond started: ", bondStartTime);
+    console.log("bond end at:  ", bondStartTime + shortBond);
+    console.log("time now:     ", time_now_s);
+    let time_elapsed = time_now_s - bondStartTime;
+    console.log("time elapsed: ", time_elapsed);
 
-  //   await delay(shortBond / 2 - time_elapsed);
+    await delay(shortBond / 2 - time_elapsed);
 
-  //   // try {
-  //   const tx_lu1 = await bondProgram.methods
-  //     .claim(ibo.address, bond.idx)
-  //     .accounts({
-  //       bondOwner: user.publicKey,
-  //       bond: bond.address,
-  //       bondOwnerAta: bond.ownerBondAccount.address,
-  //       bondAta: bond.account.address,
-  //       systemProgram: anchor.web3.SystemProgram.programId,
-  //     })
-  //     .signers([user])
-  //     .rpc();
-  //   // } catch (e) {
-  //   //   console.log("\nerror:\n\n", e);
-  //   // }
+    // try {
+    const tx_lu1 = await bondProgram.methods
+      .claim(ibo.address, bond.idx)
+      .accounts({
+        bondOwner: user.publicKey,
+        bond: bond.address,
+        bondOwnerAta: bond.ownerBondAccount.address,
+        bondAta: bond.account.address,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .signers([user])
+      .rpc();
+    // } catch (e) {
+    //   console.log("\nerror:\n\n", e);
+    // }
 
-  //   // Get bond amounts
-  //   let balanceBuyer = await getTokenBalance(bond.ownerBondAccount);
-  //   let bondBalance = await getTokenBalance(bond.account);
+    // Get bond amounts
+    let balanceBuyer = await getTokenBalance(bond.ownerBondAccount);
+    let bondBalance = await getTokenBalance(bond.account);
 
-  //   console.log("balanceBuyer: ", balanceBuyer);
-  //   console.log("bond: ", bondBalance);
+    console.log("balanceBuyer: ", balanceBuyer);
+    console.log("bond: ", bondBalance);
 
-  //   // assert(roughlyEqual(0.5, balanceBuyer / bondBalanceStart, 15));
-  // });
+    // assert(roughlyEqual(0.5, balanceBuyer / bondBalanceStart, 15));
+  });
 
   it("Buyer 0 splits bond at 50%", async () => {
     // console.log("bond: ", bond2.toBase58());
@@ -973,7 +973,7 @@ describe("dark-bonds", async () => {
     console.log("\n\nUser end balance: ", userWlBalanceEnd);
   });
 
-  xit("Buy SPL and collection gated bond offered on ibo", async () => {
+  it("Buy SPL and collection gated bond offered on ibo", async () => {
     console.log("Total lock-ups: ", ibo.lockups.length);
 
     const lockup: LockUp = ibo.lockups[5];
