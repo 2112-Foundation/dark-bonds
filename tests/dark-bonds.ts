@@ -1,14 +1,8 @@
 import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
 import { expect } from "chai";
-// import { chaiAsPromised } from "chai-as-promised";
-// import chaiAsPromised = require("chai-as-promised");
-// import chaiAsPromised from "chai-as-promised";
-// chai.use(chaiAsPromised);
-// const assert = chai.assert;
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-
 chai.use(chaiAsPromised);
 const { assert } = chai;
 import { DarkBonds } from "../target/types/dark_bonds";
@@ -342,6 +336,7 @@ describe("dark-bonds", async () => {
           admin: ibo.admin.publicKey,
           ibo: ibo.address,
           lockup: lockUp0.address,
+          master: master.address,
           systemProgram: anchor.web3.SystemProgram.programId,
         },
       }
@@ -356,6 +351,7 @@ describe("dark-bonds", async () => {
           admin: ibo.admin.publicKey,
           ibo: ibo.address,
           lockup: lockUp1.address,
+          master: master.address,
           systemProgram: anchor.web3.SystemProgram.programId,
         },
       }
@@ -370,6 +366,7 @@ describe("dark-bonds", async () => {
           admin: ibo.admin.publicKey,
           ibo: ibo.address,
           lockup: lockUp2.address,
+          master: master.address,
           systemProgram: anchor.web3.SystemProgram.programId,
         },
       }
@@ -398,12 +395,15 @@ describe("dark-bonds", async () => {
     console.log("\nadded lock up with idx: ", lockUp3.index);
     let collectionM: NftMint0 = cm.collections[0];
 
+    console.log("Master addres: ", master.address.toBase58());
+
     const tx = await bondProgram.methods
       .addLockup(new BN(lockUp3.period), new BN(lockUp3.apy), false, pp)
       .accounts({
         admin: ibo.admin.publicKey,
         ibo: ibo.address,
         lockup: lockUp3.address,
+        master: master.address,
         systemProgram: anchor.web3.SystemProgram.programId,
       })
       .signers([ibo.admin])
@@ -433,6 +433,7 @@ describe("dark-bonds", async () => {
         ibo: ibo.address,
         lockup: lockUp3.address,
         gate: gate0.address,
+        master: master.address,
         systemProgram: anchor.web3.SystemProgram.programId,
       })
       .signers([ibo.admin])
@@ -450,6 +451,7 @@ describe("dark-bonds", async () => {
         admin: ibo.admin.publicKey,
         ibo: ibo.address,
         lockup: lockUp3.address,
+        master: master.address,
         systemProgram: anchor.web3.SystemProgram.programId,
       })
       .signers([ibo.admin])
@@ -468,6 +470,7 @@ describe("dark-bonds", async () => {
         admin: ibo.admin.publicKey,
         ibo: ibo.address,
         lockup: lockUp4.address,
+        master: master.address,
         systemProgram: anchor.web3.SystemProgram.programId,
       })
       .signers([ibo.admin])
@@ -485,6 +488,7 @@ describe("dark-bonds", async () => {
         ibo: ibo.address,
         lockup: lockUp4.address,
         gate: gate1.address,
+        master: master.address,
         systemProgram: anchor.web3.SystemProgram.programId,
       })
       .signers([ibo.admin])
@@ -502,6 +506,7 @@ describe("dark-bonds", async () => {
         admin: ibo.admin.publicKey,
         ibo: ibo.address,
         lockup: lockUp4.address,
+        master: master.address,
         systemProgram: anchor.web3.SystemProgram.programId,
       })
       .signers([ibo.admin])
@@ -520,6 +525,7 @@ describe("dark-bonds", async () => {
       .accounts({
         admin: ibo.admin.publicKey,
         ibo: ibo.address,
+        master: master.address,
         lockup: lockUp5.address,
         systemProgram: anchor.web3.SystemProgram.programId,
       })
@@ -557,6 +563,7 @@ describe("dark-bonds", async () => {
         admin: ibo.admin.publicKey,
         ibo: ibo.address,
         lockup: lockUp5.address,
+        master: master.address,
         gate: gate2.address,
         systemProgram: anchor.web3.SystemProgram.programId,
       })
@@ -575,6 +582,7 @@ describe("dark-bonds", async () => {
         admin: ibo.admin.publicKey,
         ibo: ibo.address,
         lockup: lockUp5.address,
+        master: master.address,
         systemProgram: anchor.web3.SystemProgram.programId,
       })
       .signers([ibo.admin])
@@ -690,6 +698,7 @@ describe("dark-bonds", async () => {
         bond: bond.address,
         bondOwnerAta: bond.ownerBondAccount.address,
         bondAta: bond.account.address,
+        master: master.address,
         systemProgram: anchor.web3.SystemProgram.programId,
       })
       .signers([user])

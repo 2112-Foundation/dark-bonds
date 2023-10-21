@@ -77,15 +77,8 @@ pub fn split(
         ibo.bond_counter
     );
 
-    // Transfer lamports to the master recipient account
-    anchor_lang::solana_program::program::invoke(
-        &anchor_lang::solana_program::system_instruction::transfer(
-            &owner.key(),
-            &master.key(),
-            SPLIT_SOL_FEE
-        ),
-        &[owner.to_account_info(), master.to_account_info()]
-    )?;
+    // Transfer lamports to the master recipient account for splitting the bond
+    take_fee(&master.to_account_info(), &owner, master.user_fees.bond_split_fee as u64, 0)?;
 
     // TODO add tests for that SOL change
 

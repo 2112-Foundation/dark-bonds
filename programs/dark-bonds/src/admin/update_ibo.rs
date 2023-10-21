@@ -42,15 +42,8 @@ pub fn update_ibo(
     let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
     let master: &mut Account<Master> = &mut ctx.accounts.master;
 
-    // Transfer lamports to the master recipient account for creating this bad boy
-    anchor_lang::solana_program::program::invoke(
-        &anchor_lang::solana_program::system_instruction::transfer(
-            &admin.key(),
-            &master.key(),
-            ((master.admin_fees.ibo_creation_fee as f64) / 10.0) as u64
-        ),
-        &[admin.to_account_info(), master.to_account_info()]
-    )?;
+    // Transfer lamports to the master recipient account for updating ibo
+    take_fee(&master.to_account_info(), &admin, master.admin_fees.lockup_fee, 0)?;
 
     // Fill out details of the new Ibo
     // TODO need ensure what locking does

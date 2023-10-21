@@ -23,7 +23,7 @@ pub struct BuyBond<'info> {
     pub bond: Account<'info, Bond>,
     #[account(mut)]
     pub ibo: Account<'info, Ibo>,
-    #[account(seeds = [MASTER_SEED.as_bytes()], bump)]
+    #[account(mut, seeds = [MASTER_SEED.as_bytes()], bump)]
     pub master: Account<'info, Master>,
 
     #[account(
@@ -122,6 +122,7 @@ pub fn buy_bond<'a, 'b, 'c, 'info>(
 ) -> Result<()> {
     let accounts: &mut BuyBond = ctx.accounts;
     let buyer: &Signer = &mut accounts.buyer;
+    let master: &Account<Master> = &mut accounts.master;
     let lockup: &mut Account<Lockup> = &mut accounts.lockup;
     let ibo: &mut Account<Ibo> = &mut accounts.ibo;
     let bond: &mut Account<Bond> = &mut accounts.bond;
@@ -142,6 +143,9 @@ pub fn buy_bond<'a, 'b, 'c, 'info>(
 
     // Compound the bond amount
     let bond_amount_comp: u64 = lockup.compounded_amount(bond_amount)?;
+
+    // Take SOL fee for buying a bond
+    take_fee(&master.to_account_info(), &buyer, master.user_fees.bond_purchase_fee as u64, 0)?;
 
     // Check if it has at least one access gate
     if lockup.gates.len() > 0 {

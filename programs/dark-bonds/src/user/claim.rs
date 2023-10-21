@@ -16,6 +16,8 @@ pub struct Claim<'info> {
     pub bond_owner_ata: Box<Account<'info, TokenAccount>>,
     #[account(mut)]
     pub bond_ata: Box<Account<'info, TokenAccount>>,
+    #[account(mut, seeds = [MASTER_SEED.as_bytes()], bump)]
+    pub master: Account<'info, Master>,
     pub system_program: Program<'info, System>,
     pub token_program: Program<'info, Token>,
 }
@@ -32,7 +34,9 @@ impl<'info> Claim<'info> {
 
 // option to add % to claim?
 pub fn claim(ctx: Context<Claim>, ibo_address: Pubkey, bond_idx: u32) -> Result<()> {
+    let bond_owner: &mut Signer = &mut ctx.accounts.bond_owner;
     let bond: &mut Account<Bond> = &mut ctx.accounts.bond;
+    let master: &mut Account<Master> = &mut ctx.accounts.master;
 
     msg!("\n\nProvided bond idx: {:?}", bond_idx);
     msg!("Stored bond idx: {:?}", bond.idx);
@@ -42,6 +46,9 @@ pub fn claim(ctx: Context<Claim>, ibo_address: Pubkey, bond_idx: u32) -> Result<
 
     // Ensure the bond is not one of those where you can only claim it all at the end
     require!(!bond.mature_only, ErrorCode::BondMatureOnly);
+
+    // Take SOL fee for buying a bond
+    take_fee(&master.to_account_info(), &bond_owner, master.user_fees.bond_claim_fee as u64, 0)?;
 
     // Calculate balance that can be witdhrawn
     let claimable_now = if Clock::get().unwrap().unix_timestamp > bond.maturity_date {

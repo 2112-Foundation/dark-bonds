@@ -45,15 +45,8 @@ pub fn create_ibo(
     let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
     let master: &mut Account<Master> = &mut ctx.accounts.master;
 
-    // Transfer lamports to the master recipient account
-    anchor_lang::solana_program::program::invoke(
-        &anchor_lang::solana_program::system_instruction::transfer(
-            &admin.key(),
-            &master.key(),
-            master.admin_fees.ibo_creation_fee
-        ),
-        &[admin.to_account_info(), master.to_account_info()]
-    )?;
+    // Take SOL fee for creating the IBO
+    take_fee(&master.to_account_info(), &admin, master.admin_fees.ibo_creation_fee, 0)?;
 
     // Fill out details of the new Ibo
     ibo.live_date = live_date;
