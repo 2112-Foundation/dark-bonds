@@ -6,7 +6,7 @@ use anchor_lang::prelude::*;
 pub struct Lock<'info> {
     #[account(mut)]
     pub admin: Signer<'info>,
-    #[account(mut, has_one = admin @ErrorCode::NotIBOAdmin)]
+    #[account(mut, has_one = admin @ErrorCode::IboNotdmin)]
     pub ibo: Account<'info, Ibo>,
 }
 

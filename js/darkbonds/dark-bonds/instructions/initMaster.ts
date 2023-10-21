@@ -10,49 +10,80 @@ import * as web3 from '@solana/web3.js'
 
 /**
  * @category Instructions
- * @category Init
+ * @category InitMaster
  * @category generated
  */
-export const initStruct = new beet.BeetArgsStruct<{
-  instructionDiscriminator: number[] /* size: 8 */
-}>(
-  [['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)]],
-  'InitInstructionArgs'
+export type InitMasterInstructionArgs = {
+  iboCreationFee: beet.bignum
+  lockupFee: beet.bignum
+  gateAdditionFee: beet.bignum
+  purchaseCut: beet.bignum
+  resaleCut: beet.bignum
+  bondClaimFee: beet.bignum
+  bondPurchaseFee: beet.bignum
+  bondSplitFee: beet.bignum
+}
+/**
+ * @category Instructions
+ * @category InitMaster
+ * @category generated
+ */
+export const initMasterStruct = new beet.BeetArgsStruct<
+  InitMasterInstructionArgs & {
+    instructionDiscriminator: number[] /* size: 8 */
+  }
+>(
+  [
+    ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
+    ['iboCreationFee', beet.u64],
+    ['lockupFee', beet.u64],
+    ['gateAdditionFee', beet.u64],
+    ['purchaseCut', beet.u64],
+    ['resaleCut', beet.u64],
+    ['bondClaimFee', beet.u64],
+    ['bondPurchaseFee', beet.u64],
+    ['bondSplitFee', beet.u64],
+  ],
+  'InitMasterInstructionArgs'
 )
 /**
- * Accounts required by the _init_ instruction
+ * Accounts required by the _initMaster_ instruction
  *
  * @property [_writable_, **signer**] superadmin
  * @property [_writable_] master
  * @category Instructions
- * @category Init
+ * @category InitMaster
  * @category generated
  */
-export type InitInstructionAccounts = {
+export type InitMasterInstructionAccounts = {
   superadmin: web3.PublicKey
   master: web3.PublicKey
   systemProgram?: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
 
-export const initInstructionDiscriminator = [
-  220, 59, 207, 236, 108, 250, 47, 100,
+export const initMasterInstructionDiscriminator = [
+  168, 49, 22, 248, 228, 56, 111, 24,
 ]
 
 /**
- * Creates a _Init_ instruction.
+ * Creates a _InitMaster_ instruction.
  *
  * @param accounts that will be accessed while the instruction is processed
+ * @param args to provide as instruction data to the program
+ *
  * @category Instructions
- * @category Init
+ * @category InitMaster
  * @category generated
  */
-export function createInitInstruction(
-  accounts: InitInstructionAccounts,
+export function createInitMasterInstruction(
+  accounts: InitMasterInstructionAccounts,
+  args: InitMasterInstructionArgs,
   programId = new web3.PublicKey('8ZP1cSpVPVPp5aeake5f1BtgW1xv1e39zkoG8bWobbwV')
 ) {
-  const [data] = initStruct.serialize({
-    instructionDiscriminator: initInstructionDiscriminator,
+  const [data] = initMasterStruct.serialize({
+    instructionDiscriminator: initMasterInstructionDiscriminator,
+    ...args,
   })
   const keys: web3.AccountMeta[] = [
     {

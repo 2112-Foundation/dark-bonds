@@ -1,17 +1,16 @@
 use crate::errors::errors::ErrorCode;
 use crate::state::*;
+use crate::common::*;
 use anchor_lang::prelude::*;
 
 use anchor_spl::token::{ self, Token, TokenAccount, Transfer };
-
-const SPLIT_SOL_FEE: u64 = 900000; // equivalent 0.0009 SOL
 
 #[derive(Accounts)]
 pub struct Split<'info> {
     #[account(mut)]
     pub owner: Signer<'info>,
     // Only owner can split
-    #[account(mut, has_one = owner @ErrorCode::NotBondOwner)]
+    #[account(mut, has_one = owner @ErrorCode::BondNotBondOwner)]
     pub bond: Account<'info, Bond>,
     #[account(mut)]
     pub bond_ata_old: Box<Account<'info, TokenAccount>>,
@@ -19,7 +18,7 @@ pub struct Split<'info> {
     pub bond_ata_new: Box<Account<'info, TokenAccount>>,
     #[account(
         init,
-        seeds = ["bond".as_bytes(), ibo.key().as_ref(), &ibo.bond_counter.to_be_bytes()], // TODO add counter
+        seeds = [BOND_SEED.as_bytes(), ibo.key().as_ref(), &ibo.bond_counter.to_be_bytes()], // TODO add counter
         bump,
         payer = owner,
         space = 400
@@ -27,7 +26,7 @@ pub struct Split<'info> {
     pub new_bond: Account<'info, Bond>,
     #[account(               
         mut, 
-        seeds = ["main_register".as_bytes()], 
+        seeds = [MASTER_SEED.as_bytes()], 
         bump,       
     )]
     pub master: Account<'info, Master>, // TODO do that everwyehre
@@ -76,24 +75,17 @@ pub fn split(
         ibo.bond_counter
     );
 
-    // Transfer lamports to the master recipient account
-    anchor_lang::solana_program::program::invoke(
-        &anchor_lang::solana_program::system_instruction::transfer(
-            &owner.key(),
-            &master.key(),
-            SPLIT_SOL_FEE
-        ),
-        &[owner.to_account_info(), master.to_account_info()]
-    )?;
+    // Transfer lamports to the master recipient account for splitting the bond
+    take_fee(&master.to_account_info(), &owner, master.user_fees.bond_split_fee as u64, 0)?;
 
     // TODO add tests for that SOL change
 
     // Get signing dets
     let (_, bump) = anchor_lang::prelude::Pubkey::find_program_address(
-        &["bond".as_bytes(), ibo_address.as_ref(), &bond_idx.to_be_bytes()],
+        &[BOND_SEED.as_bytes(), ibo_address.as_ref(), &bond_idx.to_be_bytes()],
         &ctx.program_id
     );
-    let seeds = &["bond".as_bytes(), ibo_address.as_ref(), &bond_idx.to_be_bytes(), &[bump]];
+    let seeds = &[BOND_SEED.as_bytes(), ibo_address.as_ref(), &bond_idx.to_be_bytes(), &[bump]];
 
     // Get balance
     let current_bond_balance = ctx.accounts.bond_ata_old.amount as f64;

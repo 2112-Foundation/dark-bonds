@@ -13,6 +13,30 @@ import {
 import { Mint } from "./mint";
 import { now } from "@metaplex-foundation/js";
 
+import {
+  loadKeypairFromFile,
+  delay,
+  roughlyEqual,
+  createCollectionTypeInput,
+  createSplTypeInput,
+  createCombinedTypeInput,
+  createSameAsMainIboInput,
+  createLockupPurchaseStartInput,
+  createLockupPurchaseEndInput,
+  createLockupPurchaseCombinedInput,
+} from "./helpers";
+
+import {
+  LOCKUP_SEED,
+  MASTER_SEED,
+  BOND_SEED,
+  IBO_SEED,
+  GATE_SEED,
+  TREE_SEED,
+  VERTEX_SEED,
+  NFT_BASKET_SEED,
+} from "./constants";
+
 export class Bond {
   swapPrice: number = 0;
   ownerBondAccount: Account;
@@ -63,7 +87,10 @@ export class Gate {
   }
 }
 
-export abstract class GateSetting {}
+export abstract class GateSetting {
+  // Write me an abstract class that returns the struct I need to pass forward
+  // abstract createInput(): {};
+}
 
 export class CollectionSetting extends GateSetting {
   constructor(
@@ -76,21 +103,35 @@ export class CollectionSetting extends GateSetting {
   ) {
     super();
   }
+  /** Get struct for submission as argument */
+  // createInput(): {} {
+  //   return createCollectionTypeInput(
+  //     this.mintKey,
+  //     this.masterKey,
+  //     this.creatorKey
+  //   );
+  // }
 }
 
 export class SplSetting extends GateSetting {
   constructor(
-    /** Address of the  token account. */
-    // public tokenAccount: PublicKey,
     /** Address of the Mint. */
     public mint: PublicKey, // Example additional field
     /** Minnimum SPL balance needed for the gate. */
-    public minnimumAccount: Number, // Example additional field
+    public minnimumAccount: number, // Example additional field
     /** Address of the Mint. */
-    public bondsAllowed: Number // Example additional field
+    public bondsAllowed: number // Example additional field
   ) {
     super();
   }
+  // /** Get struct for submission as argument */
+  // createInput(): {} {
+  //   return createSplTypeInput(
+  //     this.mint,
+  //     this.minnimumAccount,
+  //     this.bondsAllowed
+  //   );
+  // }
 }
 
 /**
@@ -192,7 +233,7 @@ export class Ibo {
     console.log("Using bond counter: ", this.bondCounter);
     const [bondPDA] = PublicKey.findProgramAddressSync(
       [
-        Buffer.from("bond"),
+        Buffer.from(BOND_SEED),
         Buffer.from(this.address.toBytes()),
         new BN(this.bondCounter).toArrayLike(Buffer, "be", 4),
       ],
@@ -228,7 +269,7 @@ export class Ibo {
     console.log("Using counter of: ", this.lockupCounter);
     const [lockUpPda] = PublicKey.findProgramAddressSync(
       [
-        Buffer.from("lockup"),
+        Buffer.from(LOCKUP_SEED),
         Buffer.from(this.address.toBytes()),
         new BN(this.lockupCounter).toArrayLike(Buffer, "be", 4),
       ],
@@ -256,7 +297,7 @@ export class Ibo {
   private async deriveGatePda(): Promise<PublicKey> {
     const [gatePda] = await PublicKey.findProgramAddress(
       [
-        Buffer.from("gate"),
+        Buffer.from(GATE_SEED),
         Buffer.from(this.address.toBytes()),
         new BN(this.gateCounter).toArrayLike(Buffer, "be", 4),
       ],
@@ -407,7 +448,7 @@ export class Master {
   ): Promise<Ibo> {
     const iboPda = PublicKey.findProgramAddressSync(
       [
-        Buffer.from("ibo_instance"),
+        Buffer.from(IBO_SEED),
         new BN(this.iboCounter).toArrayLike(Buffer, "be", 8),
       ],
       this.programAddress
@@ -441,7 +482,7 @@ export class Master {
   ) {
     this.programAddress = programAddress;
     this.address = PublicKey.findProgramAddressSync(
-      [Buffer.from("main_register")],
+      [Buffer.from(MASTER_SEED)],
       this.programAddress
     )[0];
   }

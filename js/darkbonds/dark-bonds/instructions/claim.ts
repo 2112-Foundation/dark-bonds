@@ -43,6 +43,7 @@ export const claimStruct = new beet.BeetArgsStruct<
  * @property [_writable_] bond
  * @property [_writable_] bondOwnerAta
  * @property [_writable_] bondAta
+ * @property [_writable_] master
  * @category Instructions
  * @category Claim
  * @category generated
@@ -52,6 +53,7 @@ export type ClaimInstructionAccounts = {
   bond: web3.PublicKey
   bondOwnerAta: web3.PublicKey
   bondAta: web3.PublicKey
+  master: web3.PublicKey
   systemProgram?: web3.PublicKey
   tokenProgram?: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
@@ -98,6 +100,11 @@ export function createClaimInstruction(
     },
     {
       pubkey: accounts.bondAta,
+      isWritable: true,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.master,
       isWritable: true,
       isSigner: false,
     },

@@ -31,6 +31,8 @@ export type IboArgs = {
   nftCounter: number
   nftBasePrice: beet.bignum
   treeCounter: number
+  descriptin: string
+  link: string
 }
 
 export const iboDiscriminator = [241, 56, 108, 84, 124, 148, 136, 234]
@@ -58,7 +60,9 @@ export class Ibo implements IboArgs {
     readonly gateCounter: number,
     readonly nftCounter: number,
     readonly nftBasePrice: beet.bignum,
-    readonly treeCounter: number
+    readonly treeCounter: number,
+    readonly descriptin: string,
+    readonly link: string
   ) {}
 
   /**
@@ -81,7 +85,9 @@ export class Ibo implements IboArgs {
       args.gateCounter,
       args.nftCounter,
       args.nftBasePrice,
-      args.treeCounter
+      args.treeCounter,
+      args.descriptin,
+      args.link
     )
   }
 
@@ -152,34 +158,36 @@ export class Ibo implements IboArgs {
 
   /**
    * Returns the byteSize of a {@link Buffer} holding the serialized data of
-   * {@link Ibo}
+   * {@link Ibo} for the provided args.
+   *
+   * @param args need to be provided since the byte size for this account
+   * depends on them
    */
-  static get byteSize() {
-    return iboBeet.byteSize
+  static byteSize(args: IboArgs) {
+    const instance = Ibo.fromArgs(args)
+    return iboBeet.toFixedFromValue({
+      accountDiscriminator: iboDiscriminator,
+      ...instance,
+    }).byteSize
   }
 
   /**
    * Fetches the minimum balance needed to exempt an account holding
    * {@link Ibo} data from rent
    *
+   * @param args need to be provided since the byte size for this account
+   * depends on them
    * @param connection used to retrieve the rent exemption information
    */
   static async getMinimumBalanceForRentExemption(
+    args: IboArgs,
     connection: web3.Connection,
     commitment?: web3.Commitment
   ): Promise<number> {
     return connection.getMinimumBalanceForRentExemption(
-      Ibo.byteSize,
+      Ibo.byteSize(args),
       commitment
     )
-  }
-
-  /**
-   * Determines if the provided {@link Buffer} has the correct byte size to
-   * hold {@link Ibo} data.
-   */
-  static hasCorrectByteSize(buf: Buffer, offset = 0) {
-    return buf.byteLength - offset === Ibo.byteSize
   }
 
   /**
@@ -254,6 +262,8 @@ export class Ibo implements IboArgs {
         return x
       })(),
       treeCounter: this.treeCounter,
+      descriptin: this.descriptin,
+      link: this.link,
     }
   }
 }
@@ -262,7 +272,7 @@ export class Ibo implements IboArgs {
  * @category Accounts
  * @category generated
  */
-export const iboBeet = new beet.BeetStruct<
+export const iboBeet = new beet.FixableBeetStruct<
   Ibo,
   IboArgs & {
     accountDiscriminator: number[] /* size: 8 */
@@ -286,6 +296,8 @@ export const iboBeet = new beet.BeetStruct<
     ['nftCounter', beet.u32],
     ['nftBasePrice', beet.u64],
     ['treeCounter', beet.u8],
+    ['descriptin', beet.utf8String],
+    ['link', beet.utf8String],
   ],
   Ibo.fromArgs,
   'Ibo'
