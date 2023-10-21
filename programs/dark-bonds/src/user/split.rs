@@ -5,8 +5,6 @@ use anchor_lang::prelude::*;
 
 use anchor_spl::token::{ self, Token, TokenAccount, Transfer };
 
-const SPLIT_SOL_FEE: u64 = 900000; // equivalent 0.0009 SOL
-
 #[derive(Accounts)]
 pub struct Split<'info> {
     #[account(mut)]

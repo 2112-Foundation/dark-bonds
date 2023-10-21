@@ -33,7 +33,7 @@ export const addLockupStruct = new beet.FixableBeetArgsStruct<
   [
     ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
     ['lockupDuration', beet.i64],
-    ['lockupApy', beet.i64],
+    ['lockupApy', beet.u64],
     ['matureOnly', beet.bool],
     ['purchasePeriod', purchasePeriodBeet],
   ],
@@ -45,6 +45,7 @@ export const addLockupStruct = new beet.FixableBeetArgsStruct<
  * @property [_writable_, **signer**] admin
  * @property [_writable_] ibo
  * @property [_writable_] lockup
+ * @property [_writable_] master
  * @category Instructions
  * @category AddLockup
  * @category generated
@@ -53,6 +54,7 @@ export type AddLockupInstructionAccounts = {
   admin: web3.PublicKey
   ibo: web3.PublicKey
   lockup: web3.PublicKey
+  master: web3.PublicKey
   systemProgram?: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
@@ -93,6 +95,11 @@ export function createAddLockupInstruction(
     },
     {
       pubkey: accounts.lockup,
+      isWritable: true,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.master,
       isWritable: true,
       isSigner: false,
     },

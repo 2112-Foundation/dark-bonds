@@ -52,6 +52,34 @@ pub mod dark_bonds {
         )
     }
 
+    // Update fees funciotn
+    pub fn update_fees(
+        ctx: Context<UpdateFees>,
+        // Admin creation fees
+        ibo_creation_fee: u64,
+        lockup_fee: u64,
+        gate_addition_fee: u64,
+        // Cuts
+        purchase_cut: u64,
+        resale_cut: u64,
+        // User fees
+        bond_claim_fee: u64,
+        bond_purchase_fee: u64,
+        bond_split_fee: u64
+    ) -> Result<()> {
+        superadmin::update_fees::update_fees(
+            ctx,
+            ibo_creation_fee,
+            lockup_fee,
+            gate_addition_fee,
+            purchase_cut,
+            resale_cut,
+            bond_claim_fee,
+            bond_purchase_fee,
+            bond_split_fee
+        )
+    }
+
     // Bond admin functions
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -96,14 +124,14 @@ pub mod dark_bonds {
     pub fn add_lockup(
         ctx: Context<AddLockUp>,
         lockup_duration: i64,
-        lockup_apy: f64,
+        lockup_apy: u64,
         mature_only: bool,
         purchase_period: PurchasePeriod
     ) -> Result<()> {
         admin::add_lockup::add_lockup(
             ctx,
             lockup_duration,
-            lockup_apy as f64,
+            lockup_apy,
             mature_only,
             purchase_period
         )

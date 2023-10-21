@@ -7,7 +7,7 @@ pub struct Lockup {
     /** Minimum lockup period in seconds.*/
     pub period: i64,
     /** Yearly APY for this lockup.*/
-    pub apy: f64,
+    pub apy: u64,
     /** Pointers to the gates that will allow this lockup to be used.*/
     pub gates: Vec<u32>,
     /** Can only withdraw all at once at the end.*/
@@ -103,7 +103,7 @@ impl Lockup {
     /** Calculates how much bond move to the bond's PDA's token account */
     pub fn compounded_amount(&self, bond_starting_amount: u64) -> Result<u64> {
         let apy: f64 = (self.apy as f64) / 100.0;
-        let year_elapsed: f64 = (self.period as f64) / SECONDS_YEAR;
+        let year_elapsed: f64 = (self.period as f64) / (SECONDS_YEAR as f64);
 
         // Calculate compounded amount
         let compounded: f64 = (bond_starting_amount as f64) * (1.0 + apy).powf(year_elapsed);

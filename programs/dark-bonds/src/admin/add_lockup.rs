@@ -3,8 +3,6 @@ use crate::state::*;
 use crate::common::*;
 use anchor_lang::prelude::*;
 
-use solana_program::pubkey::Pubkey;
-
 #[derive(Accounts)]
 pub struct AddLockUp<'info> {
     #[account(mut)]
@@ -27,7 +25,7 @@ pub struct AddLockUp<'info> {
 pub fn add_lockup(
     ctx: Context<AddLockUp>,
     lockup_duration: i64,
-    lockup_apy: f64,
+    lockup_apy: u64,
     mature_only: bool,
     purchase_period: PurchasePeriod
 ) -> Result<()> {
@@ -41,9 +39,9 @@ pub fn add_lockup(
     // Ensure APY and lockup duration are non-zero
     msg!("lockup duration: {:?}", lockup_duration);
     require!(lockup_duration >= SECONDS_IN_A_DAY, ErrorCode::LockupDurationUnderDay);
-    require!(lockup_apy >= 0.0, ErrorCode::LockupZeroApy);
+    require!(lockup_apy > 0, ErrorCode::LockupZeroApy);
     lockup.period = lockup_duration;
-    lockup.apy = lockup_apy;
+    lockup.apy = lockup_apy; // TODO check correctens
 
     // Set additional settings
     lockup.mature_only = mature_only;

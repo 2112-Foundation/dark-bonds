@@ -88,8 +88,6 @@ pub fn mark_end<'info>(vertex: &mut Account<'info, Vertex>, max_depth: u8, this_
     }
 }
 
-use anchor_lang::prelude::*;
-
 pub fn take_fee<'info>(
     recipient: &AccountInfo<'info>,
     payer: &AccountInfo<'info>,

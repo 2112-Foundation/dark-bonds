@@ -44,6 +44,7 @@ export const addGateStruct = new beet.FixableBeetArgsStruct<
  * @property [_writable_] ibo
  * @property [_writable_] lockup
  * @property [_writable_] gate
+ * @property [_writable_] master
  * @category Instructions
  * @category AddGate
  * @category generated
@@ -53,6 +54,7 @@ export type AddGateInstructionAccounts = {
   ibo: web3.PublicKey
   lockup: web3.PublicKey
   gate: web3.PublicKey
+  master: web3.PublicKey
   systemProgram?: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
@@ -98,6 +100,11 @@ export function createAddGateInstruction(
     },
     {
       pubkey: accounts.gate,
+      isWritable: true,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.master,
       isWritable: true,
       isSigner: false,
     },
