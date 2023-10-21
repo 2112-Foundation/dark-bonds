@@ -1,5 +1,6 @@
 use crate::errors::errors::ErrorCode;
 use crate::state::*;
+use crate::common::*;
 use anchor_lang::prelude::*;
 
 use anchor_spl::token::{ self, Token, TokenAccount, Transfer };
@@ -19,7 +20,7 @@ pub struct Split<'info> {
     pub bond_ata_new: Box<Account<'info, TokenAccount>>,
     #[account(
         init,
-        seeds = ["bond".as_bytes(), ibo.key().as_ref(), &ibo.bond_counter.to_be_bytes()], // TODO add counter
+        seeds = [BOND_SEED.as_bytes(), ibo.key().as_ref(), &ibo.bond_counter.to_be_bytes()], // TODO add counter
         bump,
         payer = owner,
         space = 400
@@ -27,7 +28,7 @@ pub struct Split<'info> {
     pub new_bond: Account<'info, Bond>,
     #[account(               
         mut, 
-        seeds = ["main_register".as_bytes()], 
+        seeds = [MASTER_SEED.as_bytes()], 
         bump,       
     )]
     pub master: Account<'info, Master>, // TODO do that everwyehre
@@ -90,10 +91,10 @@ pub fn split(
 
     // Get signing dets
     let (_, bump) = anchor_lang::prelude::Pubkey::find_program_address(
-        &["bond".as_bytes(), ibo_address.as_ref(), &bond_idx.to_be_bytes()],
+        &[BOND_SEED.as_bytes(), ibo_address.as_ref(), &bond_idx.to_be_bytes()],
         &ctx.program_id
     );
-    let seeds = &["bond".as_bytes(), ibo_address.as_ref(), &bond_idx.to_be_bytes(), &[bump]];
+    let seeds = &[BOND_SEED.as_bytes(), ibo_address.as_ref(), &bond_idx.to_be_bytes(), &[bump]];
 
     // Get balance
     let current_bond_balance = ctx.accounts.bond_ata_old.amount as f64;

@@ -4,16 +4,16 @@ pub mod errors;
 pub mod instructions;
 pub mod state;
 pub mod common;
-pub mod bond_admin;
+pub mod admin;
 pub mod user;
-pub mod super_admin;
+pub mod superadmin;
 pub use errors::*;
 pub use instructions::*;
-pub use bond_admin::*;
+pub use admin::*;
 pub use state::*;
 pub use common::*;
 pub use user::*;
-pub use super_admin::*;
+pub use superadmin::*;
 
 declare_id!("8ZP1cSpVPVPp5aeake5f1BtgW1xv1e39zkoG8bWobbwV");
 
@@ -25,8 +25,31 @@ pub mod dark_bonds {
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Invoke once at the deployement,sets Ibo counter and recipient
-    pub fn init(ctx: Context<Init>) -> Result<()> {
-        super_admin::init::init(ctx)
+    pub fn init_master(
+        ctx: Context<Init>,
+        // Admin creation fees
+        ibo_creation_fee: u64,
+        lockup_fee: u64,
+        gate_addition_fee: u64,
+        // Cuts
+        purchase_cut: u64,
+        resale_cut: u64,
+        // User fees
+        bond_claim_fee: u64,
+        bond_purchase_fee: u64,
+        bond_split_fee: u64
+    ) -> Result<()> {
+        superadmin::init_master::init_master(
+            ctx,
+            ibo_creation_fee,
+            lockup_fee,
+            gate_addition_fee,
+            purchase_cut,
+            resale_cut,
+            bond_claim_fee,
+            bond_purchase_fee,
+            bond_split_fee
+        )
     }
 
     // Bond admin functions
@@ -35,6 +58,8 @@ pub mod dark_bonds {
     // Create a bond offering
     pub fn create_ibo(
         ctx: Context<CreateIBO>,
+        description: String,
+        link: String,
         fixed_exchange_rate: u64,
         live_date: i64,
         end_date: i64,
@@ -42,8 +67,10 @@ pub mod dark_bonds {
         liquidity_token: Pubkey,
         recipient: Pubkey
     ) -> Result<()> {
-        bond_admin::create_ibo::create_ibo(
+        admin::create_ibo::create_ibo(
             ctx,
+            description,
+            link,
             fixed_exchange_rate,
             live_date, // TODO make it so you can't buy bonds prior to it
             end_date,
@@ -73,7 +100,7 @@ pub mod dark_bonds {
         mature_only: bool,
         purchase_period: PurchasePeriod
     ) -> Result<()> {
-        bond_admin::add_lockup::add_lockup(
+        admin::add_lockup::add_lockup(
             ctx,
             lockup_duration,
             lockup_apy as f64,
@@ -83,7 +110,7 @@ pub mod dark_bonds {
     }
 
     pub fn remove_lockup(ctx: Context<RemoveLockup>) -> Result<()> {
-        bond_admin::remove_lockup::remove_lockup(ctx)
+        admin::remove_lockup::remove_lockup(ctx)
     }
 
     pub fn update_gates(
@@ -93,7 +120,7 @@ pub mod dark_bonds {
         gates_add: Vec<u32>,
         gates_remove: Vec<u32>
     ) -> Result<()> {
-        bond_admin::update_gates::update_gates(ctx, gates_add, gates_remove)
+        admin::update_gates::update_gates(ctx, gates_add, gates_remove)
     }
 
     pub fn add_gate(
@@ -102,7 +129,7 @@ pub mod dark_bonds {
         lockup_idx: u32,
         gate_settings: Vec<GateType>
     ) -> Result<()> {
-        bond_admin::add_gate::add_gate(ctx, ibo_idx, lockup_idx, gate_settings)
+        admin::add_gate::add_gate(ctx, ibo_idx, lockup_idx, gate_settings)
     }
 
     pub fn remove_gate(
@@ -110,7 +137,7 @@ pub mod dark_bonds {
         ibo_idx: u32,
         lockup_idx: u32
     ) -> Result<()> {
-        bond_admin::remove_gate::remove_gate(ctx, ibo_idx, lockup_idx)
+        admin::remove_gate::remove_gate(ctx, ibo_idx, lockup_idx)
     }
 
     pub fn lock(
@@ -118,7 +145,7 @@ pub mod dark_bonds {
         lock_withdraws: bool,
         lock_lockup_addition: bool
     ) -> Result<()> {
-        bond_admin::lock::lock(ctx, lock_withdraws, lock_lockup_addition)
+        admin::lock::lock(ctx, lock_withdraws, lock_lockup_addition)
     }
 
     // USer functions

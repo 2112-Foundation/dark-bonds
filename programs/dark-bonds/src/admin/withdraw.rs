@@ -1,4 +1,5 @@
 use crate::errors::errors::ErrorCode;
+use crate::common::*;
 use crate::state::*;
 use anchor_lang::prelude::*;
 use anchor_spl::{
@@ -14,7 +15,7 @@ pub struct Withdraw<'info> {
     pub ibo: Account<'info, Ibo>,
     #[account(               
         mut, 
-        seeds = ["main_register".as_bytes()], 
+        seeds = [MASTER_SEED.as_bytes()], 
         bump,       
     )]
     pub master: Account<'info, Master>, // TODO do that everwyehre where master is used
@@ -51,13 +52,13 @@ pub fn withdraw(ctx: Context<Withdraw>, withdraw_amount: u64, ibo_idx: u64) -> R
 
     // Get the bump
     let (_, bump) = anchor_lang::prelude::Pubkey::find_program_address(
-        &["ibo_instance".as_bytes(), master_ibo_address.clone().as_ref(), &ibo_idx.to_be_bytes()],
+        &[IBO_SEED.as_bytes(), master_ibo_address.clone().as_ref(), &ibo_idx.to_be_bytes()],
         &ctx.program_id
     );
 
     // Get the seeds
     let seeds = &[
-        "ibo_instance".as_bytes(),
+        IBO_SEED.as_bytes(),
         master_ibo_address.as_ref(),
         &ibo_idx.to_be_bytes(),
         &[bump],

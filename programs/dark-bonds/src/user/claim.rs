@@ -1,6 +1,8 @@
 use crate::state::*;
+use crate::common::*;
 use crate::errors::errors::ErrorCode;
 use anchor_lang::prelude::*;
+
 use anchor_spl::token::{ self, Token, TokenAccount, Transfer };
 
 #[derive(Accounts)]
@@ -56,11 +58,11 @@ pub fn claim(ctx: Context<Claim>, ibo_address: Pubkey, bond_idx: u32) -> Result<
     bond.update_claim_date();
 
     let (_, bump) = anchor_lang::prelude::Pubkey::find_program_address(
-        &["bond".as_bytes(), ibo_address.as_ref(), &bond_idx.to_be_bytes()],
+        &[BOND_SEED.as_bytes(), ibo_address.as_ref(), &bond_idx.to_be_bytes()],
         &ctx.program_id
     );
 
-    let seeds = &["bond".as_bytes(), ibo_address.as_ref(), &bond_idx.to_be_bytes(), &[bump]];
+    let seeds = &[BOND_SEED.as_bytes(), ibo_address.as_ref(), &bond_idx.to_be_bytes(), &[bump]];
 
     msg!("total claimable_now: {:?}", bond.total_claimable);
     msg!("claimable_now: {:?}", claimable_now);

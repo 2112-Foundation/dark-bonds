@@ -26,6 +26,17 @@ import {
   createLockupPurchaseCombinedInput,
 } from "./helpers";
 
+import {
+  LOCKUP_SEED,
+  MASTER_SEED,
+  BOND_SEED,
+  IBO_SEED,
+  GATE_SEED,
+  TREE_SEED,
+  VERTEX_SEED,
+  NFT_BASKET_SEED,
+} from "./constants";
+
 export class Bond {
   swapPrice: number = 0;
   ownerBondAccount: Account;
@@ -222,7 +233,7 @@ export class Ibo {
     console.log("Using bond counter: ", this.bondCounter);
     const [bondPDA] = PublicKey.findProgramAddressSync(
       [
-        Buffer.from("bond"),
+        Buffer.from(BOND_SEED),
         Buffer.from(this.address.toBytes()),
         new BN(this.bondCounter).toArrayLike(Buffer, "be", 4),
       ],
@@ -258,7 +269,7 @@ export class Ibo {
     console.log("Using counter of: ", this.lockupCounter);
     const [lockUpPda] = PublicKey.findProgramAddressSync(
       [
-        Buffer.from("lockup"),
+        Buffer.from(LOCKUP_SEED),
         Buffer.from(this.address.toBytes()),
         new BN(this.lockupCounter).toArrayLike(Buffer, "be", 4),
       ],
@@ -286,7 +297,7 @@ export class Ibo {
   private async deriveGatePda(): Promise<PublicKey> {
     const [gatePda] = await PublicKey.findProgramAddress(
       [
-        Buffer.from("gate"),
+        Buffer.from(GATE_SEED),
         Buffer.from(this.address.toBytes()),
         new BN(this.gateCounter).toArrayLike(Buffer, "be", 4),
       ],
@@ -437,7 +448,7 @@ export class Master {
   ): Promise<Ibo> {
     const iboPda = PublicKey.findProgramAddressSync(
       [
-        Buffer.from("ibo_instance"),
+        Buffer.from(IBO_SEED),
         new BN(this.iboCounter).toArrayLike(Buffer, "be", 8),
       ],
       this.programAddress
@@ -471,7 +482,7 @@ export class Master {
   ) {
     this.programAddress = programAddress;
     this.address = PublicKey.findProgramAddressSync(
-      [Buffer.from("main_register")],
+      [Buffer.from(MASTER_SEED)],
       this.programAddress
     )[0];
   }

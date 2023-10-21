@@ -1,4 +1,5 @@
 use crate::errors::errors::ErrorCode;
+use crate::common::*;
 use crate::state::*;
 use anchor_lang::prelude::*;
 
@@ -11,7 +12,7 @@ pub struct UpdateGates<'info> {
     pub admin: Signer<'info>,
     #[account(mut, has_one = admin, constraint = ibo.lockups_locked == false @ErrorCode::IboRatesLocked)]
     pub ibo: Account<'info, Ibo>,
-    #[account(mut, seeds = ["lockup".as_bytes(), ibo.key().as_ref(), &lockup_idx.to_be_bytes()], bump)]
+    #[account(mut, seeds = [LOCKUP_SEED.as_bytes(), ibo.key().as_ref(), &lockup_idx.to_be_bytes()], bump)]
     pub lockup: Account<'info, Lockup>,
     pub system_program: Program<'info, System>,
 }

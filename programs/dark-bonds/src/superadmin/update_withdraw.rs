@@ -1,5 +1,6 @@
 use crate::state::*;
 use anchor_lang::prelude::*;
+use crate::common::*;
 
 // TODO this is pretty much unimplemented
 
@@ -10,7 +11,7 @@ pub struct UpdateMasterWithdraw<'info> {
     // Need PDA of the to be derived of some shared register which is incremented
     #[account(        
         mut,      
-        seeds = ["main_register".as_bytes()], 
+        seeds = [MASTER_SEED.as_bytes()], 
         bump,                      
     )]
     pub master: Account<'info, Master>,

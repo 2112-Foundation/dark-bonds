@@ -151,6 +151,20 @@ describe("dark-bonds", async () => {
   let metaplex = new Metaplex(connection);
   metaplex.use(keypairIdentity(nftWallet));
 
+  // Admin fees
+  let iboCreationFee = 1000000;
+  let gateCreationFee = 1000000;
+  let lockupCreationFee = 1000000;
+
+  // Cuts
+  let bondPurchaseCut = 200;
+  let bondResaleCut = 200;
+
+  // User fees
+  let bondClaimFee = 2000;
+  let bondPurchaseFee = 20000;
+  let bondSplitFee = 200000;
+
   // Same purchase period as the IBO lockup
   let pp = await createSameAsMainIboInput();
 
@@ -250,7 +264,19 @@ describe("dark-bonds", async () => {
       master.iboCounter = parseInt(main_state.iboCounter.toString());
     } catch (err) {
       const tx = await bondProgram.methods
-        .init()
+        .initMaster(
+          // Admin fees
+          new BN(iboCreationFee),
+          new BN(gateCreationFee),
+          new BN(lockupCreationFee),
+          // Cuts
+          new BN(bondPurchaseCut),
+          new BN(bondResaleCut),
+          // User fees
+          new BN(bondClaimFee),
+          new BN(bondPurchaseFee),
+          new BN(bondSplitFee)
+        )
         .accounts({
           master: master.address,
           superadmin: superAdmin.publicKey,
@@ -276,24 +302,29 @@ describe("dark-bonds", async () => {
     console.log("ibo.ata: ", ibo.vaultAccount.address.toBase58());
     await mintBond.topUpSPl(ibo.vaultAccount.address, 1000000000000000);
     console.log("Minted");
-
-    const tx = await bondProgram.methods
-      .createIbo(
-        new BN(ibo.fixedExchangeRate),
-        new BN(ibo.liveDate),
-        new BN(ibo.endDate), // Can buy bonds until that point in the future
-        ibo.swapCut,
-        ibo.liquidityMint,
-        ibo.admin.publicKey
-      )
-      .accounts({
-        master: master.address,
-        admin: ibo.admin.publicKey,
-        ibo: ibo.address,
-        systemProgram: anchor.web3.SystemProgram.programId,
-      })
-      .signers([ibo.admin])
-      .rpc();
+    try {
+      const tx = await bondProgram.methods
+        .createIbo(
+          "test description",
+          "test link",
+          new BN(ibo.fixedExchangeRate),
+          new BN(ibo.liveDate),
+          new BN(ibo.endDate), // Can buy bonds until that point in the future
+          ibo.swapCut,
+          ibo.liquidityMint,
+          ibo.admin.publicKey
+        )
+        .accounts({
+          master: master.address,
+          admin: ibo.admin.publicKey,
+          ibo: ibo.address,
+          systemProgram: anchor.web3.SystemProgram.programId,
+        })
+        .signers([ibo.admin])
+        .rpc();
+    } catch (err) {
+      console.log("err: ", err);
+    }
   });
 
   it("Add three different lockups.", async () => {

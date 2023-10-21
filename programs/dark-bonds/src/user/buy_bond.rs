@@ -15,7 +15,7 @@ pub struct BuyBond<'info> {
     pub buyer: Signer<'info>,
     #[account(
         init,
-        seeds = ["bond".as_bytes(), ibo.key().as_ref(), &ibo.bond_counter.to_be_bytes()],
+        seeds = [BOND_SEED.as_bytes(), ibo.key().as_ref(), &ibo.bond_counter.to_be_bytes()],
         bump,
         payer = buyer,
         space = 400
@@ -23,12 +23,12 @@ pub struct BuyBond<'info> {
     pub bond: Account<'info, Bond>,
     #[account(mut)]
     pub ibo: Account<'info, Ibo>,
-    #[account(seeds = ["main_register".as_bytes()], bump)]
+    #[account(seeds = [MASTER_SEED.as_bytes()], bump)]
     pub master: Account<'info, Master>,
 
     #[account(
         mut,
-        seeds = ["lockup".as_bytes(), ibo.key().as_ref(), &lockup_idx.to_be_bytes()],
+        seeds = [LOCKUP_SEED.as_bytes(), ibo.key().as_ref(), &lockup_idx.to_be_bytes()],
         bump        
     )]
     pub lockup: Account<'info, Lockup>,
@@ -56,10 +56,10 @@ pub struct BuyBond<'info> {
 impl<'info> BuyBond<'info> {
     fn transfer_bond(&self, bond_amount: u64, ibo_idx: u64, program_id: &Pubkey) -> Result<()> {
         let (_, bump) = anchor_lang::prelude::Pubkey::find_program_address(
-            &["ibo_instance".as_bytes(), &ibo_idx.to_be_bytes()],
+            &[IBO_SEED.as_bytes(), &ibo_idx.to_be_bytes()],
             program_id
         );
-        let seeds = &["ibo_instance".as_bytes(), &ibo_idx.to_be_bytes(), &[bump]];
+        let seeds = &[IBO_SEED.as_bytes(), &ibo_idx.to_be_bytes(), &[bump]];
 
         // Transfer bond to the vested account
         token::transfer(
@@ -157,7 +157,7 @@ pub fn buy_bond<'a, 'b, 'c, 'info>(
 
         // Recheck that the pda is correct for the given gate account
         let (gate_pda, _bump) = Pubkey::find_program_address(
-            &["gate".as_bytes(), ibo.key().as_ref(), &gate_idx.to_be_bytes()],
+            &[GATE_SEED.as_bytes(), ibo.key().as_ref(), &gate_idx.to_be_bytes()],
             &ctx.program_id
         );
 

@@ -6,6 +6,11 @@ pub enum ErrorCode {
     #[msg("Wrong cut?")]
     WorngCutTMP,
 
+    // Supaadmin errirs
+    /////////////////////////////////////////////////////////////////////////////
+    #[msg("Bruh we ain't charity")]
+    NonZeroFees,
+
     // Ibo errors
     /////////////////////////////////////////////////////////////////////////////
     #[msg("Can not add or remove lockup type")]
