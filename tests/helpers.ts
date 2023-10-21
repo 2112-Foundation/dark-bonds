@@ -1,7 +1,107 @@
 const fs = require("fs");
 const path = require("path");
 const solanaWeb3 = require("@solana/web3.js");
+import { PublicKey } from "@metaplex-foundation/js";
 import * as anchor from "@project-serum/anchor";
+const BN = anchor.BN;
+
+export function createSameAsMainIboInput() {
+  return {
+    sameAsMainIbo: {},
+  };
+}
+
+export function createLockupPurchaseStartInput(start: number) {
+  // Ensure that 'start' is a BN instance.
+  const startBN = new BN(start);
+  return {
+    lockupPurchaseStart: {
+      start: startBN,
+    },
+  };
+}
+
+export function createLockupPurchaseEndInput(end: number) {
+  // Ensure that 'end' is a BN instance.
+  const endBN = new BN(end);
+  return {
+    lockupPurchaseEnd: {
+      end: endBN,
+    },
+  };
+}
+
+export function createLockupPurchaseCombinedInput(start: number, end: number) {
+  // Ensure that 'start' and 'end' are BN instances.
+  const startBN = new BN(start);
+  const endBN = new BN(end);
+
+  return {
+    lockupPurchaseCombined: {
+      start: startBN,
+      end: endBN,
+    },
+  };
+}
+
+export function createCollectionTypeInput(
+  metadata: PublicKey,
+  masterMint: PublicKey,
+  creator: PublicKey
+) {
+  return {
+    collection: {
+      gate: {
+        metadata: metadata,
+        masterMint: masterMint,
+        creator: creator,
+      },
+    },
+  };
+}
+
+export function createSplTypeInput(
+  splMint: PublicKey,
+  minimumOwnership: number,
+  amountPerToken: number
+) {
+  const minimumOwnershipBN = new BN(minimumOwnership);
+  const amountPerTokenBN = new BN(amountPerToken);
+
+  return {
+    spl: {
+      gate: {
+        splMint,
+        minimumOwnership: minimumOwnershipBN,
+        amountPerToken: amountPerTokenBN,
+      },
+    },
+  };
+}
+
+export function createCombinedTypeInput(
+  collectionMetadata: string,
+  collectionMasterMint: string,
+  collectionCreator: string,
+  splMint: string,
+  splMinimumOwnership: number,
+  splAmountPerToken: number | null
+) {
+  return {
+    combined: {
+      gate_collection: {
+        metadata: collectionMetadata,
+        masterMint: collectionMasterMint,
+        creator: collectionCreator,
+      },
+      spl_gate: {
+        splMint: splMint,
+        minimumOwnership: splMinimumOwnership,
+        amountPerToken: splAmountPerToken,
+      },
+    },
+  };
+}
 
 export function loadKeypairFromFile(fileName) {
   const filePath = path.join(__dirname, fileName);

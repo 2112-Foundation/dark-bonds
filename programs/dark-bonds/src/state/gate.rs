@@ -1,215 +1,221 @@
 use anchor_lang::prelude::*;
+use crate::errors::errors::ErrorCode;
+use anchor_spl::token::{ self, Mint, Token, TokenAccount, Burn };
 use mpl_token_metadata::accounts::Metadata;
 
-// Those PDAs are spun off the main Ibo PDA by the reuser
-// Only used to fill out the bond details
-// After that not accessed
-
-use anchor_lang::prelude::*;
-
 #[account]
+#[derive(PartialEq, Eq)]
 pub struct Gate {
-    pub verification: GateType,
+    /** Type of gate_settings.*/
+    pub gate_settings: Vec<GateType>,
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq)]
+// Size in bytes
+pub enum LockSize {
+    CollectionLock = 100,
+    SplLock = 50,
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Copy, Clone, Debug, PartialEq, Eq)]
 pub enum GateType {
-    Collection(CollectionData),
-    Spl(SplData),
+    /** Verification via NFT membership.*/
+    Collection {
+        gate: CollectionType,
+    },
+    /** Verification via SPL ownership.*/
+    Spl {
+        gate: SplType,
+    },
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq)]
-pub struct CollectionData {
-    pub mint_key: Pubkey,
-    pub master_key: Pubkey,
-    pub creator_key: Pubkey,
-}
-
-pub trait Verifiable {
-    type Args; // Associated type to represent arguments.
-    fn verify(&self, args: Self::Args) -> Result<()>;
-}
-
-impl Verifiable for CollectionData {
-    type Args = (Pubkey, Pubkey, Pubkey);
-
-    fn verify(&self, args: (Pubkey, Pubkey, Pubkey)) -> Result<()> {
-        let (mint_key, master_key, creator_key) = args;
-        // Your specific logic for CollectionData using the above keys...
-        Ok(())
+impl GateType {
+    pub fn account_drop(&self) -> usize {
+        match self {
+            GateType::Collection { .. } => 3, // for CollectionType
+            GateType::Spl { .. } => 2, // Modifying this to pass
+        }
     }
 }
 
-impl Verifiable for SplData {
-    type Args = Pubkey;
+pub trait Verifiable<'a> {
+    type Args;
+    fn verify(&self, owner: &Signer, args: Self::Args) -> Result<bool>;
+}
+impl<'a> Verifiable<'a> for GateType {
+    type Args = Vec<AccountInfo<'a>>;
+    fn verify(&self, owner: &Signer, args: Self::Args) -> Result<bool> {
+        match self {
+            GateType::Collection { gate } => gate.verify(owner, args),
+            GateType::Spl { gate } => gate.verify(owner, args),
+        }
+    }
+}
+impl<'a> Verifiable<'a> for CollectionType {
+    type Args = Vec<AccountInfo<'a>>;
 
-    fn verify(&self, mint_key: Pubkey) -> Result<()> {
-        // Your specific logic for SplData using the mint_key...
-        Ok(())
+    fn verify(&self, owner: &Signer, _args: Self::Args) -> Result<bool> {
+        // verify based on membership to an NFT community
+        // msg!("\n\nCollection gate_settings");
+        msg!("Provided {:?} accounts.", _args.len());
+
+        if _args.len() < 3 {
+            msg!("Not enough accounts provided. At least 3 required.");
+            return Err(ErrorCode::GateCollectionInsufficientAccounts.into());
+        }
+
+        let account1: &AccountInfo<'_> = &_args[0];
+        let account2: &AccountInfo<'_> = &_args[1];
+        let account3: &AccountInfo<'_> = &_args[2];
+
+        // Assert there is enough accounts
+        let nft_metadata: Metadata = Metadata::try_from(account1)?;
+        msg!("Extarcted metadata");
+
+        // Ensure caller owns provided nft mint
+        let nft_mint: Account<Mint> = Account::try_from(account2)?;
+        msg!("Extracted NFT mint");
+
+        // Get token account
+        let nft_token_account: Account<TokenAccount> = Account::try_from(account3)?;
+        msg!("Extarcted nft token account");
+
+        // Caller is the owner of the nft
+        require!(&nft_token_account.owner == &owner.key(), ErrorCode::GateCollectionInvalidOwner);
+
+        // Token accout is for that particular  mint
+        require!(
+            &nft_token_account.mint == &nft_mint.key(),
+            ErrorCode::GateCollectionInvalidTokenAccount
+        );
+
+        // Nft metadta matches the nft mint
+        msg!("Mint from the metadata provided: {:?}", nft_metadata.mint);
+        // msg!("Provided NFT mint: {:?}", nft_mint.key());
+
+        // Ensure mint in the metadata matches provided mint
+        require!(nft_metadata.mint == nft_mint.key(), ErrorCode::GateCollectionInvalidNftMetadata);
+
+        let temp = nft_metadata.collection.unwrap();
+
+        // msg!("\nmaster mint stored in class: {:?}", self.master_mint);
+        // msg!("metadata mint stored in class: {:?}", self.metadata);
+        // msg!("nft_metadata. colection details: {:?} ", nft_metadata.collection_details);
+        // msg!("nft_metadata. colection: {:?} ", temp.key);
+
+        // Ensure daddy mint matches one inside nft metadata
+        require!(self.master_mint == temp.key, ErrorCode::GateCollectionNftNotFromCollection);
+
+        // Ensure caller owns provided nft mint
+        msg!("verified collection gate_settings");
+        Ok(true)
+    }
+}
+impl<'a> Verifiable<'a> for SplType {
+    type Args = Vec<AccountInfo<'a>>;
+    fn verify(&self, owner: &Signer, _args: Self::Args) -> Result<bool> {
+        msg!("\n\nSPL gate_settings");
+        msg!("Provided {:?} accounts.", _args.len());
+        if _args.len() < 2 {
+            msg!("Not enough accounts provided. At least 2 required.");
+            return Err(ErrorCode::GateSplInsufficientAccounts.into());
+        }
+
+        let account1: &AccountInfo<'_> = &_args[0];
+        let account2: &AccountInfo<'_> = &_args[1];
+
+        // Mint mathes the one stored
+        let mint: Account<Mint> = Account::try_from(account1)?;
+        require!(&mint.key() == &self.spl_mint, ErrorCode::GateSplIncorrectMint);
+
+        // Token account derived from this mint
+        let spl_token_account: Account<TokenAccount> = Account::try_from(account2)?;
+        require!(&spl_token_account.mint == &mint.key(), ErrorCode::GateSplInvalidTokenAccount);
+
+        // let token_program: Program<Token> = Program::try_from(account3)?;
+
+        // User owns provieded token account
+        require!(&spl_token_account.owner == &owner.key(), ErrorCode::GateSplInvalidOwner);
+
+        // User has enough tokens
+        require!(
+            spl_token_account.amount > self.minimum_ownership,
+            ErrorCode::GateSplCallerNotEnoughToken
+        );
+
+        msg!(
+            "User has: {:?} and min ownership is {:?}",
+            spl_token_account.amount,
+            self.minimum_ownership
+        );
+
+        msg!("verified SPL gate_settings");
+
+        Ok(true)
     }
 }
 
-impl CollectionData {
-    fn verify(&self, _mint_key: Pubkey, _master_key: Pubkey, _creator_key: Pubkey) -> Result<()> {
-        // let metadata: Metadata = Metadata::try_from(&self.nft_metadata_account)?;
-        // Verify NFT token account
-        // Check if the owner of the token account is the buyer
-        // if self.nft_token_account.owner != self.buyer.key() {
-        //     return Err(ErrorCode::InvalidNFTAccountOwner.into());
-        // }
-        // // Check if the mint of the token account is the mint provided
-        // if self.nft_token_account.mint != self.mint.key() {
-        //     return Err(ErrorCode::InvalidNFTAccountMint.into());
-        // }
-        // // Check if the amount in the token account is exactly 1 (as expected for an NFT)
-        // if self.nft_token_account.amount != 1 {
-        //     return Err(ErrorCode::InvalidNFTAccountAmount.into());
-        // }
+#[derive(AnchorSerialize, AnchorDeserialize, Copy, Clone, Debug, PartialEq, Eq)]
+pub struct CollectionType {
+    pub metadata: Pubkey,
+    pub master_mint: Pubkey,
+    pub creator: Pubkey,
+}
 
-        // Verify NFT Mint
-        // Check if the master edition account key matches the provided master key
-        // if master_key != self.nft_master_edition_account.key() {
-        //     return Err(ErrorCode::InvalidMasterEdition.into());
-        // }
-
-        // metadata.data.
-
-        // Check if the master edition account contains any data
-        // if self.nft_master_edition_account.data_is_empty() {
-        //     return Err(ErrorCode::InvalidMasterEdition.into());
-        // }
-
-        // Print the master key and the master edition account key for debugging purposes
-        // msg!("master_key: {:?}", master_key);
-        // msg!("nft_master_edition_account: {:?}", self.nft_master_edition_account.key());
-
-        // // Verify NFT metadata
-        // // Extract the metadata from the metadata account and check if its mint matches the provided mint
-        // // let metadata = Metadata::from_account_info(&self.nft_metadata_account)?;
-        // if metadata.mint != self.mint.key() {
-        //     return Err(ErrorCode::InvalidMetadata.into());
-        // }
-
-        // Check if the metadata contains any data
-        // if metadata.data.is_empty() {
-        //     return Err(ErrorCode::InvalidMetadata.into());
-        // }
-
-        // Verify NFT creator
-        // Check if there's any creator in the metadata that matches the provided creator key and is verified
-        // if
-        //     !metadata.creators.iter().any(|creator_vec| {
-        //         if let Some(creator) = creator_vec.first() {
-        //             creator.address == creator_key && creator.verified
-        //         } else {
-        //             false
-        //         }
-        //     })
-        // {
-        //     return Err(ErrorCode::InvalidCreator.into());
-        // }
-        Ok(())
+impl CollectionType {
+    pub fn new(metadata: &Pubkey, master_mint: &Pubkey, creator: &Pubkey) -> Self {
+        Self {
+            metadata: *metadata,
+            master_mint: *master_mint,
+            creator: *creator,
+        }
     }
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq)]
-pub struct SplData {
-    pub mint_key: Pubkey,
+#[derive(AnchorSerialize, AnchorDeserialize, Copy, Clone, Debug, PartialEq, Eq)]
+pub struct SplType {
+    pub spl_mint: Pubkey,
+    pub minimum_ownership: u64,
+    pub amount_per_token: u64,
 }
 
-impl SplData {
-    fn verify(&self, _mint_key: Pubkey) -> Result<()> {
-        Ok(())
+impl SplType {
+    pub fn new(mint: &Pubkey, minimum_ownership: u64, amount_per_token: u64) -> Self {
+        Self {
+            spl_mint: *mint,
+            minimum_ownership: minimum_ownership,
+            amount_per_token: amount_per_token,
+        }
     }
 }
 
-// #[account]
-// pub struct Gate {
-//     // pub mint_key: Pubkey,
-//     // pub master_key: Pubkey,
-//     // pub creator_key: Pubkey,
-//     pub gate_type: GateType,
-// }
+impl Gate {
+    pub fn load_gate_lock(&mut self, gate_inputs: Vec<GateType>) -> usize {
+        // Keep a track of how much in size the account shoudl increase
+        let mut size_increase: usize = 0;
 
-// #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq)]
-// pub enum GateType {
-//     Spl,
-//     Nft,
-// }
+        // Loop over each of the gates and set them in the array
+        for &gate in gate_inputs.iter() {
+            // Debug: Print when this branch is reached.
+            msg!("\n\nGate: {:?}", gate);
 
-// pub struct GateVerification {
-//     pub mint_key: Pubkey,
-//     pub master_key: Pubkey,
-//     pub creator_key: Pubkey,
-// }
+            match gate {
+                GateType::Collection { gate } => {
+                    msg!("\nMatching CollectionType with collection: {:?}", gate);
+                    self.gate_settings.push(GateType::Collection {
+                        gate,
+                    });
+                    size_increase += LockSize::CollectionLock as usize;
+                }
+                GateType::Spl { gate } => {
+                    msg!("\nMatching SplType with spl: {:?}", gate);
+                    self.gate_settings.push(GateType::Spl {
+                        gate,
+                    });
+                    size_increase += LockSize::SplLock as usize;
+                }
+            }
+        }
 
-// pub struct GateVerification2 {
-//     pub mint_key: Pubkey,
-// }
-
-// // Need to add verification functions here
-// // Also different types of a gate
-
-// impl<'info> GatedBuy<'info> {
-//     fn verify(&self, _mint_key: Pubkey, master_key: Pubkey, creator_key: Pubkey) -> Result<()> {
-//         let metadata: Metadata = Metadata::try_from(&self.nft_metadata_account)?;
-//         // Verify NFT token account
-//         // Check if the owner of the token account is the buyer
-//         // if self.nft_token_account.owner != self.buyer.key() {
-//         //     return Err(ErrorCode::InvalidNFTAccountOwner.into());
-//         // }
-//         // // Check if the mint of the token account is the mint provided
-//         // if self.nft_token_account.mint != self.mint.key() {
-//         //     return Err(ErrorCode::InvalidNFTAccountMint.into());
-//         // }
-//         // // Check if the amount in the token account is exactly 1 (as expected for an NFT)
-//         // if self.nft_token_account.amount != 1 {
-//         //     return Err(ErrorCode::InvalidNFTAccountAmount.into());
-//         // }
-
-//         // Verify NFT Mint
-//         // Check if the master edition account key matches the provided master key
-//         if master_key != self.nft_master_edition_account.key() {
-//             return Err(ErrorCode::InvalidMasterEdition.into());
-//         }
-
-//         // metadata.data.
-
-//         // Check if the master edition account contains any data
-//         if self.nft_master_edition_account.data_is_empty() {
-//             return Err(ErrorCode::InvalidMasterEdition.into());
-//         }
-
-//         // Print the master key and the master edition account key for debugging purposes
-//         msg!("master_key: {:?}", master_key);
-//         msg!("nft_master_edition_account: {:?}", self.nft_master_edition_account.key());
-
-//         // Verify NFT metadata
-//         // Extract the metadata from the metadata account and check if its mint matches the provided mint
-//         // let metadata = Metadata::from_account_info(&self.nft_metadata_account)?;
-//         if metadata.mint != self.mint.key() {
-//             return Err(ErrorCode::InvalidMetadata.into());
-//         }
-
-//         // Check if the metadata contains any data
-//         // if metadata.data.is_empty() {
-//         //     return Err(ErrorCode::InvalidMetadata.into());
-//         // }
-
-//         // Verify NFT creator
-//         // Check if there's any creator in the metadata that matches the provided creator key and is verified
-//         if
-//             !metadata.creators.iter().any(|creator_vec| {
-//                 if let Some(creator) = creator_vec.first() {
-//                     creator.address == creator_key && creator.verified
-//                 } else {
-//                     false
-//                 }
-//             })
-//         {
-//             return Err(ErrorCode::InvalidCreator.into());
-//         }
-
-// //         Ok(())
-// //     }
-// // }
+        size_increase
+    }
+}

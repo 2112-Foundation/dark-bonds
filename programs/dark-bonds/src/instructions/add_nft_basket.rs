@@ -11,7 +11,7 @@ pub struct AddNftBasket2<'info> {
     #[account(mut)]
     pub admin: Signer<'info>,
     // Rederive ibo to ensure it is the correct one
-    #[account(mut, has_one = admin, constraint = ibo.lockups_locked == false @ErrorCode::RatesLocked)]
+    #[account(mut, has_one = admin, constraint = ibo.lockups_locked == false @ErrorCode::IboRatesLocked)]
     pub ibo: Account<'info, Ibo>,
     #[account(
         seeds = ["tree".as_bytes(), ibo.key().as_ref(), &tree_idx.to_be_bytes()],
@@ -88,7 +88,7 @@ pub fn add_nft_basket2(
     // let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
     // let tree: &mut Account<Tree> = &mut ctx.accounts.tree;
 
-    // Loop over vertices and verify them
+    // Loop over vertices and process them
 
     msg!("initialising nft basket");
 

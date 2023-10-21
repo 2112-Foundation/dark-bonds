@@ -13,6 +13,30 @@ import {
 import { Mint } from "./mint";
 import { now } from "@metaplex-foundation/js";
 
+import {
+  loadKeypairFromFile,
+  delay,
+  roughlyEqual,
+  createCollectionTypeInput,
+  createSplTypeInput,
+  createCombinedTypeInput,
+  createSameAsMainIboInput,
+  createLockupPurchaseStartInput,
+  createLockupPurchaseEndInput,
+  createLockupPurchaseCombinedInput,
+} from "./helpers";
+
+import {
+  LOCKUP_SEED,
+  MASTER_SEED,
+  BOND_SEED,
+  IBO_SEED,
+  GATE_SEED,
+  TREE_SEED,
+  VERTEX_SEED,
+  NFT_BASKET_SEED,
+} from "./constants";
+
 export class Bond {
   swapPrice: number = 0;
   ownerBondAccount: Account;
@@ -32,7 +56,7 @@ export class Bond {
 
   async split(amount: number) {
     this.amount -= amount;
-    return await this.parent.addBond(this.lockUpIdx, amount);
+    return await this.parent.issueBond(this.lockUpIdx, amount);
   }
 
   constructor(
@@ -47,20 +71,67 @@ export class Bond {
   ) {}
 }
 
-/**
- * Represents the Gate class with the specified fields.
- */
 export class Gate {
   constructor(
     /** Address of the PDA. */
     public address: PublicKey,
+    /** Gate inedex within this IBO. */
+    public index: number,
+    /** Array of different gate settings */
+    public settings: GateSetting[]
+  ) {}
+
+  /** Adds a setting type for this gate */
+  public addSetting(setting: GateSetting) {
+    this.settings.push(setting);
+  }
+}
+
+export abstract class GateSetting {
+  // Write me an abstract class that returns the struct I need to pass forward
+  // abstract createInput(): {};
+}
+
+export class CollectionSetting extends GateSetting {
+  constructor(
     /** The mint key for the gate. */
     public mintKey: PublicKey,
     /** The master key for the gate. */
     public masterKey: PublicKey,
     /** The creator key for the gate. */
     public creatorKey: PublicKey
-  ) {}
+  ) {
+    super();
+  }
+  /** Get struct for submission as argument */
+  // createInput(): {} {
+  //   return createCollectionTypeInput(
+  //     this.mintKey,
+  //     this.masterKey,
+  //     this.creatorKey
+  //   );
+  // }
+}
+
+export class SplSetting extends GateSetting {
+  constructor(
+    /** Address of the Mint. */
+    public mint: PublicKey, // Example additional field
+    /** Minnimum SPL balance needed for the gate. */
+    public minnimumAccount: number, // Example additional field
+    /** Address of the Mint. */
+    public bondsAllowed: number // Example additional field
+  ) {
+    super();
+  }
+  // /** Get struct for submission as argument */
+  // createInput(): {} {
+  //   return createSplTypeInput(
+  //     this.mint,
+  //     this.minnimumAccount,
+  //     this.bondsAllowed
+  //   );
+  // }
 }
 
 /**
@@ -81,8 +152,18 @@ export class LockUp {
     /** Has special deal on. */
     public gatePresent: boolean,
     /** Index of the gate. */
-    public gateIdx: number
+    public gates: number[]
   ) {}
+
+  /** Function that adds a variable gate index to this lock-up*/
+  addGateIdx(gateIdx: number) {
+    this.gates.push(gateIdx);
+  }
+
+  /**  Function that removes a particulare gate index from this lock-up */
+  removeGate(gateIdx: number) {
+    this.gates = this.gates.filter((gate) => gate !== gateIdx);
+  }
 }
 
 /**
@@ -130,22 +211,29 @@ export class Ibo {
   /** An array of LockUp objects associated with this Ibo. */
   public bonds: Bond[] = [];
 
-  // Function that returns any bond that is marked as being on a swap
+  /**  Function that returns any bond that is marked as being on a swap */
   getBondsOnSwap(): Bond[] {
     return this.bonds.filter((bond) => bond.swapPrice > 0);
   }
 
+  /** Converts between liqduid and bont tokens using the conversion and APY for this particular lock up */
   getBondToken(lockUpIdx: number, stableAmount: number) {
     const lockUp: LockUp = this.lockups[lockUpIdx];
     const gains = lockUp.apy * stableAmount * (lockUp.period / 31536000);
     return gains;
   }
 
-  async addBond(lockUpIdx: number, amount: number) {
+  /** Adds bond entry to the ibo instance and icnremenets bond counter */
+  async issueBond(
+    /**Index of the lock up from which thsi bond will get rate and lockup period. */
+    lockUpIdx: number,
+    /** Amount in liquidity coin that the user is spending  */
+    amount: number
+  ) {
     console.log("Using bond counter: ", this.bondCounter);
     const [bondPDA] = PublicKey.findProgramAddressSync(
       [
-        Buffer.from("bond"),
+        Buffer.from(BOND_SEED),
         Buffer.from(this.address.toBytes()),
         new BN(this.bondCounter).toArrayLike(Buffer, "be", 4),
       ],
@@ -154,6 +242,8 @@ export class Ibo {
     const bondAccount = await this.mintB.makeAta(bondPDA);
 
     // Get how much token will be locked up
+    console.log("Getting lockup idx: ", lockUpIdx);
+    console.log("Total lock-ups: ", this.lockups.length);
     const lockedBondToken = this.getBondToken(lockUpIdx, amount);
 
     console.log("Stroign in bond class: ", amount);
@@ -179,7 +269,7 @@ export class Ibo {
     console.log("Using counter of: ", this.lockupCounter);
     const [lockUpPda] = PublicKey.findProgramAddressSync(
       [
-        Buffer.from("lockup"),
+        Buffer.from(LOCKUP_SEED),
         Buffer.from(this.address.toBytes()),
         new BN(this.lockupCounter).toArrayLike(Buffer, "be", 4),
       ],
@@ -194,7 +284,7 @@ export class Ibo {
       apy,
       matureOnly,
       gateIdx !== undefined,
-      gateIdx
+      []
     );
 
     // Push to the array
@@ -204,27 +294,82 @@ export class Ibo {
     this.lockupCounter++;
     return newLockUp;
   }
-  async addGate(
-    mintKey: PublicKey,
-    masterKey: PublicKey,
-    editionKey: PublicKey
-  ): Promise<Gate> {
-    // Derive gate PDA
-    const gatePda = (
-      await PublicKey.findProgramAddressSync(
-        [
-          Buffer.from("gate"),
-          Buffer.from(this.address.toBytes()),
-          new BN(this.gateCounter).toArrayLike(Buffer, "be", 4),
-        ],
-        this.parent.programAddress
-      )
-    )[0];
-    const newGate = new Gate(gatePda, mintKey, masterKey, editionKey);
+  private async deriveGatePda(): Promise<PublicKey> {
+    const [gatePda] = await PublicKey.findProgramAddress(
+      [
+        Buffer.from(GATE_SEED),
+        Buffer.from(this.address.toBytes()),
+        new BN(this.gateCounter).toArrayLike(Buffer, "be", 4),
+      ],
+      this.parent.programAddress
+    );
+    return gatePda;
+  }
+
+  // Adds gate along wiht a list ot gate settings
+  async addGate(settings: GateSetting[]): Promise<Gate> {
+    const gatePda = await this.deriveGatePda();
+    const newGate = new Gate(gatePda, this.gateCounter, settings);
     this.gates.push(newGate);
     this.gateCounter++;
     return newGate;
   }
+
+  // async getSplGate(
+  //   mintKey: PublicKey,
+  //   bondsAllowed: number,
+  //   minimumAmount: number
+  // ): Promise<SplSettings> {
+  //   const newGate = new SplSettings(mintKey, bondsAllowed, minimumAmount);
+  //   return newGate;
+  // }
+
+  // async addCollectionGate(
+  //   mintKey: PublicKey,
+  //   masterKey: PublicKey,
+  //   creatorKey: PublicKey
+  // ): Promise<CollectionGate> {
+  //   const gatePda = await this.deriveGatePda();
+  //   const newGate = new CollectionGate(
+  //     gatePda,
+  //     this.gateCounter,
+  //     mintKey,
+  //     masterKey,
+  //     creatorKey
+  //   );
+  //   this.gates.push(newGate);
+  //   this.gateCounter++;
+  //   return newGate;
+  // }
+
+  // async addCombinedGate(
+  //   collectionMintKey: PublicKey,
+  //   collectionMasterKey: PublicKey,
+  //   collectionCreatorKey: PublicKey,
+  //   splMint: PublicKey
+  // ): Promise<CombinedGate> {
+  //   const collectionGatePda = await this.deriveGatePda();
+  //   const collectionGate = new CollectionGate(
+  //     collectionGatePda,
+  //     this.gateCounter,
+  //     collectionMintKey,
+  //     collectionMasterKey,
+  //     collectionCreatorKey
+  //   );
+
+  //   const splGatePda = await this.deriveGatePda();
+  //   const splGate = new SplGate(splGatePda, this.gateCounter, splMint);
+  //   const gatePda = await this.deriveGatePda();
+  //   const newGate = new CombinedGate(
+  //     gatePda,
+  //     this.gateCounter,
+  //     collectionGate,
+  //     splGate
+  //   );
+  //   this.gates.push(newGate);
+  //   this.gateCounter++;
+  //   return newGate;
+  // }
 
   constructor(
     public parent: Master,
@@ -303,7 +448,7 @@ export class Master {
   ): Promise<Ibo> {
     const iboPda = PublicKey.findProgramAddressSync(
       [
-        Buffer.from("ibo_instance"),
+        Buffer.from(IBO_SEED),
         new BN(this.iboCounter).toArrayLike(Buffer, "be", 8),
       ],
       this.programAddress
@@ -337,7 +482,7 @@ export class Master {
   ) {
     this.programAddress = programAddress;
     this.address = PublicKey.findProgramAddressSync(
-      [Buffer.from("main_register")],
+      [Buffer.from(MASTER_SEED)],
       this.programAddress
     )[0];
   }

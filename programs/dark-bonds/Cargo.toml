@@ -18,9 +18,11 @@ default = []
 [dependencies]
 mpl-token-metadata = "3.0.1"
 anchor-spl = "0.28.0"
+spl-math = {version = "0.1", features = ["no-entrypoint"]}
 spl-token = {version = "3.5.0", default-features = false, features = ["no-entrypoint"]}
 anchor-lang = {version = "0.28.0", features = ["init-if-needed"]}
 solana-program = "^1.16.0"
 switchboard-v2 = "0.4.0"
 bytemuck = "1.13.1"
+
 

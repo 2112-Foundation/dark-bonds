@@ -1,14 +1,19 @@
 use anchor_lang::prelude::*;
 
-use mpl_token_metadata;
-
 pub mod errors;
 pub mod instructions;
 pub mod state;
-
+pub mod common;
+pub mod admin;
+pub mod user;
+pub mod superadmin;
 pub use errors::*;
 pub use instructions::*;
+pub use admin::*;
 pub use state::*;
+pub use common::*;
+pub use user::*;
+pub use superadmin::*;
 
 declare_id!("8ZP1cSpVPVPp5aeake5f1BtgW1xv1e39zkoG8bWobbwV");
 
@@ -16,14 +21,73 @@ declare_id!("8ZP1cSpVPVPp5aeake5f1BtgW1xv1e39zkoG8bWobbwV");
 pub mod dark_bonds {
     use super::*;
 
+    // Super admin functions
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     // Invoke once at the deployement,sets Ibo counter and recipient
-    pub fn init(ctx: Context<Init>) -> Result<()> {
-        instructions::init::init(ctx)
+    pub fn init_master(
+        ctx: Context<Init>,
+        // Admin creation fees
+        ibo_creation_fee: u64,
+        lockup_fee: u64,
+        gate_addition_fee: u64,
+        // Cuts
+        purchase_cut: u64,
+        resale_cut: u64,
+        // User fees
+        bond_claim_fee: u64,
+        bond_purchase_fee: u64,
+        bond_split_fee: u64
+    ) -> Result<()> {
+        superadmin::init_master::init_master(
+            ctx,
+            ibo_creation_fee,
+            lockup_fee,
+            gate_addition_fee,
+            purchase_cut,
+            resale_cut,
+            bond_claim_fee,
+            bond_purchase_fee,
+            bond_split_fee
+        )
     }
+
+    // Update fees funciotn
+    pub fn update_fees(
+        ctx: Context<UpdateFees>,
+        // Admin creation fees
+        ibo_creation_fee: u64,
+        lockup_fee: u64,
+        gate_addition_fee: u64,
+        // Cuts
+        purchase_cut: u64,
+        resale_cut: u64,
+        // User fees
+        bond_claim_fee: u64,
+        bond_purchase_fee: u64,
+        bond_split_fee: u64
+    ) -> Result<()> {
+        superadmin::update_fees::update_fees(
+            ctx,
+            ibo_creation_fee,
+            lockup_fee,
+            gate_addition_fee,
+            purchase_cut,
+            resale_cut,
+            bond_claim_fee,
+            bond_purchase_fee,
+            bond_split_fee
+        )
+    }
+
+    // Bond admin functions
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Create a bond offering
     pub fn create_ibo(
         ctx: Context<CreateIBO>,
+        description: String,
+        link: String,
         fixed_exchange_rate: u64,
         live_date: i64,
         end_date: i64,
@@ -31,8 +95,10 @@ pub mod dark_bonds {
         liquidity_token: Pubkey,
         recipient: Pubkey
     ) -> Result<()> {
-        instructions::create_ibo::create_ibo(
+        admin::create_ibo::create_ibo(
             ctx,
+            description,
+            link,
             fixed_exchange_rate,
             live_date, // TODO make it so you can't buy bonds prior to it
             end_date,
@@ -43,40 +109,65 @@ pub mod dark_bonds {
     }
 
     // TODO add payout on maturity only
+    // This also needs structs. That have
+    // Mandatory field
+    // - lock-up duration
+    // - lock-up APY
+    // Optional field
+    // - releasse all on maturity
+    // - toke cap
+    // - start
+    // - expiry
+    // Need to figure out how the above two ifnluence the mainIBO ones
+    // I guess they can be
+
     pub fn add_lockup(
         ctx: Context<AddLockUp>,
         lockup_duration: i64,
-        lockup_apy: f64
+        lockup_apy: u64,
+        mature_only: bool,
+        limit: u64,
+        purchase_period: PurchasePeriod
     ) -> Result<()> {
-        instructions::add_lockup::add_lockup(ctx, lockup_duration, lockup_apy)
+        admin::add_lockup::add_lockup(
+            ctx,
+            lockup_duration,
+            lockup_apy,
+            mature_only,
+            limit,
+            purchase_period
+        )
     }
 
     pub fn remove_lockup(ctx: Context<RemoveLockup>) -> Result<()> {
-        instructions::remove_lockup::remove_lockup(ctx)
+        admin::remove_lockup::remove_lockup(ctx)
+    }
+
+    pub fn update_gates(
+        ctx: Context<UpdateGates>,
+        _ibo_idx: u32,
+        _lockup_idx: u32,
+        gates_add: Vec<u32>,
+        gates_remove: Vec<u32>
+    ) -> Result<()> {
+        admin::update_gates::update_gates(ctx, gates_add, gates_remove)
     }
 
     pub fn add_gate(
         ctx: Context<AddGate>,
         ibo_idx: u32,
         lockup_idx: u32,
-        mint_key: Pubkey,
-        creator_key: Pubkey,
-        master_key: Pubkey,
-        gate_type: bool
+        gate_settings: Vec<GateType>
     ) -> Result<()> {
-        instructions::add_gate::add_gate(
-            ctx,
-            ibo_idx,
-            lockup_idx,
-            mint_key,
-            creator_key,
-            master_key,
-            gate_type
-        )
+        admin::add_gate::add_gate(ctx, ibo_idx, lockup_idx, gate_settings)
     }
 
-    pub fn remove_gate(ctx: Context<RemoveGate>, ibo_idx: u32, lockup_idx: u32) -> Result<()> {
-        instructions::remove_gate::remove_gate(ctx, ibo_idx, lockup_idx)
+    pub fn remove_gate(
+        ctx: Context<RemoveGatedSettings>,
+        ibo_idx: u32,
+        lockup_idx: u32
+    ) -> Result<()> {
+        admin::remove_gate::remove_gate(ctx, ibo_idx, lockup_idx)
     }
 
     pub fn lock(
@@ -84,31 +175,26 @@ pub mod dark_bonds {
         lock_withdraws: bool,
         lock_lockup_addition: bool
     ) -> Result<()> {
-        instructions::lock::lock(ctx, lock_withdraws, lock_lockup_addition)
+        admin::lock::lock(ctx, lock_withdraws, lock_lockup_addition)
     }
+
+    // USer functions
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Provide liquidity for bonds for a given bond offering
-    pub fn buy_bond(
-        ctx: Context<BuyBond>,
+    pub fn buy_bond<'a, 'b, 'c, 'info>(
+        ctx: Context<'a, 'b, 'c, 'info, BuyBond<'info>>,
         lockup_idx: u32,
         ibo_idx: u64,
-        liquidity_provided: u64
+        liquidity_provided: u64,
+        gate_idxs: u32
     ) -> Result<()> {
-        instructions::buy_bond::buy_bond(ctx, lockup_idx, ibo_idx, liquidity_provided)
-    }
-
-    pub fn buy_bond_gated(
-        ctx: Context<GatedBuy>,
-        lockup_idx: u32,
-        ibo_idx: u64,
-        liquidity_provided: u64
-    ) -> Result<()> {
-        instructions::buy_bond_gated::buy_bond_gated(ctx, lockup_idx, ibo_idx, liquidity_provided)
+        user::buy_bond::buy_bond(ctx, lockup_idx, ibo_idx, liquidity_provided, gate_idxs)
     }
 
     // Claim tokens yielded for that specifc bond bond
     pub fn claim(ctx: Context<Claim>, ibo_address: Pubkey, ibo_idx: u32) -> Result<()> {
-        instructions::claim::claim(ctx, ibo_address, ibo_idx)
+        user::claim::claim(ctx, ibo_address, ibo_idx)
     }
 
     // Split bond bond into multiples
@@ -118,20 +204,21 @@ pub mod dark_bonds {
         ibo_address: Pubkey,
         bond_idx: u32
     ) -> Result<()> {
-        instructions::split::split(ctx, percent_new, ibo_address, bond_idx)
+        user::split::split(ctx, percent_new, ibo_address, bond_idx)
     }
 
     // Mark bond as purchasable
     pub fn set_swap(ctx: Context<SetSwap>, sell_price: u64) -> Result<()> {
-        instructions::set_swap::set_swap(ctx, sell_price)
+        user::set_swap::set_swap(ctx, sell_price)
     }
 
     // Buy bond advertised for sale
     pub fn buy_swap(ctx: Context<BuySwap>) -> Result<()> {
-        instructions::buy_swap::buy_swap(ctx)
+        user::buy_swap::buy_swap(ctx)
     }
 
     // NFT stuff for later
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     pub fn add_tree(ctx: Context<AddTree>, ibo_idx: u32, tree_idx: u8, depth: u8) -> Result<()> {
         instructions::add_tree::add_tree(ctx, ibo_idx, tree_idx, depth)
