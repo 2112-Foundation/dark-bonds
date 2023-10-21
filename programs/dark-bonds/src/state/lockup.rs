@@ -2,11 +2,13 @@ use anchor_lang::prelude::*;
 use crate::errors::errors::ErrorCode;
 use crate::common::*;
 
+pub const SCALE: f64 = 1000.0;
+
 #[account]
 pub struct Lockup {
     /** Minimum lockup period in seconds.*/
     pub period: i64,
-    /** Yearly APY for this lockup.*/
+    /** Yearly APY for this lockup. As it is f64 disguised as u64 due to solita, need to divide by 1000*/
     pub apy: u64,
     /** Pointers to the gates that will allow this lockup to be used.*/
     pub gates: Vec<u32>,
@@ -102,13 +104,13 @@ impl Lockup {
 
     /** Calculates how much bond move to the bond's PDA's token account */
     pub fn compounded_amount(&self, bond_starting_amount: u64) -> Result<u64> {
-        let apy: f64 = (self.apy as f64) / 100.0;
+        let apy: f64 = (self.apy as f64) / 100.0 / SCALE;
         let year_elapsed: f64 = (self.period as f64) / (SECONDS_YEAR as f64);
 
         // Calculate compounded amount
         let compounded: f64 = (bond_starting_amount as f64) * (1.0 + apy).powf(year_elapsed);
 
-        println!("compounded : {:?}s", compounded);
+        // println!("compounded : {:?}s", compounded);
 
         // Rounding instead of truncating
         Ok(compounded.round() as u64)
