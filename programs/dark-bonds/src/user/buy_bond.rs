@@ -43,7 +43,7 @@ pub struct BuyBond<'info> {
     pub user_account: Account<'info, UserAccount>,
 
     #[account(
-        init,
+        init_if_needed,
         seeds = [
             BOND_POINTER_SEED.as_bytes(),
             buyer.key().as_ref(),

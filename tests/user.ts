@@ -48,6 +48,7 @@ export class User {
 
   // Get bond pointer address
   async getBondPointerAddress(): Promise<PublicKey> {
+    console.log("This user has this many bonds", this.bondCounter);
     const [bondPointerAddress, nonce] = await PublicKey.findProgramAddress(
       [
         Buffer.from(BOND_POINTER_SEED),

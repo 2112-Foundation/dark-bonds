@@ -43,7 +43,12 @@ pub fn update_ibo(
     let master: &mut Account<Master> = &mut ctx.accounts.master;
 
     // Transfer lamports to the master recipient account for updating ibo
-    take_fee(&master.to_account_info(), &admin, master.admin_fees.lockup_fee, 0)?;
+    take_fee(
+        &master.to_account_info(),
+        &admin,
+        ((master.admin_fees.ibo_creation_fee as f64) / 10.0) as u64,
+        0
+    )?;
 
     // Fill out details of the new Ibo
     // TODO need ensure what locking does

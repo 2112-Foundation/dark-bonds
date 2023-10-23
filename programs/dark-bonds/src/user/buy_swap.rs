@@ -18,7 +18,7 @@ pub struct BuySwap<'info> {
     // Can't buy swap that is not listed
     #[account(mut, constraint = bond.swap_price > 0 @ErrorCode::BondNotForSale)]
     pub bond: Account<'info, Bond>,
-    #[account(seeds = [MASTER_SEED.as_bytes()], bump)]
+    #[account(mut, seeds = [MASTER_SEED.as_bytes()], bump)]
     pub master: Account<'info, Master>,
 
     pub ibo: Account<'info, Ibo>,
@@ -27,6 +27,28 @@ pub struct BuySwap<'info> {
         token::authority = buyer,
     )]
     pub buyer_ata: Account<'info, TokenAccount>,
+
+    #[account(
+        init_if_needed,
+        seeds = [USER_ACCOUNT_SEED.as_bytes(), buyer.key().as_ref()],
+        bump,
+        space = 8 + 40, // change
+        payer = buyer
+    )]
+    pub user_account: Account<'info, UserAccount>,
+
+    #[account(
+        init_if_needed,
+        seeds = [
+            BOND_POINTER_SEED.as_bytes(),
+            buyer.key().as_ref(),
+            &user_account.bond_counter.to_be_bytes(),
+        ],
+        bump,
+        space = 8 + 40, // change
+        payer = buyer
+    )]
+    pub bond_pointer: Account<'info, BondPointer>,
 
     #[account(mut, 
         token::mint = ibo.liquidity_token,
@@ -41,6 +63,7 @@ pub struct BuySwap<'info> {
 
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_program: Program<'info, Token>,
+    pub system_program: Program<'info, System>,
 }
 
 impl<'info> BuySwap<'info> {
@@ -71,9 +94,19 @@ pub struct Initialize<'info> {
 
 pub fn buy_swap(ctx: Context<BuySwap>) -> Result<()> {
     let accounts: &mut BuySwap = ctx.accounts;
+    let user_account: &mut Account<UserAccount> = &mut accounts.user_account;
+    let bond_pointer: &mut Account<BondPointer> = &mut accounts.bond_pointer;
+    let master: &mut Account<Master> = &mut accounts.master;
     let buyer: &mut Signer = &mut accounts.buyer;
     let bond: &mut Account<Bond> = &mut accounts.bond;
     let ibo: &mut Account<Ibo> = &mut accounts.ibo;
+
+    // Take SOL fee for buying a bond
+    take_fee(&master.to_account_info(), &buyer, master.user_fees.bond_purchase_fee as u64, 0)?;
+
+    // Increment bond pointer counter and store pointer in the pointer PDA
+    user_account.bond_counter += 1;
+    bond_pointer.bond_address = bond.key();
 
     // Set as the new bond owner
     bond.owner = buyer.key();

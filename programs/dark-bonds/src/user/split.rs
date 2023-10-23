@@ -78,8 +78,6 @@ pub fn split(
     // Transfer lamports to the master recipient account for splitting the bond
     take_fee(&master.to_account_info(), &owner, master.user_fees.bond_split_fee as u64, 0)?;
 
-    // TODO add tests for that SOL change
-
     // Get signing dets
     let (_, bump) = anchor_lang::prelude::Pubkey::find_program_address(
         &[BOND_SEED.as_bytes(), ibo_address.as_ref(), &bond_idx.to_be_bytes()],

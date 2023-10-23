@@ -906,35 +906,43 @@ describe("dark-bonds", async () => {
     // assert((200).toString() == bond1_state.swapPrice.toString());
   });
 
-  // it("Buy bond offered on swap", async () => {
-  //   // Find any bonds on swap
-  //   const bondSale: Bond = ibo.getBondsOnSwap()[0];
+  it("Buy bond offered on swap", async () => {
+    // Find any bonds on swap
+    const bondSale: Bond = ibo.getBondsOnSwap()[0];
 
-  //   // Get random buyer
-  //   const buyer: User = users.users[4];
+    // Get random buyer
+    const buyer: User = users.users[4];
 
-  //   const tx_lu1 = await bondProgram.methods
-  //     .buySwap()
-  //     .accounts({
-  //       buyer: buyer.publicKey,
-  //       bond: bondSale.address,
-  //       buyerAta: buyer.liquidityAccount.address,
-  //       master: master.address,
-  //       masterRecipientAta: superAdminAta_sc.address,
-  //       sellerAta: bondSale.ownerLiquidityAccount.address,
-  //       ibo: bondSale.parent.address,
-  //       iboAdminAta: bondSale.parent.recipientAddressAccount.address,
-  //       tokenProgram: TOKEN_PROGRAM_ID,
-  //       associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-  //     })
-  //     .signers([buyer])
-  //     .rpc();
+    let bp: PublicKey = await buyer.getBondPointerAddress();
+    // Update counter
 
-  //   // let bond1_state = await bondProgram.account.bond.fetch(bond1);
+    // TODO should really be here
+    buyer.bondCounter++;
 
-  //   // // New owner set
-  //   // assert(resaleBuyer1.publicKey.toBase58() == bond1_state.owner.toBase58());
-  // });
+    const tx_lu1 = await bondProgram.methods
+      .buySwap()
+      .accounts({
+        buyer: buyer.publicKey,
+        bond: bondSale.address,
+        buyerAta: buyer.liquidityAccount.address,
+        master: master.address,
+        masterRecipientAta: superAdminAta_sc.address,
+        sellerAta: bondSale.ownerLiquidityAccount.address,
+        bondPointer: bp,
+        userAccount: buyer.userAccount,
+        ibo: bondSale.parent.address,
+        iboAdminAta: bondSale.parent.recipientAddressAccount.address,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+      })
+      .signers([buyer])
+      .rpc();
+
+    // let bond1_state = await bondProgram.account.bond.fetch(bond1);
+
+    // // New owner set
+    // assert(resaleBuyer1.publicKey.toBase58() == bond1_state.owner.toBase58());
+  });
 
   it("Buy collection gated bond offered on ibo", async () => {
     // Get lock-up TODO fix its hardcoded for now
