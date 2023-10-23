@@ -45,13 +45,13 @@ export const buyBondStruct = new beet.BeetArgsStruct<
  * @property [_writable_, **signer**] buyer
  * @property [_writable_] bond
  * @property [_writable_] ibo
- * @property [] master
+ * @property [_writable_] master
  * @property [_writable_] lockup
  * @property [_writable_] buyerAta
  * @property [_writable_] recipientAta
+ * @property [_writable_] masterRecipientAta
  * @property [_writable_] iboAta
  * @property [_writable_] bondAta
- * @property [_writable_] masterRecipientAta
  * @property [] associatedTokenProgram
  * @category Instructions
  * @category BuyBond
@@ -65,9 +65,9 @@ export type BuyBondInstructionAccounts = {
   lockup: web3.PublicKey
   buyerAta: web3.PublicKey
   recipientAta: web3.PublicKey
+  masterRecipientAta: web3.PublicKey
   iboAta: web3.PublicKey
   bondAta: web3.PublicKey
-  masterRecipientAta: web3.PublicKey
   tokenProgram?: web3.PublicKey
   associatedTokenProgram: web3.PublicKey
   rent?: web3.PublicKey
@@ -116,7 +116,7 @@ export function createBuyBondInstruction(
     },
     {
       pubkey: accounts.master,
-      isWritable: false,
+      isWritable: true,
       isSigner: false,
     },
     {
@@ -135,17 +135,17 @@ export function createBuyBondInstruction(
       isSigner: false,
     },
     {
+      pubkey: accounts.masterRecipientAta,
+      isWritable: true,
+      isSigner: false,
+    },
+    {
       pubkey: accounts.iboAta,
       isWritable: true,
       isSigner: false,
     },
     {
       pubkey: accounts.bondAta,
-      isWritable: true,
-      isSigner: false,
-    },
-    {
-      pubkey: accounts.masterRecipientAta,
       isWritable: true,
       isSigner: false,
     },

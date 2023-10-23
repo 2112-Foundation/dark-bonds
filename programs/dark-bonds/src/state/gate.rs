@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 use crate::errors::errors::ErrorCode;
-use anchor_spl::token::{ Mint, Token, TokenAccount };
+use anchor_spl::token::{ self, Mint, Token, TokenAccount, Burn };
 use mpl_token_metadata::accounts::Metadata;
 
 #[account]
@@ -8,6 +8,12 @@ use mpl_token_metadata::accounts::Metadata;
 pub struct Gate {
     /** Type of gate_settings.*/
     pub gate_settings: Vec<GateType>,
+}
+
+// Size in bytes
+pub enum LockSize {
+    CollectionLock = 100,
+    SplLock = 50,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Copy, Clone, Debug, PartialEq, Eq)]
@@ -26,18 +32,18 @@ impl GateType {
     pub fn account_drop(&self) -> usize {
         match self {
             GateType::Collection { .. } => 3, // for CollectionType
-            GateType::Spl { .. } => 2, // for SplType
+            GateType::Spl { .. } => 2, // Modifying this to pass
         }
     }
 }
 
 pub trait Verifiable<'a> {
     type Args;
-    fn verify(&self, owner: &Pubkey, args: Self::Args) -> Result<bool>;
+    fn verify(&self, owner: &Signer, args: Self::Args) -> Result<bool>;
 }
 impl<'a> Verifiable<'a> for GateType {
     type Args = Vec<AccountInfo<'a>>;
-    fn verify(&self, owner: &Pubkey, args: Self::Args) -> Result<bool> {
+    fn verify(&self, owner: &Signer, args: Self::Args) -> Result<bool> {
         match self {
             GateType::Collection { gate } => gate.verify(owner, args),
             GateType::Spl { gate } => gate.verify(owner, args),
@@ -47,7 +53,7 @@ impl<'a> Verifiable<'a> for GateType {
 impl<'a> Verifiable<'a> for CollectionType {
     type Args = Vec<AccountInfo<'a>>;
 
-    fn verify(&self, owner: &Pubkey, _args: Self::Args) -> Result<bool> {
+    fn verify(&self, owner: &Signer, _args: Self::Args) -> Result<bool> {
         // verify based on membership to an NFT community
         // msg!("\n\nCollection gate_settings");
         msg!("Provided {:?} accounts.", _args.len());
@@ -74,7 +80,7 @@ impl<'a> Verifiable<'a> for CollectionType {
         msg!("Extarcted nft token account");
 
         // Caller is the owner of the nft
-        require!(&nft_token_account.owner == owner, ErrorCode::GateCollectionInvalidOwner);
+        require!(&nft_token_account.owner == &owner.key(), ErrorCode::GateCollectionInvalidOwner);
 
         // Token accout is for that particular  mint
         require!(
@@ -100,13 +106,13 @@ impl<'a> Verifiable<'a> for CollectionType {
         require!(self.master_mint == temp.key, ErrorCode::GateCollectionNftNotFromCollection);
 
         // Ensure caller owns provided nft mint
-        msg!("Collection gate_settings");
+        msg!("verified collection gate_settings");
         Ok(true)
     }
 }
 impl<'a> Verifiable<'a> for SplType {
     type Args = Vec<AccountInfo<'a>>;
-    fn verify(&self, owner: &Pubkey, _args: Self::Args) -> Result<bool> {
+    fn verify(&self, owner: &Signer, _args: Self::Args) -> Result<bool> {
         msg!("\n\nSPL gate_settings");
         msg!("Provided {:?} accounts.", _args.len());
         if _args.len() < 2 {
@@ -125,8 +131,10 @@ impl<'a> Verifiable<'a> for SplType {
         let spl_token_account: Account<TokenAccount> = Account::try_from(account2)?;
         require!(&spl_token_account.mint == &mint.key(), ErrorCode::GateSplInvalidTokenAccount);
 
+        // let token_program: Program<Token> = Program::try_from(account3)?;
+
         // User owns provieded token account
-        require!(&spl_token_account.owner == owner, ErrorCode::GateSplInvalidOwner);
+        require!(&spl_token_account.owner == &owner.key(), ErrorCode::GateSplInvalidOwner);
 
         // User has enough tokens
         require!(
@@ -134,8 +142,13 @@ impl<'a> Verifiable<'a> for SplType {
             ErrorCode::GateSplCallerNotEnoughToken
         );
 
-        msg!("User has: {:?}", spl_token_account.amount);
-        msg!("User passed SPL verication");
+        msg!(
+            "User has: {:?} and min ownership is {:?}",
+            spl_token_account.amount,
+            self.minimum_ownership
+        );
+
+        msg!("verified SPL gate_settings");
 
         Ok(true)
     }
@@ -173,55 +186,36 @@ impl SplType {
             amount_per_token: amount_per_token,
         }
     }
-    /**Burns whitelisted token based on the converion rate */
-    /// Brief.
-    ///
-    /// Description.
-    ///
-    /// * `purchase_amount` - Amount in liquidity coin used for this purchase.
-    /// * `lockup_rate` - Conversion rate from this particular lock up.
-    pub fn burn_wl_token(&self, purchase_amount: u64, lockup_rate: u64) -> Result<bool> {
-        // amount * self.amount_per_token / 100
-        // Calculate how many bond tokens they are allowed to have
-        // let amount_allowed: u64 = (amount * self.amount_per_token) / 100;
-
-        //
-
-        Ok(true)
-    }
 }
 
 impl Gate {
-    pub fn load_gates(&mut self, gate_inputs: Vec<GateType>) {
-        // Debug: Print the input at the beginning of the function.
-        // msg!("Input to load2: {:?}", gate_input);
+    pub fn load_gate_lock(&mut self, gate_inputs: Vec<GateType>) -> usize {
+        // Keep a track of how much in size the account shoudl increase
+        let mut size_increase: usize = 0;
 
         // Loop over each of the gates and set them in the array
-
         for &gate in gate_inputs.iter() {
             // Debug: Print when this branch is reached.
-            // msg!("\n\nGate: {:?}", gate);
-            // self.gate_settings.push(gate.clone());
+            msg!("\n\nGate: {:?}", gate);
 
             match gate {
                 GateType::Collection { gate } => {
-                    // Debug: Print when this branch is reached.
                     msg!("\nMatching CollectionType with collection: {:?}", gate);
                     self.gate_settings.push(GateType::Collection {
                         gate,
                     });
+                    size_increase += LockSize::CollectionLock as usize;
                 }
-                // GateInput::SplType { spl } => {
                 GateType::Spl { gate } => {
-                    // Debug: Print when this branch is reached.
                     msg!("\nMatching SplType with spl: {:?}", gate);
                     self.gate_settings.push(GateType::Spl {
                         gate,
                     });
+                    size_increase += LockSize::SplLock as usize;
                 }
             }
         }
 
-        msg!("\n\nGate loaded:\n{:?}", self.gate_settings);
+        size_increase
     }
 }

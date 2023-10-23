@@ -72,8 +72,8 @@ export function createSplTypeInput(
     spl: {
       gate: {
         splMint,
-        minimumOwnershipBN,
-        amountPerTokenBN,
+        minimumOwnership: minimumOwnershipBN,
+        amountPerToken: amountPerTokenBN,
       },
     },
   };

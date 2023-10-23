@@ -422,7 +422,7 @@ describe("dark-bonds", async () => {
 
   it("Main register initialised!", async () => {
     [mainIbo] = await PublicKey.findProgramAddress(
-      [Buffer.from("main_register")],
+      [Buffer.from(MASTER_SEED)],
       bondProgram.programId
     );
 
@@ -454,10 +454,7 @@ describe("dark-bonds", async () => {
 
     // Derive ibo pda for counter 0
     [ibo0] = await PublicKey.findProgramAddress(
-      [
-        Buffer.from("ibo_instance"),
-        new BN(ibo_index).toArrayLike(Buffer, "be", 8),
-      ],
+      [Buffer.from(IBO_SEED), new BN(ibo_index).toArrayLike(Buffer, "be", 8)],
       bondProgram.programId
     );
 

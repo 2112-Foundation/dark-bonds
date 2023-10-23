@@ -1,5 +1,6 @@
 use crate::errors::errors::ErrorCode;
 use crate::state::*;
+use crate::common::*;
 use anchor_lang::prelude::*;
 
 use anchor_spl::{
@@ -15,9 +16,9 @@ pub struct BuySwap<'info> {
     pub buyer: Signer<'info>,
 
     // Can't buy swap that is not listed
-    #[account(mut, constraint = bond.swap_price > 0 @ErrorCode::NotForSale)]
+    #[account(mut, constraint = bond.swap_price > 0 @ErrorCode::BondNotForSale)]
     pub bond: Account<'info, Bond>,
-    #[account(seeds = ["main_register".as_bytes()], bump)]
+    #[account(seeds = [MASTER_SEED.as_bytes()], bump)]
     pub master: Account<'info, Master>,
 
     pub ibo: Account<'info, Ibo>,

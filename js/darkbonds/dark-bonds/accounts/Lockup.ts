@@ -20,7 +20,7 @@ export type LockupArgs = {
   apy: beet.bignum
   gates: number[]
   matureOnly: boolean
-  limit: beet.bignum
+  limit: beet.COption<beet.bignum>
   purchasePeriod: PurchasePeriod
 }
 
@@ -38,7 +38,7 @@ export class Lockup implements LockupArgs {
     readonly apy: beet.bignum,
     readonly gates: number[],
     readonly matureOnly: boolean,
-    readonly limit: beet.bignum,
+    readonly limit: beet.COption<beet.bignum>,
     readonly purchasePeriod: PurchasePeriod
   ) {}
 
@@ -185,17 +185,7 @@ export class Lockup implements LockupArgs {
       })(),
       gates: this.gates,
       matureOnly: this.matureOnly,
-      limit: (() => {
-        const x = <{ toNumber: () => number }>this.limit
-        if (typeof x.toNumber === 'function') {
-          try {
-            return x.toNumber()
-          } catch (_) {
-            return x
-          }
-        }
-        return x
-      })(),
+      limit: this.limit,
       purchasePeriod: this.purchasePeriod.__kind,
     }
   }
@@ -214,10 +204,10 @@ export const lockupBeet = new beet.FixableBeetStruct<
   [
     ['accountDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
     ['period', beet.i64],
-    ['apy', beet.i64],
+    ['apy', beet.u64],
     ['gates', beet.array(beet.u32)],
     ['matureOnly', beet.bool],
-    ['limit', beet.u64],
+    ['limit', beet.coption(beet.u64)],
     ['purchasePeriod', purchasePeriodBeet],
   ],
   Lockup.fromArgs,

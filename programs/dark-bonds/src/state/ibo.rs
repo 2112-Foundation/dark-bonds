@@ -1,4 +1,5 @@
 use anchor_lang::prelude::*;
+use anchor_spl::token::{ self, Token, TokenAccount, Transfer };
 
 #[account]
 pub struct Ibo {
@@ -20,9 +21,7 @@ pub struct Ibo {
     /** Date after which bonds can be purchased.*/
     pub live_date: i64,
     /** Date after which bonds can not be purchased.*/
-    pub end_date: i64, // needs to be set
-
-    // Accepted mint address for purchase
+    pub end_date: i64,
     /** Mint of the token in which bonds will be redeemed.*/
     pub liquidity_token: Pubkey,
     /** Mint of the token which will be used to purchase bonds.*/
@@ -33,7 +32,7 @@ pub struct Ibo {
     /** Admin of the ibo which can:
      - add/remove gates
      - add/remove lockups
-     - change exchanged rate
+     - change exchange rate
      */
     pub admin: Pubkey,
 
@@ -48,4 +47,9 @@ pub struct Ibo {
     pub nft_counter: u32, // TODO ned to also lock withdrawl of NFTs until its over delete and change to tree counter
     pub nft_base_price: u64, // TODO needs to be loaded
     pub tree_counter: u8,
+
+    /** Description of the project launching this bond offering */
+    pub descriptin: String,
+    /** Link to the project launching this offering */
+    pub link: String,
 }

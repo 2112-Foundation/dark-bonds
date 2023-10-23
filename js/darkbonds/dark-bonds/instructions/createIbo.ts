@@ -15,6 +15,8 @@ import * as beetSolana from '@metaplex-foundation/beet-solana'
  * @category generated
  */
 export type CreateIboInstructionArgs = {
+  description: string
+  link: string
   fixedExchangeRate: beet.bignum
   liveDate: beet.bignum
   endDate: beet.bignum
@@ -27,13 +29,15 @@ export type CreateIboInstructionArgs = {
  * @category CreateIbo
  * @category generated
  */
-export const createIboStruct = new beet.BeetArgsStruct<
+export const createIboStruct = new beet.FixableBeetArgsStruct<
   CreateIboInstructionArgs & {
     instructionDiscriminator: number[] /* size: 8 */
   }
 >(
   [
     ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
+    ['description', beet.utf8String],
+    ['link', beet.utf8String],
     ['fixedExchangeRate', beet.u64],
     ['liveDate', beet.i64],
     ['endDate', beet.i64],

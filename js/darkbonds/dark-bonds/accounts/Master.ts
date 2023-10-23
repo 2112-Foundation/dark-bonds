@@ -8,6 +8,9 @@
 import * as beet from '@metaplex-foundation/beet'
 import * as web3 from '@solana/web3.js'
 import * as beetSolana from '@metaplex-foundation/beet-solana'
+import { AdminFees, adminFeesBeet } from '../types/AdminFees'
+import { UserFees, userFeesBeet } from '../types/UserFees'
+import { Cuts, cutsBeet } from '../types/Cuts'
 
 /**
  * Arguments used to create {@link Master}
@@ -19,6 +22,9 @@ export type MasterArgs = {
   masterCut: beet.bignum
   admin: web3.PublicKey
   masterRecipient: web3.PublicKey
+  adminFees: AdminFees
+  userFees: UserFees
+  cuts: Cuts
 }
 
 export const masterDiscriminator = [168, 213, 193, 12, 77, 162, 58, 235]
@@ -34,7 +40,10 @@ export class Master implements MasterArgs {
     readonly iboCounter: beet.bignum,
     readonly masterCut: beet.bignum,
     readonly admin: web3.PublicKey,
-    readonly masterRecipient: web3.PublicKey
+    readonly masterRecipient: web3.PublicKey,
+    readonly adminFees: AdminFees,
+    readonly userFees: UserFees,
+    readonly cuts: Cuts
   ) {}
 
   /**
@@ -45,7 +54,10 @@ export class Master implements MasterArgs {
       args.iboCounter,
       args.masterCut,
       args.admin,
-      args.masterRecipient
+      args.masterRecipient,
+      args.adminFees,
+      args.userFees,
+      args.cuts
     )
   }
 
@@ -176,6 +188,9 @@ export class Master implements MasterArgs {
       })(),
       admin: this.admin.toBase58(),
       masterRecipient: this.masterRecipient.toBase58(),
+      adminFees: this.adminFees,
+      userFees: this.userFees,
+      cuts: this.cuts,
     }
   }
 }
@@ -196,6 +211,9 @@ export const masterBeet = new beet.BeetStruct<
     ['masterCut', beet.u64],
     ['admin', beetSolana.publicKey],
     ['masterRecipient', beetSolana.publicKey],
+    ['adminFees', adminFeesBeet],
+    ['userFees', userFeesBeet],
+    ['cuts', cutsBeet],
   ],
   Master.fromArgs,
   'Master'
