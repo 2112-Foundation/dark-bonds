@@ -1175,6 +1175,34 @@
     "eventemitter3" "^4.0.7"
     "uuid" "^8.3.2"
 
+"@coral-xyz/anchor@^0.29.0":
+  "integrity" "sha512-eny6QNG0WOwqV0zQ7cs/b1tIuzZGmP7U7EcH+ogt4Gdbl8HDmIYVMh/9aTmYZPaFWjtUaI8qSn73uYEXWfATdA=="
+  "resolved" "https://registry.npmjs.org/@coral-xyz/anchor/-/anchor-0.29.0.tgz"
+  "version" "0.29.0"
+  dependencies:
+    "@coral-xyz/borsh" "^0.29.0"
+    "@noble/hashes" "^1.3.1"
+    "@solana/web3.js" "^1.68.0"
+    "bn.js" "^5.1.2"
+    "bs58" "^4.0.1"
+    "buffer-layout" "^1.2.2"
+    "camelcase" "^6.3.0"
+    "cross-fetch" "^3.1.5"
+    "crypto-hash" "^1.3.0"
+    "eventemitter3" "^4.0.7"
+    "pako" "^2.0.3"
+    "snake-case" "^3.0.4"
+    "superstruct" "^0.15.4"
+    "toml" "^3.0.0"
+
+"@coral-xyz/borsh@^0.29.0":
+  "integrity" "sha512-s7VFVa3a0oqpkuRloWVPdCK7hMbAMY270geZOGfCnaqexrP5dTIpbEHL33req6IYPPJ0hYa71cdvJ1h6V55/oQ=="
+  "resolved" "https://registry.npmjs.org/@coral-xyz/borsh/-/borsh-0.29.0.tgz"
+  "version" "0.29.0"
+  dependencies:
+    "bn.js" "^5.1.2"
+    "buffer-layout" "^1.2.0"
+
 "@cspotcode/source-map-support@^0.8.0":
   "integrity" "sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw=="
   "resolved" "https://registry.npmjs.org/@cspotcode/source-map-support/-/source-map-support-0.8.1.tgz"
@@ -2966,7 +2994,7 @@
     "@wallet-standard/app" "^1.0.1"
     "@wallet-standard/base" "^1.0.1"
 
-"@solana/web3.js@*", "@solana/web3.js@^1.2.0", "@solana/web3.js@^1.21.0", "@solana/web3.js@^1.32.0", "@solana/web3.js@^1.36.0", "@solana/web3.js@^1.44.3", "@solana/web3.js@^1.47.4", "@solana/web3.js@^1.5.0", "@solana/web3.js@^1.50.1", "@solana/web3.js@^1.56.2", "@solana/web3.js@^1.58.0", "@solana/web3.js@^1.63.0", "@solana/web3.js@^1.63.1", "@solana/web3.js@^1.66.2", "@solana/web3.js@^1.77.3", "@solana/web3.js@^1.87.1":
+"@solana/web3.js@*", "@solana/web3.js@^1.2.0", "@solana/web3.js@^1.21.0", "@solana/web3.js@^1.32.0", "@solana/web3.js@^1.36.0", "@solana/web3.js@^1.44.3", "@solana/web3.js@^1.47.4", "@solana/web3.js@^1.5.0", "@solana/web3.js@^1.50.1", "@solana/web3.js@^1.56.2", "@solana/web3.js@^1.58.0", "@solana/web3.js@^1.63.0", "@solana/web3.js@^1.63.1", "@solana/web3.js@^1.66.2", "@solana/web3.js@^1.68.0", "@solana/web3.js@^1.77.3", "@solana/web3.js@^1.87.1":
   "integrity" "sha512-E8Y9bNlZ8TQlhOvCx1b7jG+TjA4SJLVwufmIk1+tcQctUhK5HiB1Q8ljd4yQDkFlk6OOeAlAeqvW0YntWJU94Q=="
   "resolved" "https://registry.npmjs.org/@solana/web3.js/-/web3.js-1.87.1.tgz"
   "version" "1.87.1"
@@ -4722,6 +4750,11 @@
   "version" "6.3.0"
 
 "camelcase@^6.2.1":
+  "integrity" "sha512-Gmy6FhYlCY7uOElZUSbxo2UCDH8owEk996gkbrpsgGtrJLM3J7jGxl9Ic7Qwwj4ivOE5AWZWRMecDdF7hqGjFA=="
+  "resolved" "https://registry.npmjs.org/camelcase/-/camelcase-6.3.0.tgz"
+  "version" "6.3.0"
+
+"camelcase@^6.3.0":
   "integrity" "sha512-Gmy6FhYlCY7uOElZUSbxo2UCDH8owEk996gkbrpsgGtrJLM3J7jGxl9Ic7Qwwj4ivOE5AWZWRMecDdF7hqGjFA=="
   "resolved" "https://registry.npmjs.org/camelcase/-/camelcase-6.3.0.tgz"
   "version" "6.3.0"
