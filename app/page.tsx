@@ -65,31 +65,31 @@ export default function Home() {
   }, [refetchIboData]);
 
   //Bonds
-  // const [bonds] = useMemo(() => {
-  //   // console.log(ibo);
-  //   var x = PublicKey.findProgramAddressSync(
-  //     [
-  //       Buffer.from(BOND_SEED),
-  //       Buffer.from(ibo.toBytes()),
-  //       new BN(1).toArrayLike(Buffer, "be", 4),
-  //     ],
-  //     PROGRAM_ID
-  //   );
-  //   return x;
-  // }, [ibo]);
+  const [bonds] = useMemo(() => {
+    // console.log(ibo);
+    var x = PublicKey.findProgramAddressSync(
+      [
+        Buffer.from(BOND_SEED),
+        Buffer.from(ibo.toBytes()),
+        new BN(1).toArrayLike(Buffer, "be", 4),
+      ],
+      PROGRAM_ID
+    );
+    return x;
+  }, [ibo]);
 
-  // const [bondsData, setBondsData] = useState<Bond | null>(null);
-  // const refetchBondsData = useCallback(async () => {
-  //   const data = await Bond.fromAccountAddress(connection, bonds);
-  //   // console.log(data);
-  //   setBondsData(data);
-  // }, [bonds, connection]);
+  const [bondsData, setBondsData] = useState<Bond | null>(null);
+  const refetchBondsData = useCallback(async () => {
+    const data = await Bond.fromAccountAddress(connection, bonds);
+    console.log(data);
+    setBondsData(data);
+  }, [bonds, connection]);
 
-  // useEffect(() => {
-  //   (async () => {
-  //     await refetchBondsData();
-  //   })();
-  // }, [refetchBondsData]);
+  useEffect(() => {
+    (async () => {
+      await refetchBondsData();
+    })();
+  }, [refetchBondsData]);
 
   const isDisplayed = useAppSelector((state) => state.displayBondReducer.value);
   return (
@@ -127,11 +127,11 @@ export default function Home() {
         <Image src={Asterisk} alt="" width={600} className="flex z-1 mt-36" />
       </div>
 
-      <div className="row-start- col-start-3 col-span-7">
+      {/* <div className="row-start- col-start-3 col-span-7">
         <div className="xl:h-84 bg-sable-green-bg row-start-5 col-start-3 col-span-5 row-span-2 p-2 rounded-md m-5 flex items-stretch overflow-x-auto">
           <CompliantBonds />
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }
