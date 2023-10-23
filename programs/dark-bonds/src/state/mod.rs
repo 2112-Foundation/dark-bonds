@@ -6,6 +6,8 @@ pub mod master;
 pub mod nft_basket;
 pub mod vertex;
 pub mod tree;
+pub mod user_account;
+pub mod bond_pointer;
 
 pub use bond::*;
 pub use gate::*;
@@ -15,3 +17,5 @@ pub use master::*;
 pub use nft_basket::*;
 pub use vertex::*;
 pub use tree::*;
+pub use user_account::*;
+pub use bond_pointer::*;

@@ -33,6 +33,28 @@ pub struct BuyBond<'info> {
     )]
     pub lockup: Account<'info, Lockup>,
 
+    #[account(
+        init_if_needed,
+        seeds = [USER_ACCOUNT_SEED.as_bytes(), buyer.key().as_ref()],
+        bump,
+        space = 8 + 40, // change
+        payer = buyer
+    )]
+    pub user_account: Account<'info, UserAccount>,
+
+    #[account(
+        init,
+        seeds = [
+            BOND_POINTER_SEED.as_bytes(),
+            buyer.key().as_ref(),
+            &user_account.bond_counter.to_be_bytes(),
+        ],
+        bump,
+        space = 8 + 40, // change
+        payer = buyer
+    )]
+    pub bond_pointer: Account<'info, BondPointer>,
+
     // Provided token account for the buyer has to be same mint as the one set in ibo
     #[account(mut, token::mint = ibo.liquidity_token, token::authority = buyer)]
     pub buyer_ata: Box<Account<'info, TokenAccount>>,
@@ -122,11 +144,17 @@ pub fn buy_bond<'a, 'b, 'c, 'info>(
 ) -> Result<()> {
     let accounts: &mut BuyBond = ctx.accounts;
     let buyer: &Signer = &mut accounts.buyer;
+    let user_account: &mut Account<UserAccount> = &mut accounts.user_account;
+    let bond_pointer: &mut Account<BondPointer> = &mut accounts.bond_pointer;
     let master: &Account<Master> = &mut accounts.master;
     let lockup: &mut Account<Lockup> = &mut accounts.lockup;
     let ibo: &mut Account<Ibo> = &mut accounts.ibo;
     let bond: &mut Account<Bond> = &mut accounts.bond;
     let token_program: &mut Program<'_, Token> = &mut accounts.token_program;
+
+    // Increment bond pointer counter and store pointer in the pointer PDA
+    user_account.bond_counter += 1;
+    bond_pointer.bond_address = bond.key();
 
     // Within the purchase period
     require!(lockup.within_sale(ibo.live_date, ibo.end_date), ErrorCode::NotWithinSale);
