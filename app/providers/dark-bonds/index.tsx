@@ -10,6 +10,7 @@ import {
 } from "react";
 import { Master, Ibo, Bond } from "@/js/darkbonds/dark-bonds";
 import { BN } from "@coral-xyz/anchor";
+import { BigNumber } from "@metaplex-foundation/js";
 
 const PROGRAM_ID = new PublicKey(
   "CkAJr4F6zYzDL2ov5uZgJFtupqzSsSuPXgh1Paed7K6n"
@@ -45,12 +46,19 @@ const DarkBondsProvider = ({ children }: { children: JSX.Element }) => {
     return x;
   }, []);
 
+  const [masterPDA] = useMemo(() => {
+    var x = PublicKey.findProgramAddressSync(
+      [Buffer.from(MAIN_SEED)],
+      PROGRAM_ID
+    );
+    return x;
+  }, []);
+
   const [masterData, setMasterData] = useState<Master | null>(null);
   const refetchMasterData = useCallback(async () => {
-    const data = await Master.fromAccountAddress(connection, master);
-    console.log(data);
+    const data = await Master.fromAccountAddress(connection, masterPDA).then();
     setMasterData(data);
-  }, [connection, master]);
+  }, [connection, masterPDA]);
 
   useEffect(() => {
     (async () => {
@@ -58,55 +66,60 @@ const DarkBondsProvider = ({ children }: { children: JSX.Element }) => {
     })();
   }, [refetchMasterData]);
 
-  //Ibo
-  const [ibo] = useMemo(() => {
-    var x = PublicKey.findProgramAddressSync(
-      [Buffer.from(IBO_SEED), new BN(0).toArrayLike(Buffer, "be", 8)],
-      PROGRAM_ID
-    );
-    // console.log(x);
-    return x;
-  }, [master]);
-
-  const [iboData, setIboData] = useState<Ibo | null>(null);
-  const refetchIboData = useCallback(async () => {
-    const data = await Ibo.fromAccountAddress(connection, ibo);
-    console.log(data);
-    setIboData(data);
-  }, [ibo, connection]);
-
+  //print master data after set
   useEffect(() => {
-    (async () => {
-      await refetchIboData();
-    })();
-  }, [refetchIboData]);
+    console.log(masterData);
+  }, [masterData]);
+
+  //Ibo
+  //   const [ibo] = useMemo(() => {
+  //     var x = PublicKey.findProgramAddressSync(
+  //       [Buffer.from(IBO_SEED), new BN(0).toArrayLike(Buffer, "be", 8)],
+  //       PROGRAM_ID
+  //     );
+  //     // console.log(x);
+  //     return x;
+  //   }, [master]);
+
+  //   const [iboData, setIboData] = useState<Ibo | null>(null);
+  //   const refetchIboData = useCallback(async () => {
+  //     const data = await Ibo.fromAccountAddress(connection, ibo);
+  //     console.log(data);
+  //     setIboData(data);
+  //   }, [ibo, connection]);
+
+  //   useEffect(() => {
+  //     (async () => {
+  //       await refetchIboData();
+  //     })();
+  //   }, [refetchIboData]);
 
   //Bonds
-  const [bonds] = useMemo(() => {
-    // console.log(ibo);
-    var x = PublicKey.findProgramAddressSync(
-      [
-        Buffer.from(BOND_SEED),
-        Buffer.from(ibo.toBytes()),
-        new BN(1).toArrayLike(Buffer, "be", 4),
-      ],
-      PROGRAM_ID
-    );
-    return x;
-  }, [ibo]);
+  //   const [bonds] = useMemo(() => {
+  //     // console.log(ibo);
+  //     var x = PublicKey.findProgramAddressSync(
+  //       [
+  //         Buffer.from(BOND_SEED),
+  //         Buffer.from(ibo.toBytes()),
+  //         new BN(1).toArrayLike(Buffer, "be", 4),
+  //       ],
+  //       PROGRAM_ID
+  //     );
+  //     return x;
+  //   }, [ibo]);
 
-  const [bondsData, setBondsData] = useState<Bond | null>(null);
-  const refetchBondsData = useCallback(async () => {
-    const data = await Bond.fromAccountAddress(connection, bonds);
-    // console.log(data);
-    setBondsData(data);
-  }, [bonds, connection]);
+  //   const [bondsData, setBondsData] = useState<Bond | null>(null);
+  //   const refetchBondsData = useCallback(async () => {
+  //     const data = await Bond.fromAccountAddress(connection, bonds);
+  //     // console.log(data);
+  //     setBondsData(data);
+  //   }, [bonds, connection]);
 
-  useEffect(() => {
-    (async () => {
-      await refetchBondsData();
-    })();
-  }, [refetchBondsData]);
+  //   useEffect(() => {
+  //     (async () => {
+  //       await refetchBondsData();
+  //     })();
+  //   }, [refetchBondsData]);
 
   return (
     <DarkBondsContext.Provider
