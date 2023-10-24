@@ -14,82 +14,12 @@ export const IBO_SEED = "ibo";
 export const BOND_SEED = "bond";
 import { PROGRAM_ID } from "@/js/darkbonds/dark-bonds";
 import { BN } from "@coral-xyz/anchor";
+import { useDarkBonds } from "./providers/dark-bonds";
 
 export default function Home() {
-  const { connection } = useConnection();
+  // const { connection } = useConnection();
 
-  //Master
-  const [master] = useMemo(() => {
-    var x = PublicKey.findProgramAddressSync(
-      [Buffer.from(MAIN_SEED)],
-      PROGRAM_ID
-    );
-    // console.log(x);
-    return x;
-  }, []);
-
-  const [masterData, setMasterData] = useState<Master | null>(null);
-  const refetchMasterData = useCallback(async () => {
-    const data = await Master.fromAccountAddress(connection, master);
-    console.log(data);
-    setMasterData(data);
-  }, [connection, master]);
-
-  useEffect(() => {
-    (async () => {
-      await refetchMasterData();
-    })();
-  }, [refetchMasterData]);
-
-  //Ibo
-  const [ibo] = useMemo(() => {
-    var x = PublicKey.findProgramAddressSync(
-      [Buffer.from(IBO_SEED), new BN(0).toArrayLike(Buffer, "be", 8)],
-      PROGRAM_ID
-    );
-    // console.log(x);
-    return x;
-  }, [master]);
-
-  const [iboData, setIboData] = useState<Ibo | null>(null);
-  const refetchIboData = useCallback(async () => {
-    const data = await Ibo.fromAccountAddress(connection, ibo);
-    console.log(data);
-    setIboData(data);
-  }, [ibo, connection]);
-
-  useEffect(() => {
-    (async () => {
-      await refetchIboData();
-    })();
-  }, [refetchIboData]);
-
-  //Bonds
-  const [bonds] = useMemo(() => {
-    // console.log(ibo);
-    var x = PublicKey.findProgramAddressSync(
-      [
-        Buffer.from(BOND_SEED),
-        Buffer.from(ibo.toBytes()),
-        new BN(1).toArrayLike(Buffer, "be", 4),
-      ],
-      PROGRAM_ID
-    );
-    return x;
-  }, [ibo]);
-
-  const [bondsData, setBondsData] = useState<Bond | null>(null);
-  const refetchBondsData = useCallback(async () => {
-    const data = await Bond.fromAccountAddress(connection, bonds);
-    console.log(data);
-    setBondsData(data);
-  }, [bonds, connection]);
-
-  useEffect(() => {
-    (async () => {
-      await refetchBondsData();
-    })();
-  }, [refetchBondsData]);
+  const { testing } = useDarkBonds();
 
   const isDisplayed = useAppSelector((state) => state.displayBondReducer.value);
   return (
@@ -127,11 +57,11 @@ export default function Home() {
         <Image src={Asterisk} alt="" width={600} className="flex z-1 mt-36" />
       </div>
 
-      {/* <div className="row-start- col-start-3 col-span-7">
+      <div className="row-start- col-start-3 col-span-7">
         <div className="xl:h-84 bg-sable-green-bg row-start-5 col-start-3 col-span-5 row-span-2 p-2 rounded-md m-5 flex items-stretch overflow-x-auto">
           <CompliantBonds />
         </div>
-      </div> */}
+      </div>
     </div>
   );
 }

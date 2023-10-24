@@ -20,6 +20,7 @@ import {
   WalletModalProvider,
   WalletMultiButton,
 } from "@solana/wallet-adapter-react-ui";
+import DarkBondsProvider from "./dark-bonds";
 require("@solana/wallet-adapter-react-ui/styles.css");
 
 const wallets = [new PhantomWalletAdapter()];
@@ -34,11 +35,13 @@ export function Providers({ children, ...props }: Props) {
     <ConnectionProvider endpoint="http://127.0.0.1:8899">
       <WalletProvider wallets={wallets} autoConnect={true}>
         <WalletModalProvider>
-          <ReduxProvider>
-            <Navbar />
-            {children}
-            <Footer />
-          </ReduxProvider>
+          <DarkBondsProvider>
+            <ReduxProvider>
+              <Navbar />
+              {children}
+              <Footer />
+            </ReduxProvider>
+          </DarkBondsProvider>
         </WalletModalProvider>
       </WalletProvider>
     </ConnectionProvider>
