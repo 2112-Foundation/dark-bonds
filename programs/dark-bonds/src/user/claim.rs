@@ -9,12 +9,12 @@ use anchor_spl::token::{ self, Token, TokenAccount, Transfer };
 pub struct Claim<'info> {
     #[account(mut)]
     pub bond_owner: Signer<'info>,
-    #[account(mut)]
+    #[account(mut, constraint = bond.owner == *bond_owner.key @ErrorCode::BondInvalidCaller)]
     pub bond: Account<'info, Bond>,
     // Need PDA of the to be derived of some shared register which is incremented
     #[account(mut)]
     pub bond_owner_ata: Box<Account<'info, TokenAccount>>,
-    #[account(mut)]
+    #[account(mut, token::authority = bond.key())]
     pub bond_ata: Box<Account<'info, TokenAccount>>,
     #[account(mut, seeds = [MASTER_SEED.as_bytes()], bump)]
     pub master: Account<'info, Master>,
@@ -38,8 +38,8 @@ pub fn claim(ctx: Context<Claim>, ibo_address: Pubkey, bond_idx: u32) -> Result<
     let bond: &mut Account<Bond> = &mut ctx.accounts.bond;
     let master: &mut Account<Master> = &mut ctx.accounts.master;
 
-    msg!("\n\nProvided bond idx: {:?}", bond_idx);
-    msg!("Stored bond idx: {:?}", bond.idx);
+    // msg!("\n\nProvided bond idx: {:?}", bond_idx);
+    // msg!("Stored bond idx: {:?}", bond.idx);
 
     // Ensure can only withdraw once a day TODO leave it in only when going to prod
     // require!(bond.time_elapsed(), ErrorCode::WithdrawTooEarly);
@@ -64,18 +64,23 @@ pub fn claim(ctx: Context<Claim>, ibo_address: Pubkey, bond_idx: u32) -> Result<
     // Update withdraw date to now
     bond.update_claim_date();
 
-    let (_, bump) = anchor_lang::prelude::Pubkey::find_program_address(
+    let (der, bump) = anchor_lang::prelude::Pubkey::find_program_address(
         &[BOND_SEED.as_bytes(), ibo_address.as_ref(), &bond_idx.to_be_bytes()],
         &ctx.program_id
     );
 
     let seeds = &[BOND_SEED.as_bytes(), ibo_address.as_ref(), &bond_idx.to_be_bytes(), &[bump]];
 
-    msg!("total claimable_now: {:?}", bond.total_claimable);
-    msg!("claimable_now: {:?}", claimable_now);
+    // msg!("total claimable_now: {:?}", bond.total_claimable);
+    // msg!("claiming now: {:?}", claimable_now);
+    // msg!("derived_ata: {:?}", der);
+    // msg!("provided_ata: {:?}", bond.key());
+    // msg!("Balances bond_ata (from): {:?}", ctx.accounts.bond_ata.amount);
+    // msg!("Balances bond_ata.owner: {:?}", ctx.accounts.bond_ata.owner);
+    // msg!("Balances bond_owner_ata (to): {:?}", ctx.accounts.bond_owner_ata.amount);
 
     // Transfer SPL balance calculated
-    token::transfer(ctx.accounts.transfer_bond().with_signer(&[seeds]), claimable_now)?;
+    token::transfer(ctx.accounts.transfer_bond().with_signer(&[seeds]), 100)?;
 
     // Invoke SPL to transfer
     Ok(())

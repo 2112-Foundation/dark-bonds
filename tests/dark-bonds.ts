@@ -290,35 +290,37 @@ describe("dark-bonds", async () => {
       swapCut,
       mintBond,
       mintSc.mint,
-      adminIbo0
+      adminIbo0,
+      adminIbo0.publicKey // If
     );
 
     console.log("ibo.ata: ", ibo.vaultAccount.address.toBase58());
     await mintBond.topUpSPl(ibo.vaultAccount.address, 1000000000000000);
     console.log("Minted");
-    try {
-      const tx = await bondProgram.methods
-        .createIbo(
-          "test description",
-          "test link",
-          new BN(ibo.fixedExchangeRate),
-          new BN(ibo.liveDate),
-          new BN(ibo.endDate), // Can buy bonds until that point in the future
-          ibo.swapCut,
-          ibo.liquidityMint,
-          ibo.admin.publicKey
-        )
-        .accounts({
-          master: master.address,
-          admin: ibo.admin.publicKey,
-          ibo: ibo.address,
-          systemProgram: anchor.web3.SystemProgram.programId,
-        })
-        .signers([ibo.admin])
-        .rpc();
-    } catch (err) {
-      console.log("err: ", err);
-    }
+    // try {
+    const tx = await bondProgram.methods
+      .createIbo(
+        "test description",
+        "test link",
+        new BN(ibo.fixedExchangeRate),
+        new BN(ibo.liveDate),
+        new BN(ibo.endDate),
+        ibo.swapCut,
+        ibo.liquidityMint,
+        ibo.mintB.mint,
+        ibo.recipientAddressAccount.owner
+      )
+      .accounts({
+        master: master.address,
+        admin: ibo.admin.publicKey,
+        ibo: ibo.address,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .signers([ibo.admin])
+      .rpc();
+    // } catch (err) {
+    //   console.log("err: ", err);
+    // }
   });
 
   it("Add three different lockups.", async () => {
@@ -648,7 +650,7 @@ describe("dark-bonds", async () => {
     console.log(
       `Using  bp ${bp.toBase58()} at index ${user.bondPointers.length}`
     );
-
+    // try {
     const tx_lu1 = await bondProgram.methods
       .buyBond(0, new BN(ibo.index), new BN(purchaseAmount), 0)
       .accounts({
@@ -670,6 +672,9 @@ describe("dark-bonds", async () => {
       })
       .signers([user])
       .rpc();
+    // } catch (e) {
+    //   console.log("\nerror:\n\n", e);
+    // }
 
     // bond_counter += 1;
 
@@ -790,6 +795,13 @@ describe("dark-bonds", async () => {
     console.log("time elapsed: ", time_elapsed);
 
     await delay(shortBond / 2 - time_elapsed);
+    await delay(3);
+
+    console.log(" user.publicKey: ", user.publicKey.toBase58());
+    console.log(
+      "bond.ownerBondAccount.address: ",
+      bond.ownerBondAccount.address.toBase58()
+    );
 
     // try {
     const tx_lu1 = await bondProgram.methods

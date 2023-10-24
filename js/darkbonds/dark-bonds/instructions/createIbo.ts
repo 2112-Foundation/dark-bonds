@@ -22,6 +22,7 @@ export type CreateIboInstructionArgs = {
   endDate: beet.bignum
   swapCut: number
   liquidityToken: web3.PublicKey
+  underlyingToken: web3.PublicKey
   recipient: web3.PublicKey
 }
 /**
@@ -43,6 +44,7 @@ export const createIboStruct = new beet.FixableBeetArgsStruct<
     ['endDate', beet.i64],
     ['swapCut', beet.u32],
     ['liquidityToken', beetSolana.publicKey],
+    ['underlyingToken', beetSolana.publicKey],
     ['recipient', beetSolana.publicKey],
   ],
   'CreateIboInstructionArgs'

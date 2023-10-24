@@ -39,6 +39,7 @@ pub fn create_ibo(
     end_date: i64,
     swap_cut: u32,
     liquidity_token: Pubkey,
+    underlying_token: Pubkey,
     recipient: Pubkey
 ) -> Result<()> {
     let admin: &Signer = &mut ctx.accounts.admin;
@@ -52,6 +53,7 @@ pub fn create_ibo(
     ibo.live_date = live_date;
     ibo.fixed_exchange_rate = fixed_exchange_rate;
     ibo.liquidity_token = liquidity_token;
+    ibo.underlying_token = underlying_token;
     ibo.admin = admin.key();
     ibo.recipient_address = recipient;
     ibo.swap_cut = swap_cut as u64;

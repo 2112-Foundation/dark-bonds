@@ -93,6 +93,7 @@ pub mod dark_bonds {
         end_date: i64,
         swap_cut: u32,
         liquidity_token: Pubkey,
+        underlying_token: Pubkey,
         recipient: Pubkey
     ) -> Result<()> {
         admin::create_ibo::create_ibo(
@@ -104,6 +105,7 @@ pub mod dark_bonds {
             end_date,
             swap_cut,
             liquidity_token,
+            underlying_token,
             recipient
         )
     }
@@ -193,8 +195,8 @@ pub mod dark_bonds {
     }
 
     // Claim tokens yielded for that specifc bond bond
-    pub fn claim(ctx: Context<Claim>, ibo_address: Pubkey, ibo_idx: u32) -> Result<()> {
-        user::claim::claim(ctx, ibo_address, ibo_idx)
+    pub fn claim(ctx: Context<Claim>, ibo_address: Pubkey, bond_idx: u32) -> Result<()> {
+        user::claim::claim(ctx, ibo_address, bond_idx)
     }
 
     // Split bond bond into multiples

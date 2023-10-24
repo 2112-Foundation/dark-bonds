@@ -26,8 +26,8 @@ pub struct Ibo {
     pub liquidity_token: Pubkey,
     /** Mint of the token which will be used to purchase bonds.*/
     pub underlying_token: Pubkey,
-    /** Receives a cut of the provided liquidity token amount.*/
-    pub recipient_address: Pubkey, // , can be this PDA or any specified account
+    /** Receives a cut of the provided liquidity token amount. Not an ATA.*/
+    pub recipient_address: Pubkey,
 
     /** Admin of the ibo which can:
      - add/remove gates

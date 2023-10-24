@@ -58,15 +58,16 @@ pub struct BuyBond<'info> {
     // Provided token account for the buyer has to be same mint as the one set in ibo
     #[account(mut, token::mint = ibo.liquidity_token, token::authority = buyer)]
     pub buyer_ata: Box<Account<'info, TokenAccount>>,
-    #[account(mut)]
+    #[account(mut, token::mint = ibo.liquidity_token, token::authority = ibo.recipient_address)]
     pub recipient_ata: Box<Account<'info, TokenAccount>>,
     #[account(mut, token::mint = ibo.liquidity_token, token::authority = master.master_recipient)]
     pub master_recipient_ata: Box<Account<'info, TokenAccount>>, // Matches specified owner and mint
 
-    #[account(mut)]
+    #[account(mut)] //= ibo_ata.mint == ibo.underlying_token @ErrorCode::MintMismatch)]
     pub ibo_ata: Box<Account<'info, TokenAccount>>,
     // Check for bond substitution attack
     #[account(mut, token::authority = bond)]
+    ///, constraint = ibo_ata.mint == ibo.underlying_token @ErrorCode::MintMismatch)]
     pub bond_ata: Box<Account<'info, TokenAccount>>,
 
     pub token_program: Program<'info, Token>,
@@ -134,13 +135,12 @@ fn burn_wl<'a, 'info>(
     Ok(())
 }
 
-// impl<'a> Verifiable<'a>
 pub fn buy_bond<'a, 'b, 'c, 'info>(
     ctx: Context<'a, 'b, 'c, 'info, BuyBond<'info>>,
     _lockup_idx: u32,
     ibo_idx: u64,
     amount_liquidity: u64,
-    gate_idx: u32 // This needs to be an array of gates
+    gate_idx: u32 // Gate selector
 ) -> Result<()> {
     let accounts: &mut BuyBond = ctx.accounts;
     let buyer: &Signer = &mut accounts.buyer;
