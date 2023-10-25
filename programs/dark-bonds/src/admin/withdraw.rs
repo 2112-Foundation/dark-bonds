@@ -22,7 +22,7 @@ pub struct Withdraw<'info> {
 
     #[account(mut)]
     pub ibo_ata: Box<Account<'info, TokenAccount>>,
-    #[account(mut)]
+    #[account(mut, token::authority = ibo.recipient_address)]
     pub recipient_ata: Box<Account<'info, TokenAccount>>,
 
     pub token_program: Program<'info, Token>,
@@ -43,8 +43,8 @@ pub fn withdraw(ctx: Context<Withdraw>, withdraw_amount: u64, ibo_idx: u64) -> R
     let master: &mut Account<Master> = &mut ctx.accounts.master;
 
     // If trying to withdraw underlying asset and withdraw for that have been marked as locked
-    if ibo_ata.mint == ibo.underlying_token && ibo.withdraws_locked {
-        // Assert deadline has expired
+    if ibo_ata.mint == ibo.underlying_token && ibo.actions.admin_withdraws {
+        // Otherwise ensure its over by asserting deadline has expired
         require!(Clock::get().unwrap().unix_timestamp >= ibo.end_date, ErrorCode::WithdrawLocked);
     }
 

@@ -6,7 +6,7 @@ pub const SCALE: f64 = 1000.0;
 // Account sizes
 pub const PRE: usize = 8;
 pub const LOCKUP_BASE_SIZE: usize = 90;
-pub const IBO_BASE_SIZE: usize = 200;
+pub const IBO_BASE_SIZE: usize = 300;
 
 // PDA seeds
 pub const LOCKUP_SEED: &str = "lockup";

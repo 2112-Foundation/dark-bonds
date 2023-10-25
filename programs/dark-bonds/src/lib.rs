@@ -172,12 +172,8 @@ pub mod dark_bonds {
         admin::remove_gate::remove_gate(ctx, ibo_idx, lockup_idx)
     }
 
-    pub fn lock(
-        ctx: Context<Lock>,
-        lock_withdraws: bool,
-        lock_lockup_addition: bool
-    ) -> Result<()> {
-        admin::lock::lock(ctx, lock_withdraws, lock_lockup_addition)
+    pub fn lock(ctx: Context<Lock>, new_actions: PermittedAction) -> Result<()> {
+        admin::lock::lock(ctx, new_actions)
     }
 
     // USer functions

@@ -65,6 +65,9 @@ pub fn create_ibo(
 
     // Counter is incremebted for Ibo counter
     master.ibo_counter += 1;
+
+    // Set permitted actions
+    ibo.actions = PermittedAction::new();
     Ok(())
 }
 

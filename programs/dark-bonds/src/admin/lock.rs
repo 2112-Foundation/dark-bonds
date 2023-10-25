@@ -10,16 +10,12 @@ pub struct Lock<'info> {
     pub ibo: Account<'info, Ibo>,
 }
 
+// TODO: This isnt tested for now
+
 // Any invocation after first time will fail on the PDA seeds macthing
-pub fn lock(ctx: Context<Lock>, lock_withdraws: bool, lock_lockup_addition: bool) -> Result<()> {
+// Needs to take the whole struct and set it
+pub fn lock(ctx: Context<Lock>, actions: PermittedAction) -> Result<()> {
     let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
-    if lock_withdraws {
-        msg!("locking lockup");
-        ibo.lockups_locked = true;
-    }
-    if lock_lockup_addition {
-        msg!("locking withdraws");
-        ibo.withdraws_locked = true;
-    }
+    ibo.actions.update_permissions(&actions);
     Ok(())
 }
