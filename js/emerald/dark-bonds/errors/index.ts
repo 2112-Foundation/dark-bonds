@@ -35,14 +35,14 @@ createErrorFromNameLookup.set(
 );
 
 /**
- * IboRatesLocked: 'Can not add or remove lockup type'
+ * IboLockupsLocked: 'Can not add or remove lockup type'
  *
  * @category Errors
  * @category generated
  */
 export class RatesLockedError extends Error {
   readonly code: number = 0x1771;
-  readonly name: string = "IboRatesLocked";
+  readonly name: string = "IboLockupsLocked";
   constructor() {
     super("Can not add or remove lockup type");
     if (typeof Error.captureStackTrace === "function") {
@@ -52,7 +52,7 @@ export class RatesLockedError extends Error {
 }
 
 createErrorFromCodeLookup.set(0x1771, () => new RatesLockedError());
-createErrorFromNameLookup.set("IboRatesLocked", () => new RatesLockedError());
+createErrorFromNameLookup.set("IboLockupsLocked", () => new RatesLockedError());
 
 /**
  * IboGatedSettingsLocked: 'Can not add or remove gate type'

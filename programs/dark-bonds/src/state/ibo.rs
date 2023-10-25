@@ -62,9 +62,9 @@ pub struct PermittedAction {
     /** After being set to true, IBO admin can't withdraw underlying token until end of the IBO set by end_date */
     pub admin_withdraws: bool, // Can withrdraw after it ends
     /** Can't add or remove gates*/
-    pub gate_addition: bool,
+    pub gate_modification: bool,
     /** After being set to true, IBO admin can't withdraw underlying token until end of the IBO set by end_date */
-    pub lockup_addition: bool,
+    pub lockup_modification: bool,
     /** Can not change exchange rate set between underlying an dliquidity token*/
     pub exchange_rate_change: bool,
     /** Can't change when the main IBO deadline will be */
@@ -79,13 +79,12 @@ pub struct PermittedAction {
     pub link_change: bool,
 }
 
-// Write me an implementation to the struct PermitedAction taht sets each of them to true
 impl PermittedAction {
     pub fn new() -> Self {
         Self {
             admin_withdraws: true,
-            gate_addition: true,
-            lockup_addition: true,
+            gate_modification: true,
+            lockup_modification: true,
             exchange_rate_change: true,
             end_date_change: true,
             live_date_change: true,
@@ -100,11 +99,11 @@ impl PermittedAction {
         if self.admin_withdraws {
             self.admin_withdraws = new_config.admin_withdraws;
         }
-        if self.gate_addition {
-            self.gate_addition = new_config.gate_addition;
+        if self.gate_modification {
+            self.gate_modification = new_config.gate_modification;
         }
-        if self.lockup_addition {
-            self.lockup_addition = new_config.lockup_addition;
+        if self.lockup_modification {
+            self.lockup_modification = new_config.lockup_modification;
         }
         if self.exchange_rate_change {
             self.exchange_rate_change = new_config.exchange_rate_change;

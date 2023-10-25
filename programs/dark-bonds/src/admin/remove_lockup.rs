@@ -9,7 +9,7 @@ use solana_program::pubkey::Pubkey;
 pub struct RemoveLockup<'info> {
     #[account(mut)]
     pub admin: Signer<'info>,
-    #[account(mut, has_one = admin, constraint = ibo.actions.lockup_addition @ErrorCode::IboRatesLocked)]
+    #[account(mut, has_one = admin, constraint = ibo.actions.lockup_modification @ErrorCode::IboLockupsLocked)]
     pub ibo: Account<'info, Ibo>,
     #[account(        
         mut,

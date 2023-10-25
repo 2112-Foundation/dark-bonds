@@ -7,66 +7,88 @@
 
 import * as beet from '@metaplex-foundation/beet'
 import * as web3 from '@solana/web3.js'
-import { PermittedAction, permittedActionBeet } from '../types/PermittedAction'
+import * as beetSolana from '@metaplex-foundation/beet-solana'
 
 /**
  * @category Instructions
- * @category Lock
+ * @category UpdateIbo
  * @category generated
  */
-export type LockInstructionArgs = {
-  newActions: PermittedAction
+export type UpdateIboInstructionArgs = {
+  iboIdx: beet.bignum
+  description: string
+  link: string
+  fixedExchangeRate: beet.bignum
+  liveDate: beet.bignum
+  endDate: beet.bignum
+  swapCut: number
+  liquidityToken: web3.PublicKey
+  underlyingToken: web3.PublicKey
+  recipient: web3.PublicKey
 }
 /**
  * @category Instructions
- * @category Lock
+ * @category UpdateIbo
  * @category generated
  */
-export const lockStruct = new beet.BeetArgsStruct<
-  LockInstructionArgs & {
+export const updateIboStruct = new beet.FixableBeetArgsStruct<
+  UpdateIboInstructionArgs & {
     instructionDiscriminator: number[] /* size: 8 */
   }
 >(
   [
     ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
-    ['newActions', permittedActionBeet],
+    ['iboIdx', beet.u64],
+    ['description', beet.utf8String],
+    ['link', beet.utf8String],
+    ['fixedExchangeRate', beet.u64],
+    ['liveDate', beet.i64],
+    ['endDate', beet.i64],
+    ['swapCut', beet.u32],
+    ['liquidityToken', beetSolana.publicKey],
+    ['underlyingToken', beetSolana.publicKey],
+    ['recipient', beetSolana.publicKey],
   ],
-  'LockInstructionArgs'
+  'UpdateIboInstructionArgs'
 )
 /**
- * Accounts required by the _lock_ instruction
+ * Accounts required by the _updateIbo_ instruction
  *
  * @property [_writable_, **signer**] admin
  * @property [_writable_] ibo
+ * @property [_writable_] master
  * @category Instructions
- * @category Lock
+ * @category UpdateIbo
  * @category generated
  */
-export type LockInstructionAccounts = {
+export type UpdateIboInstructionAccounts = {
   admin: web3.PublicKey
   ibo: web3.PublicKey
+  master: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
 
-export const lockInstructionDiscriminator = [21, 19, 208, 43, 237, 62, 255, 87]
+export const updateIboInstructionDiscriminator = [
+  175, 218, 123, 26, 24, 191, 67, 83,
+]
 
 /**
- * Creates a _Lock_ instruction.
+ * Creates a _UpdateIbo_ instruction.
  *
  * @param accounts that will be accessed while the instruction is processed
  * @param args to provide as instruction data to the program
  *
  * @category Instructions
- * @category Lock
+ * @category UpdateIbo
  * @category generated
  */
-export function createLockInstruction(
-  accounts: LockInstructionAccounts,
-  args: LockInstructionArgs,
+export function createUpdateIboInstruction(
+  accounts: UpdateIboInstructionAccounts,
+  args: UpdateIboInstructionArgs,
   programId = new web3.PublicKey('8ZP1cSpVPVPp5aeake5f1BtgW1xv1e39zkoG8bWobbwV')
 ) {
-  const [data] = lockStruct.serialize({
-    instructionDiscriminator: lockInstructionDiscriminator,
+  const [data] = updateIboStruct.serialize({
+    instructionDiscriminator: updateIboInstructionDiscriminator,
     ...args,
   })
   const keys: web3.AccountMeta[] = [
@@ -77,6 +99,11 @@ export function createLockInstruction(
     },
     {
       pubkey: accounts.ibo,
+      isWritable: true,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.master,
       isWritable: true,
       isSigner: false,
     },

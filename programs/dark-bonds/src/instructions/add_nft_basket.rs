@@ -12,7 +12,7 @@ pub struct AddNftBasket2<'info> {
     pub admin: Signer<'info>,
     // Rederive ibo to ensure it is the correct one
     // TODO wrong action look-up probably, need to be specific to this
-    #[account(mut, has_one = admin, constraint = ibo.actions.lockup_addition @ErrorCode::IboRatesLocked)]
+    #[account(mut, has_one = admin, constraint = ibo.actions.lockup_modification @ErrorCode::IboLockupsLocked)]
     pub ibo: Account<'info, Ibo>,
     #[account(
         seeds = ["tree".as_bytes(), ibo.key().as_ref(), &tree_idx.to_be_bytes()],

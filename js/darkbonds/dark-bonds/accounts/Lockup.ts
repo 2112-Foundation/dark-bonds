@@ -9,6 +9,7 @@ import * as beet from '@metaplex-foundation/beet'
 import * as web3 from '@solana/web3.js'
 import * as beetSolana from '@metaplex-foundation/beet-solana'
 import { PurchasePeriod, purchasePeriodBeet } from '../types/PurchasePeriod'
+import { UnlockType, unlockTypeBeet } from '../types/UnlockType'
 
 /**
  * Arguments used to create {@link Lockup}
@@ -22,6 +23,7 @@ export type LockupArgs = {
   matureOnly: boolean
   limit: beet.COption<beet.bignum>
   purchasePeriod: PurchasePeriod
+  unlock: UnlockType
 }
 
 export const lockupDiscriminator = [1, 45, 32, 32, 57, 81, 88, 67]
@@ -39,7 +41,8 @@ export class Lockup implements LockupArgs {
     readonly gates: number[],
     readonly matureOnly: boolean,
     readonly limit: beet.COption<beet.bignum>,
-    readonly purchasePeriod: PurchasePeriod
+    readonly purchasePeriod: PurchasePeriod,
+    readonly unlock: UnlockType
   ) {}
 
   /**
@@ -52,7 +55,8 @@ export class Lockup implements LockupArgs {
       args.gates,
       args.matureOnly,
       args.limit,
-      args.purchasePeriod
+      args.purchasePeriod,
+      args.unlock
     )
   }
 
@@ -187,6 +191,7 @@ export class Lockup implements LockupArgs {
       matureOnly: this.matureOnly,
       limit: this.limit,
       purchasePeriod: this.purchasePeriod.__kind,
+      unlock: 'UnlockType.' + UnlockType[this.unlock],
     }
   }
 }
@@ -209,6 +214,7 @@ export const lockupBeet = new beet.FixableBeetStruct<
     ['matureOnly', beet.bool],
     ['limit', beet.coption(beet.u64)],
     ['purchasePeriod', purchasePeriodBeet],
+    ['unlock', unlockTypeBeet],
   ],
   Lockup.fromArgs,
   'Lockup'

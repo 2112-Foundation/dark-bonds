@@ -7,66 +7,78 @@
 
 import * as beet from '@metaplex-foundation/beet'
 import * as web3 from '@solana/web3.js'
-import { PermittedAction, permittedActionBeet } from '../types/PermittedAction'
 
 /**
  * @category Instructions
- * @category Lock
+ * @category UpdateLockupGates
  * @category generated
  */
-export type LockInstructionArgs = {
-  newActions: PermittedAction
+export type UpdateLockupGatesInstructionArgs = {
+  iboIdx: number
+  lockupIdx: number
+  gatesAdd: number[]
+  gatesRemove: number[]
 }
 /**
  * @category Instructions
- * @category Lock
+ * @category UpdateLockupGates
  * @category generated
  */
-export const lockStruct = new beet.BeetArgsStruct<
-  LockInstructionArgs & {
+export const updateLockupGatesStruct = new beet.FixableBeetArgsStruct<
+  UpdateLockupGatesInstructionArgs & {
     instructionDiscriminator: number[] /* size: 8 */
   }
 >(
   [
     ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
-    ['newActions', permittedActionBeet],
+    ['iboIdx', beet.u32],
+    ['lockupIdx', beet.u32],
+    ['gatesAdd', beet.array(beet.u32)],
+    ['gatesRemove', beet.array(beet.u32)],
   ],
-  'LockInstructionArgs'
+  'UpdateLockupGatesInstructionArgs'
 )
 /**
- * Accounts required by the _lock_ instruction
+ * Accounts required by the _updateLockupGates_ instruction
  *
  * @property [_writable_, **signer**] admin
  * @property [_writable_] ibo
+ * @property [_writable_] lockup
+ * @property [_writable_] master
  * @category Instructions
- * @category Lock
+ * @category UpdateLockupGates
  * @category generated
  */
-export type LockInstructionAccounts = {
+export type UpdateLockupGatesInstructionAccounts = {
   admin: web3.PublicKey
   ibo: web3.PublicKey
+  lockup: web3.PublicKey
+  master: web3.PublicKey
+  systemProgram?: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
 
-export const lockInstructionDiscriminator = [21, 19, 208, 43, 237, 62, 255, 87]
+export const updateLockupGatesInstructionDiscriminator = [
+  176, 248, 88, 52, 3, 207, 35, 98,
+]
 
 /**
- * Creates a _Lock_ instruction.
+ * Creates a _UpdateLockupGates_ instruction.
  *
  * @param accounts that will be accessed while the instruction is processed
  * @param args to provide as instruction data to the program
  *
  * @category Instructions
- * @category Lock
+ * @category UpdateLockupGates
  * @category generated
  */
-export function createLockInstruction(
-  accounts: LockInstructionAccounts,
-  args: LockInstructionArgs,
+export function createUpdateLockupGatesInstruction(
+  accounts: UpdateLockupGatesInstructionAccounts,
+  args: UpdateLockupGatesInstructionArgs,
   programId = new web3.PublicKey('8ZP1cSpVPVPp5aeake5f1BtgW1xv1e39zkoG8bWobbwV')
 ) {
-  const [data] = lockStruct.serialize({
-    instructionDiscriminator: lockInstructionDiscriminator,
+  const [data] = updateLockupGatesStruct.serialize({
+    instructionDiscriminator: updateLockupGatesInstructionDiscriminator,
     ...args,
   })
   const keys: web3.AccountMeta[] = [
@@ -78,6 +90,21 @@ export function createLockInstruction(
     {
       pubkey: accounts.ibo,
       isWritable: true,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.lockup,
+      isWritable: true,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.master,
+      isWritable: true,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.systemProgram ?? web3.SystemProgram.programId,
+      isWritable: false,
       isSigner: false,
     },
   ]

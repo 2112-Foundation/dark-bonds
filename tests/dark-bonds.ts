@@ -91,11 +91,11 @@ describe("dark-bonds", async () => {
     }
   }
 
-  let bondProgram;
+  let bondProgram: anchor.Program<DarkBonds>;
   try {
     bondProgram = anchor.workspace.DarkBonds as Program<DarkBonds>;
   } catch (err) {
-    console.log("err: ", err);
+    console.log("Failed loading IDL error: ", err);
   }
 
   const superAdmin = loadKeypairFromFile("./master-keypair.json"); // reused so that ATA are
@@ -452,7 +452,7 @@ describe("dark-bonds", async () => {
 
     // Update lock up to reflect those changes
     const tx3 = await bondProgram.methods
-      .updateGates(
+      .updateLockupGates(
         ibo.index,
         lockUp3.index,
         [0], // 0th gate PDA
@@ -513,7 +513,7 @@ describe("dark-bonds", async () => {
 
     // Update lock up to reflect those changes
     const tx3 = await bondProgram.methods
-      .updateGates(
+      .updateLockupGates(
         ibo.index,
         lockUp4.index,
         [gate1.index], // 0th gate PDA
@@ -595,7 +595,7 @@ describe("dark-bonds", async () => {
 
     // Update lock up to reflect those changes
     const tx3 = await bondProgram.methods
-      .updateGates(
+      .updateLockupGates(
         ibo.index,
         lockUp5.index,
         [gate2.index], // 0th gate PDA
@@ -781,7 +781,7 @@ describe("dark-bonds", async () => {
     let user: User = users.users[0];
     let bond: Bond = user.bonds[0];
 
-    console.log("bond.account.address: ", bond.account.address);
+    console.log("bond.account.address: ", bond.account.address.toBase58());
 
     let bondBalanceStart = await getTokenBalance(bond.account);
     let bond1_state = await bondProgram.account.bond.fetch(bond.address);

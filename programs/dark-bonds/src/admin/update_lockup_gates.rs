@@ -11,7 +11,7 @@ pub struct UpdateGates<'info> {
     #[account(mut)]
     pub admin: Signer<'info>,
     // TODO wrong error code
-    #[account(mut, has_one = admin, constraint = ibo.actions.gate_addition @ErrorCode::IboRatesLocked)]
+    #[account(mut, has_one = admin, constraint = ibo.actions.gate_modification @ErrorCode::IboLockupsLocked)]
     pub ibo: Account<'info, Ibo>,
     #[account(mut, seeds = [LOCKUP_SEED.as_bytes(), ibo.key().as_ref(), &lockup_idx.to_be_bytes()], bump)]
     pub lockup: Account<'info, Lockup>,
@@ -22,7 +22,7 @@ pub struct UpdateGates<'info> {
 
 // Need to feed acounts to set in within th gate
 // TODO first or second argument is redundant
-pub fn update_gates(
+pub fn update_lockup_gates(
     ctx: Context<UpdateGates>,
     gates_add: Vec<u32>,
     gates_remove: Vec<u32>

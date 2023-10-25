@@ -8,6 +8,7 @@
 import * as beet from '@metaplex-foundation/beet'
 import * as web3 from '@solana/web3.js'
 import * as beetSolana from '@metaplex-foundation/beet-solana'
+import { PermittedAction, permittedActionBeet } from '../types/PermittedAction'
 
 /**
  * Arguments used to create {@link Ibo}
@@ -15,8 +16,7 @@ import * as beetSolana from '@metaplex-foundation/beet-solana'
  * @category generated
  */
 export type IboArgs = {
-  lockupsLocked: boolean
-  withdrawsLocked: boolean
+  actions: PermittedAction
   fixedExchangeRate: beet.bignum
   swapCut: beet.bignum
   liveDate: beet.bignum
@@ -45,8 +45,7 @@ export const iboDiscriminator = [241, 56, 108, 84, 124, 148, 136, 234]
  */
 export class Ibo implements IboArgs {
   private constructor(
-    readonly lockupsLocked: boolean,
-    readonly withdrawsLocked: boolean,
+    readonly actions: PermittedAction,
     readonly fixedExchangeRate: beet.bignum,
     readonly swapCut: beet.bignum,
     readonly liveDate: beet.bignum,
@@ -70,8 +69,7 @@ export class Ibo implements IboArgs {
    */
   static fromArgs(args: IboArgs) {
     return new Ibo(
-      args.lockupsLocked,
-      args.withdrawsLocked,
+      args.actions,
       args.fixedExchangeRate,
       args.swapCut,
       args.liveDate,
@@ -196,8 +194,7 @@ export class Ibo implements IboArgs {
    */
   pretty() {
     return {
-      lockupsLocked: this.lockupsLocked,
-      withdrawsLocked: this.withdrawsLocked,
+      actions: this.actions,
       fixedExchangeRate: (() => {
         const x = <{ toNumber: () => number }>this.fixedExchangeRate
         if (typeof x.toNumber === 'function') {
@@ -280,8 +277,7 @@ export const iboBeet = new beet.FixableBeetStruct<
 >(
   [
     ['accountDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
-    ['lockupsLocked', beet.bool],
-    ['withdrawsLocked', beet.bool],
+    ['actions', permittedActionBeet],
     ['fixedExchangeRate', beet.u64],
     ['swapCut', beet.u64],
     ['liveDate', beet.i64],

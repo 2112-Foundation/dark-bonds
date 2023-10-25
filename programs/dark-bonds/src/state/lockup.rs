@@ -16,6 +16,13 @@ pub struct Lockup {
     pub limit: Option<u64>,
     /** Optional period that allows to be purchased outside of the main timing.*/
     pub purchase_period: PurchasePeriod,
+    /** If the tokens are unlocked linearly or exponentially.*/
+    pub unlock: UnlockType,
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq, Eq)]
+pub enum UnlockType {
+    DUdd,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq, Eq)]

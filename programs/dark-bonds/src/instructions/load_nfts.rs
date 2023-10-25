@@ -12,7 +12,7 @@ pub struct LoadNfts<'info> {
     pub admin: Signer<'info>,
     // Rederive ibo to ensure it is the correct one
     // TODO wrong action look-up probably, need to be specific to this
-    #[account(mut, has_one = admin, constraint = ibo.actions.lockup_addition == false @ErrorCode::IboRatesLocked)]
+    #[account(mut, has_one = admin, constraint = ibo.actions.lockup_modification == false @ErrorCode::IboLockupsLocked)]
     pub ibo: Box<Account<'info, Ibo>>,
     #[account(seeds = ["tree".as_bytes(), ibo.key().as_ref(), &tree_idx.to_be_bytes()], bump)]
     pub tree: Box<Account<'info, Tree>>,

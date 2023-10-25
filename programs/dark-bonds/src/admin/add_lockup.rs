@@ -7,7 +7,7 @@ use anchor_lang::prelude::*;
 pub struct AddLockUp<'info> {
     #[account(mut)]
     pub admin: Signer<'info>,
-    #[account(mut, has_one = admin, constraint = ibo.actions.lockup_addition @ErrorCode::IboRatesLocked)]
+    #[account(mut, has_one = admin, constraint = ibo.actions.lockup_modification @ErrorCode::IboLockupsLocked)]
     pub ibo: Account<'info, Ibo>,
     #[account(
         init,

@@ -14,7 +14,9 @@ pub enum ErrorCode {
     // Ibo errors
     /////////////////////////////////////////////////////////////////////////////
     #[msg("Can not add or remove lockup type")]
-    IboRatesLocked,
+    IboLockupsLocked,
+    #[msg("Can not add modify the exchange rate")]
+    IboRateLocked,
     #[msg("Can not add or remove gate type")]
     IboGatedSettingsLocked,
     #[msg(
