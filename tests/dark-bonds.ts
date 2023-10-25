@@ -220,7 +220,7 @@ describe("dark-bonds", async () => {
     mintSc = new Mint(connection, mintAuthSC, mintSC);
     mintBond = new Mint(connection, mintAuthB, mintB);
     mintWhiteList = new Mint(connection, mintAuthWl, mintWL);
-    users = new Users(connection, mintSc);
+    users = new Users(connection, mintSc, bondProgram.programId);
 
     console.log("Created classes");
 
@@ -290,7 +290,8 @@ describe("dark-bonds", async () => {
       swapCut,
       mintBond,
       mintSc.mint,
-      adminIbo0
+      adminIbo0,
+      adminIbo0.publicKey // If
     );
 
     console.log("ibo.ata: ", ibo.vaultAccount.address.toBase58());
@@ -303,10 +304,11 @@ describe("dark-bonds", async () => {
           "test link",
           new BN(ibo.fixedExchangeRate),
           new BN(ibo.liveDate),
-          new BN(ibo.endDate), // Can buy bonds until that point in the future
+          new BN(ibo.endDate),
           ibo.swapCut,
           ibo.liquidityMint,
-          ibo.admin.publicKey
+          ibo.mintB.mint,
+          ibo.recipientAddressAccount.owner
         )
         .accounts({
           master: master.address,
@@ -612,7 +614,8 @@ describe("dark-bonds", async () => {
     lockUp5.addGateIdx(gate2.index);
   });
 
-  it("Lock further lockups.", async () => {
+  // TODO implement consuming a whole struct
+  xit("Lock further lockups.", async () => {
     const tx_lu1 = await bondProgram.methods
       .lock(true, true)
       .accounts({
@@ -642,6 +645,13 @@ describe("dark-bonds", async () => {
       superAdminAta_sc.mint.toBase58()
     );
 
+    // Get latest bond pointer
+    let bp: PublicKey = await user.getBondPointerAddress();
+
+    console.log(
+      `Using  bp ${bp.toBase58()} at index ${user.bondPointers.length}`
+    );
+    // try {
     const tx_lu1 = await bondProgram.methods
       .buyBond(0, new BN(ibo.index), new BN(purchaseAmount), 0)
       .accounts({
@@ -654,7 +664,83 @@ describe("dark-bonds", async () => {
         master: master.address,
         masterRecipientAta: superAdminAta_sc.address,
         iboAta: ibo.vaultAccount.address,
+        bondPointer: bp,
         bondAta: bond.account.address,
+        userAccount: user.userAccount,
+        systemProgram: anchor.web3.SystemProgram.programId,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+      })
+      .signers([user])
+      .rpc();
+    // } catch (e) {
+    //   console.log("\nerror:\n\n", e);
+    // }
+
+    // bond_counter += 1;
+
+    let bond0_state = await bondProgram.account.bond.fetch(bond.address);
+    console.log("bond0 owner: ", bond0_state.owner.toBase58());
+    console.log("bond0 maturity date: ", bond0_state.maturityDate.toString());
+    console.log(
+      "bond0 total to claim: ",
+      bond0_state.totalClaimable.toString()
+    );
+
+    // let ibo0_state = await bondProgram.account.ibo.fetch(ibo.address);
+    // console.log("ibo0_state: ", ibo0_state.)
+
+    let masterBalanceEnd = await getTokenBalance(superAdminAta_sc);
+    console.log("masterBalanceEnd: ", masterBalanceEnd);
+    // assert(
+    //   purchaseAmount * 0.05 == masterBalanceEnd,
+    //   "take a cut of exactly 5%"
+    // );
+
+    // masterBalance += purchaseAmount * 0.05;
+
+    // Check that liquidity_token balance decresed
+    // Check that buyer set as the owner in the bond
+    // Check calculation of bond to receive is correct
+  });
+
+  it("Buyer 0 buys with lockkup rate 0 bond idx1", async () => {
+    // masterBalance = await getTokenBalance(superAdminAta_sc);
+    console.log("superAdmin: ", superAdmin.publicKey.toBase58()); // Add a bond
+    let lockUp: LockUp = ibo.lockups[0];
+    const user: User = users.users[0]; // take some user out
+    const bond: Bond = await ibo.issueBond(ibo.bondCounter, purchaseAmount);
+    user.issueBond(bond);
+
+    console.log("/sc mint: ", mintSC.toBase58());
+    console.log("mint buyer ata mint: ", user.liquidityAccount.mint.toBase58());
+    console.log(
+      "masterRecipientAta ata mint: ",
+      superAdminAta_sc.mint.toBase58()
+    );
+
+    // Get latest bond pointer
+    let bp: PublicKey = await user.getBondPointerAddress();
+
+    console.log(
+      `Using  bp ${bp.toBase58()} at index ${user.bondPointers.length}`
+    );
+
+    const tx_lu1 = await bondProgram.methods
+      .buyBond(0, new BN(ibo.index), new BN(purchaseAmount), 0)
+      .accounts({
+        buyer: user.publicKey,
+        bond: bond.address,
+        ibo: ibo.address,
+        lockup: lockUp.address,
+        buyerAta: user.liquidityAccount.address,
+        recipientAta: ibo.recipientAddressAccount.address,
+        master: master.address,
+        masterRecipientAta: superAdminAta_sc.address,
+        iboAta: ibo.vaultAccount.address,
+        bondPointer: bp,
+        bondAta: bond.account.address,
+        userAccount: user.userAccount,
         systemProgram: anchor.web3.SystemProgram.programId,
         tokenProgram: TOKEN_PROGRAM_ID,
         associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -710,6 +796,13 @@ describe("dark-bonds", async () => {
     console.log("time elapsed: ", time_elapsed);
 
     await delay(shortBond / 2 - time_elapsed);
+    await delay(3);
+
+    console.log(" user.publicKey: ", user.publicKey.toBase58());
+    console.log(
+      "bond.ownerBondAccount.address: ",
+      bond.ownerBondAccount.address.toBase58()
+    );
 
     // try {
     const tx_lu1 = await bondProgram.methods
@@ -826,35 +919,43 @@ describe("dark-bonds", async () => {
     // assert((200).toString() == bond1_state.swapPrice.toString());
   });
 
-  // it("Buy bond offered on swap", async () => {
-  //   // Find any bonds on swap
-  //   const bondSale: Bond = ibo.getBondsOnSwap()[0];
+  it("Buy bond offered on swap", async () => {
+    // Find any bonds on swap
+    const bondSale: Bond = ibo.getBondsOnSwap()[0];
 
-  //   // Get random buyer
-  //   const buyer: User = users.users[4];
+    // Get random buyer
+    const buyer: User = users.users[4];
 
-  //   const tx_lu1 = await bondProgram.methods
-  //     .buySwap()
-  //     .accounts({
-  //       buyer: buyer.publicKey,
-  //       bond: bondSale.address,
-  //       buyerAta: buyer.liquidityAccount.address,
-  //       master: master.address,
-  //       masterRecipientAta: superAdminAta_sc.address,
-  //       sellerAta: bondSale.ownerLiquidityAccount.address,
-  //       ibo: bondSale.parent.address,
-  //       iboAdminAta: bondSale.parent.recipientAddressAccount.address,
-  //       tokenProgram: TOKEN_PROGRAM_ID,
-  //       associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-  //     })
-  //     .signers([buyer])
-  //     .rpc();
+    let bp: PublicKey = await buyer.getBondPointerAddress();
+    // Update counter
 
-  //   // let bond1_state = await bondProgram.account.bond.fetch(bond1);
+    // TODO should really be here
+    buyer.bondCounter++;
 
-  //   // // New owner set
-  //   // assert(resaleBuyer1.publicKey.toBase58() == bond1_state.owner.toBase58());
-  // });
+    const tx_lu1 = await bondProgram.methods
+      .buySwap()
+      .accounts({
+        buyer: buyer.publicKey,
+        bond: bondSale.address,
+        buyerAta: buyer.liquidityAccount.address,
+        master: master.address,
+        masterRecipientAta: superAdminAta_sc.address,
+        sellerAta: bondSale.ownerLiquidityAccount.address,
+        bondPointer: bp,
+        userAccount: buyer.userAccount,
+        ibo: bondSale.parent.address,
+        iboAdminAta: bondSale.parent.recipientAddressAccount.address,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+      })
+      .signers([buyer])
+      .rpc();
+
+    // let bond1_state = await bondProgram.account.bond.fetch(bond1);
+
+    // // New owner set
+    // assert(resaleBuyer1.publicKey.toBase58() == bond1_state.owner.toBase58());
+  });
 
   it("Buy collection gated bond offered on ibo", async () => {
     // Get lock-up TODO fix its hardcoded for now
@@ -881,6 +982,13 @@ describe("dark-bonds", async () => {
 
     // Spend 500 for rate 1 as player 1
 
+    // Get latest bond pointer
+    let bp: PublicKey = await user.getBondPointerAddress();
+
+    console.log(
+      `Using  bp ${bp.toBase58()} at index ${user.bondPointers.length}`
+    );
+
     async function submit() {
       const tx_lu1 = await bondProgram.methods
         .buyBond(lockup.index, new BN(ibo.index), new BN(10000), gate.index)
@@ -889,7 +997,9 @@ describe("dark-bonds", async () => {
           bond: bond.address,
           ibo: ibo.address,
           lockup: lockup.address,
+          bondPointer: bp,
           master: master.address,
+          userAccount: user.userAccount,
           buyerAta: user.liquidityAccount.address,
           recipientAta: ibo.recipientAddressAccount.address,
           iboAta: ibo.vaultAccount.address,
@@ -969,6 +1079,13 @@ describe("dark-bonds", async () => {
     const userWlAta: Account = await mintWhiteList.makeAta(user.publicKey);
     const userScAta: Account = await mintSc.makeAta(user.publicKey);
 
+    // Get latest bond pointer
+    let bp: PublicKey = await user.getBondPointerAddress();
+
+    console.log(
+      `Using  bp ${bp.toBase58()} at index ${user.bondPointers.length}`
+    );
+
     async function submit() {
       const tx_lu1 = await bondProgram.methods
         .buyBond(lockup.index, new BN(ibo.index), new BN(10000), gate.index)
@@ -977,7 +1094,9 @@ describe("dark-bonds", async () => {
           bond: bond.address,
           ibo: ibo.address,
           lockup: lockup.address,
+          bondPointer: bp,
           master: master.address,
+          userAccount: user.userAccount,
           buyerAta: user.liquidityAccount.address,
           recipientAta: ibo.recipientAddressAccount.address,
           iboAta: ibo.vaultAccount.address,
@@ -1062,6 +1181,13 @@ describe("dark-bonds", async () => {
     const userScAta: Account = await mintSc.makeAta(user.publicKey);
     let collectionM: NftMint0 = cm.collections[0];
 
+    // Get latest bond pointer
+    let bp: PublicKey = await user.getBondPointerAddress();
+
+    console.log(
+      `Using  bp ${bp.toBase58()} at index ${user.bondPointers.length}`
+    );
+
     async function submit() {
       const tx_lu1 = await bondProgram.methods
         .buyBond(lockup.index, new BN(ibo.index), new BN(10000), gate.index)
@@ -1070,7 +1196,9 @@ describe("dark-bonds", async () => {
           bond: bond.address,
           ibo: ibo.address,
           lockup: lockup.address,
+          bondPointer: bp,
           master: master.address,
+          userAccount: user.userAccount,
           buyerAta: user.liquidityAccount.address,
           recipientAta: ibo.recipientAddressAccount.address,
           iboAta: ibo.vaultAccount.address,

@@ -6,13 +6,15 @@ pub const SCALE: f64 = 1000.0;
 // Account sizes
 pub const PRE: usize = 8;
 pub const LOCKUP_BASE_SIZE: usize = 90;
-pub const IBO_BASE_SIZE: usize = 200;
+pub const IBO_BASE_SIZE: usize = 300;
 
 // PDA seeds
 pub const LOCKUP_SEED: &str = "lockup";
 pub const MASTER_SEED: &str = "master";
 pub const BOND_SEED: &str = "bond";
 pub const IBO_SEED: &str = "ibo";
+pub const USER_ACCOUNT_SEED: &str = "user_account";
+pub const BOND_POINTER_SEED: &str = "bond_pointer";
 pub const GATE_SEED: &str = "gate";
 pub const TREE_SEED: &str = "tree";
 pub const VERTEX_SEED: &str = "vertex";

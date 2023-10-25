@@ -25,9 +25,11 @@ export const buySwapStruct = new beet.BeetArgsStruct<{
  *
  * @property [_writable_, **signer**] buyer
  * @property [_writable_] bond
- * @property [] master
+ * @property [_writable_] master
  * @property [] ibo
  * @property [_writable_] buyerAta
+ * @property [_writable_] userAccount
+ * @property [_writable_] bondPointer
  * @property [_writable_] sellerAta
  * @property [_writable_] masterRecipientAta
  * @property [_writable_] iboAdminAta
@@ -42,11 +44,14 @@ export type BuySwapInstructionAccounts = {
   master: web3.PublicKey
   ibo: web3.PublicKey
   buyerAta: web3.PublicKey
+  userAccount: web3.PublicKey
+  bondPointer: web3.PublicKey
   sellerAta: web3.PublicKey
   masterRecipientAta: web3.PublicKey
   iboAdminAta: web3.PublicKey
   associatedTokenProgram: web3.PublicKey
   tokenProgram?: web3.PublicKey
+  systemProgram?: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
 
@@ -82,7 +87,7 @@ export function createBuySwapInstruction(
     },
     {
       pubkey: accounts.master,
-      isWritable: false,
+      isWritable: true,
       isSigner: false,
     },
     {
@@ -92,6 +97,16 @@ export function createBuySwapInstruction(
     },
     {
       pubkey: accounts.buyerAta,
+      isWritable: true,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.userAccount,
+      isWritable: true,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.bondPointer,
       isWritable: true,
       isSigner: false,
     },
@@ -117,6 +132,11 @@ export function createBuySwapInstruction(
     },
     {
       pubkey: accounts.tokenProgram ?? splToken.TOKEN_PROGRAM_ID,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.systemProgram ?? web3.SystemProgram.programId,
       isWritable: false,
       isSigner: false,
     },

@@ -10,7 +10,8 @@ use solana_program::pubkey::Pubkey;
 pub struct UpdateGates<'info> {
     #[account(mut)]
     pub admin: Signer<'info>,
-    #[account(mut, has_one = admin, constraint = ibo.lockups_locked == false @ErrorCode::IboRatesLocked)]
+    // TODO wrong error code
+    #[account(mut, has_one = admin, constraint = ibo.actions.gate_addition @ErrorCode::IboRatesLocked)]
     pub ibo: Account<'info, Ibo>,
     #[account(mut, seeds = [LOCKUP_SEED.as_bytes(), ibo.key().as_ref(), &lockup_idx.to_be_bytes()], bump)]
     pub lockup: Account<'info, Lockup>,

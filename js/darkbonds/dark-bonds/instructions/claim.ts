@@ -17,7 +17,7 @@ import * as beet from '@metaplex-foundation/beet'
  */
 export type ClaimInstructionArgs = {
   iboAddress: web3.PublicKey
-  iboIdx: number
+  bondIdx: number
 }
 /**
  * @category Instructions
@@ -32,7 +32,7 @@ export const claimStruct = new beet.BeetArgsStruct<
   [
     ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
     ['iboAddress', beetSolana.publicKey],
-    ['iboIdx', beet.u32],
+    ['bondIdx', beet.u32],
   ],
   'ClaimInstructionArgs'
 )

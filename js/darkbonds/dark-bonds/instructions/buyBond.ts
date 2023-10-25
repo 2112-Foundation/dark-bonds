@@ -47,6 +47,8 @@ export const buyBondStruct = new beet.BeetArgsStruct<
  * @property [_writable_] ibo
  * @property [_writable_] master
  * @property [_writable_] lockup
+ * @property [_writable_] userAccount
+ * @property [_writable_] bondPointer
  * @property [_writable_] buyerAta
  * @property [_writable_] recipientAta
  * @property [_writable_] masterRecipientAta
@@ -63,6 +65,8 @@ export type BuyBondInstructionAccounts = {
   ibo: web3.PublicKey
   master: web3.PublicKey
   lockup: web3.PublicKey
+  userAccount: web3.PublicKey
+  bondPointer: web3.PublicKey
   buyerAta: web3.PublicKey
   recipientAta: web3.PublicKey
   masterRecipientAta: web3.PublicKey
@@ -121,6 +125,16 @@ export function createBuyBondInstruction(
     },
     {
       pubkey: accounts.lockup,
+      isWritable: true,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.userAccount,
+      isWritable: true,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.bondPointer,
       isWritable: true,
       isSigner: false,
     },

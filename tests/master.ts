@@ -62,7 +62,9 @@ export class Bond {
   constructor(
     public parent: Ibo,
     public idx: number,
+    /** Address of this bond PDA*/
     public address: PublicKey,
+    /** This bond's token account for the mint specified in the IBO PDA */
     public account: Account,
     public lockUpIdx: number,
     /** Amount in bond token to be given out. */
@@ -444,7 +446,8 @@ export class Master {
     swapCut: number,
     mintB: Mint,
     liquidityMint: PublicKey,
-    adminKey: anchor.web3.Keypair
+    adminKey: anchor.web3.Keypair,
+    recipientPubkey?: PublicKey
   ): Promise<Ibo> {
     const iboPda = PublicKey.findProgramAddressSync(
       [
@@ -454,14 +457,18 @@ export class Master {
       this.programAddress
     )[0];
 
+    // Get bonds token
     const iboAccount = await mintB.makeAta(iboPda);
-    const liquidityAccount = await this.mintSc.makeAta(iboPda);
+    // Liwuidity gets made from the PDA rathern than admin if there is one
+    const iboAdminLiquidityAccount = await this.mintSc.makeAta(
+      recipientPubkey ? recipientPubkey : iboPda
+    );
     const newIbo = new Ibo(
       this,
       iboPda,
       this.iboCounter,
       iboAccount,
-      liquidityAccount,
+      iboAdminLiquidityAccount, // This one
       fixedExchangeRate,
       liveDate,
       endDate,

@@ -33,18 +33,41 @@ pub struct BuyBond<'info> {
     )]
     pub lockup: Account<'info, Lockup>,
 
+    #[account(
+        init_if_needed,
+        seeds = [USER_ACCOUNT_SEED.as_bytes(), buyer.key().as_ref()],
+        bump,
+        space = 8 + 40, // change
+        payer = buyer
+    )]
+    pub user_account: Account<'info, UserAccount>,
+
+    #[account(
+        init_if_needed,
+        seeds = [
+            BOND_POINTER_SEED.as_bytes(),
+            buyer.key().as_ref(),
+            &user_account.bond_counter.to_be_bytes(),
+        ],
+        bump,
+        space = 8 + 40, // change
+        payer = buyer
+    )]
+    pub bond_pointer: Account<'info, BondPointer>,
+
     // Provided token account for the buyer has to be same mint as the one set in ibo
     #[account(mut, token::mint = ibo.liquidity_token, token::authority = buyer)]
     pub buyer_ata: Box<Account<'info, TokenAccount>>,
-    #[account(mut)]
+    #[account(mut, token::mint = ibo.liquidity_token, token::authority = ibo.recipient_address)]
     pub recipient_ata: Box<Account<'info, TokenAccount>>,
     #[account(mut, token::mint = ibo.liquidity_token, token::authority = master.master_recipient)]
     pub master_recipient_ata: Box<Account<'info, TokenAccount>>, // Matches specified owner and mint
 
-    #[account(mut)]
+    #[account(mut)] //= ibo_ata.mint == ibo.underlying_token @ErrorCode::MintMismatch)]
     pub ibo_ata: Box<Account<'info, TokenAccount>>,
     // Check for bond substitution attack
     #[account(mut, token::authority = bond)]
+    ///, constraint = ibo_ata.mint == ibo.underlying_token @ErrorCode::MintMismatch)]
     pub bond_ata: Box<Account<'info, TokenAccount>>,
 
     pub token_program: Program<'info, Token>,
@@ -112,21 +135,26 @@ fn burn_wl<'a, 'info>(
     Ok(())
 }
 
-// impl<'a> Verifiable<'a>
 pub fn buy_bond<'a, 'b, 'c, 'info>(
     ctx: Context<'a, 'b, 'c, 'info, BuyBond<'info>>,
     _lockup_idx: u32,
     ibo_idx: u64,
     amount_liquidity: u64,
-    gate_idx: u32 // This needs to be an array of gates
+    gate_idx: u32 // Gate selector
 ) -> Result<()> {
     let accounts: &mut BuyBond = ctx.accounts;
     let buyer: &Signer = &mut accounts.buyer;
+    let user_account: &mut Account<UserAccount> = &mut accounts.user_account;
+    let bond_pointer: &mut Account<BondPointer> = &mut accounts.bond_pointer;
     let master: &Account<Master> = &mut accounts.master;
     let lockup: &mut Account<Lockup> = &mut accounts.lockup;
     let ibo: &mut Account<Ibo> = &mut accounts.ibo;
     let bond: &mut Account<Bond> = &mut accounts.bond;
     let token_program: &mut Program<'_, Token> = &mut accounts.token_program;
+
+    // Increment bond pointer counter and store pointer in the pointer PDA
+    user_account.bond_counter += 1;
+    bond_pointer.bond_address = bond.key();
 
     // Within the purchase period
     require!(lockup.within_sale(ibo.live_date, ibo.end_date), ErrorCode::NotWithinSale);

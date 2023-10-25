@@ -69,7 +69,12 @@ const DarkBondsProvider = ({ children }: { children: JSX.Element }) => {
   //print master data after set
   useEffect(() => {
     console.log(masterData);
+    if (masterData?.iboCounter) runAddIboTest(masterData!);
   }, [masterData]);
+
+  function runAddIboTest(info: Master) {
+    console.log("Running IBO test");
+  }
 
   //Ibo
   //   const [ibo] = useMemo(() => {

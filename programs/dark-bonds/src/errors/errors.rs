@@ -31,6 +31,8 @@ pub enum ErrorCode {
     BondNotForSale,
     #[msg("Signing account is not the owner of this bond")]
     BondNotBondOwner,
+    #[msg("Mint of the provided token account is not the one set in the ibo")]
+    MintMismatch,
     #[msg("This bond can only be claimed at the end of the lockup duration")]
     BondMatureOnly,
     #[msg("Purchase requires seperate function call with NTF ownership proof")]
@@ -45,6 +47,8 @@ pub enum ErrorCode {
     InvalidMetadata,
     #[msg("The creator of the NFT is not the expected creator or is not verified")]
     InvalidCreator,
+    #[msg("The caller is not the onwer of this bond")]
+    BondInvalidCaller,
 
     // NFT Ibo errors
     /////////////////////////////////////////////////////////////////////////////

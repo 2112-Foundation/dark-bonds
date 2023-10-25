@@ -9,7 +9,8 @@ use solana_program::pubkey::Pubkey;
 pub struct AddTree<'info> {
     #[account(mut)]
     pub admin: Signer<'info>,
-    #[account(mut, has_one = admin, constraint = ibo.lockups_locked == false @ErrorCode::IboRatesLocked)]
+    // TODO wrong action look-up probably, need to be specific to this
+    #[account(mut, has_one = admin, constraint = ibo.actions.lockup_addition == false @ErrorCode::IboRatesLocked)]
     pub ibo: Account<'info, Ibo>,
     #[account(
         init,

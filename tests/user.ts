@@ -13,17 +13,24 @@ import {
 
 import { Mint } from "./mint";
 import { Bond } from "./master";
+import { USER_ACCOUNT_SEED, BOND_POINTER_SEED } from "./constants";
 
 export class User {
   /** Bond's owned by the user */
   public bonds: Bond[] = [];
+  public bondPointers: PublicKey[] = [];
+  public bondCounter: number = 0;
   constructor(
+    /** parent */
+    public parent: Users,
     /** Private key */
     public secretKey: Uint8Array,
     /** Public address */
     public publicKey: PublicKey,
     /** Liquidity ATA address */
-    public liquidityAccount: Account
+    public liquidityAccount: Account,
+    /** Accountn for look ups of bond positions */
+    public userAccount: PublicKey
   ) {}
 
   async issueBond(bond: Bond): Promise<Bond> {
@@ -33,7 +40,26 @@ export class User {
       this.liquidityAccount
     );
     this.bonds.push(bond);
+
+    // Increment counter
+    this.bondCounter += 1;
     return bond;
+  }
+
+  // Get bond pointer address
+  async getBondPointerAddress(): Promise<PublicKey> {
+    console.log("This user has this many bonds", this.bondCounter);
+    const [bondPointerAddress, nonce] = await PublicKey.findProgramAddress(
+      [
+        Buffer.from(BOND_POINTER_SEED),
+        this.publicKey.toBuffer(),
+        new BN(this.bondCounter).toArrayLike(Buffer, "be", 2),
+      ],
+      this.parent.bondProgramAddress
+    );
+
+    this.bondPointers.push(bondPointerAddress);
+    return bondPointerAddress;
   }
 
   removeBond(/** Index of users bond */ bondIdx: number): Bond {
@@ -46,7 +72,11 @@ export class User {
 export class Users {
   users: User[] = [];
   mintSc: PublicKey;
-  constructor(public connection: anchor.web3.Connection, public mintSC: Mint) {}
+  constructor(
+    public connection: anchor.web3.Connection,
+    public mintSC: Mint,
+    public bondProgramAddress: PublicKey
+  ) {}
 
   /** Changes bond owner from user x to user y in the ownership mappings for this IBO */
   async transferBond(
@@ -68,10 +98,22 @@ export class Users {
     // Tops up sol
     await this.topUp(user.publicKey);
 
+    // Create the PDA for users account
+    const [userAccount, nonce] = await PublicKey.findProgramAddress(
+      [Buffer.from(USER_ACCOUNT_SEED), user.publicKey.toBuffer()],
+      this.bondProgramAddress
+    );
+
     // Create an ATA
     const userScAta = await this.mintSC.makeAta(user.publicKey);
     await this.mintSC.topUpSPl(userScAta.address, 100000000);
-    const userStruct = new User(user.secretKey, user.publicKey, userScAta);
+    const userStruct = new User(
+      this,
+      user.secretKey,
+      user.publicKey,
+      userScAta,
+      userAccount
+    );
     this.users.push(userStruct);
   }
 

@@ -7,3 +7,5 @@ export const GATE_SEED: string = "gate";
 export const TREE_SEED: string = "tree";
 export const VERTEX_SEED: string = "vertex";
 export const NFT_BASKET_SEED: string = "nft_basket";
+export const USER_ACCOUNT_SEED: string = "user_account";
+export const BOND_POINTER_SEED: string = "bond_pointer";

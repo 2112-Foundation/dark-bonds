@@ -59,18 +59,27 @@ Then you need to:
 [x] Implement withdraw for liquidity tokens stored at ibo PDA  
 [x] Need to withdraw of leftover bond tokens past some hardcoded date  
 [x] Ability to remove lockups and gates before it is locked  
-[ ] Reuse functionality for NFTs:  
+[ ] Reuse functionality for NFTs:    
  NFTs owned by the ibo account.  
  Above NFT purchase specific tokens released linearly to the given bond for a user.  
  Bond tokens can be used to claim NFT at a set price level.  
  Or they can be resold. On purchase they are burned, and two step invocation for a VRF is made.  
  Based on that a random NFT is selected and can be withdrawn. Would need a wheel to iterate over all of the remaining NFTs using the obtained randomness.  
+<<<<<<< HEAD
 [x] ~~Option for a price look-up. Rather than having a fixed price, instead need a call to an oracle to fetch latest price and use that~~ abandoned
 [ ] With SPL gate need to ensure that user has above certain amount and that it is burned when they convert it to bonds. So they can't get more than their WL allowance
 [ ] There is an optional limits on bond purchases per given lock-up types. Those can't be exceeded
 [ ] There is a bond start and gate end on the bond account (`purchase_period`), that override main bond. So even if the main ibo hasn't started someone could use that lockup (that is ideally gated) to buy before veryone else driving hype. Likewise if main IBO time expires (and organisers can withdraw leftover bonds if they are frozen) lockup with longer purchase date could still purchase any bonds provided there are any left.
 [ ] Optional string to describe this project including links to the website etc
 [ ] Delegate for claiming, but not selling
+=======
+[x] ~~Option for a price look-up. Rather than having a fixed price, instead need a call to an oracle to fetch latest price and use that~~ abandoned   
+[x] With SPL gate need to ensure that user has above certain amount and that it is burned when they convert it to bonds. So they can't get more than their WL allowance  
+[x] There is an optional limits on bond purchases per given lock-up types. Those can't be exceeded   
+[x] There is a bond start and gate end on the bond account (`purchase_period`), that override main bond. So even if the main ibo hasn't started someone could use that lockup (that is ideally gated) to buy before veryone else  driving hype. Likewise if main IBO time expires (and organisers can withdraw leftover bonds if they are frozen) lockup with longer purchase date could still purchase any bonds provided there are any left.   
+[x] Optional string to describe this project including links to the website etc   
+[ ] Delegate for claiming, but not selling   
+>>>>>>> main
 
 ### Revenue
 
