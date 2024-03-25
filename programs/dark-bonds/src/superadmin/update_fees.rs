@@ -1,5 +1,5 @@
 use crate::state::*;
-use crate::errors::errors::ErrorCode;
+use crate::common::errors::BondErrors;
 use crate::common::*;
 use anchor_lang::prelude::*;
 
@@ -31,7 +31,7 @@ pub fn update_fees(
     let master: &mut Account<Master> = &mut ctx.accounts.master;
     require!(
         ibo_creation_fee > 0 && lockup_fee > 0 && gate_addition_fee > 0,
-        ErrorCode::NonZeroFees
+        BondErrors::NonZeroFees
     );
 
     // Set ibo admin fees

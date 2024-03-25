@@ -33,7 +33,7 @@ pub fn claim(ctx: Context<Claim>, ibo_address: Pubkey, bond_idx: u32) -> Result<
     let bond: &mut Account<Bond> = &mut ctx.accounts.bond;
 
     // Ensure can only withdraw once a day
-    // require!(bond.time_elapsed(), ErrorCode::WithdrawTooEarly);
+    // require!(bond.time_elapsed(), BondErrors::WithdrawTooEarly);
 
     // Calculate balance that can be witdhrawn
     let claimable_now = if Clock::get().unwrap().unix_timestamp > bond.maturity_date {

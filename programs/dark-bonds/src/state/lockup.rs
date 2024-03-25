@@ -1,5 +1,6 @@
 use anchor_lang::prelude::*;
-use crate::errors::errors::ErrorCode;
+use crate::common::errors::BondErrors::*;
+use crate::common::errors::BondErrors;
 use crate::common::*;
 
 #[account]
@@ -53,7 +54,7 @@ impl Lockup {
     pub fn tokens_left(&self, bond_purchase_amount: u64) -> Result<bool> {
         return match self.limit {
             Some(limit) => {
-                require!(limit >= bond_purchase_amount, ErrorCode::LockupLimitExceeded);
+                require!(limit >= bond_purchase_amount, BondErrors::LockupLimitExceeded);
                 Ok(true)
             }
             None => Ok(true),

@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 #[error_code]
-pub enum ErrorCode {
+pub enum BondErrors {
     #[msg("Need 24h between withdraws")]
     WithdrawTooEarly,
     #[msg("Wrong cut?")]

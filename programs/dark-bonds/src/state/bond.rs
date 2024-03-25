@@ -1,6 +1,7 @@
 use anchor_lang::prelude::*;
 use spl_math::precise_number::PreciseNumber;
-use crate::{ errors::errors::ErrorCode, Lock };
+use crate::common::errors::BondErrors::*;
+use crate::common::errors::BondErrors;
 use anchor_spl::token::{ self, Token, TokenAccount, Transfer };
 use crate::common::*;
 use crate::state::*;
@@ -25,6 +26,8 @@ pub struct Bond {
     pub bond_start: i64,
     /** Redemption possible only once full maturity is reached.*/
     pub mature_only: bool, // Set based on lockup type
+    /** Ratio for how much of the principal is returned upon maturity.*/
+    pub principal_return: Option<u16>, // Number from 0 to 1000
 }
 
 impl Bond {
@@ -68,35 +71,35 @@ impl Bond {
 
         // Convert time_elapsed and total_time into `PreciseNumber`
         let time_elapsed_precise: PreciseNumber = PreciseNumber::new(time_elapsed as u128).ok_or(
-            error!(ErrorCode::ConversionFailed)
+            error!(ConversionFailed)
         )?;
         let total_time_precise: PreciseNumber = PreciseNumber::new(total_time as u128).ok_or(
-            error!(ErrorCode::ConversionFailed)
+            error!(ConversionFailed)
         )?;
 
         // Work out the ratio of total time
         let ratio: PreciseNumber = time_elapsed_precise
             .checked_div(&total_time_precise)
-            .ok_or(error!(ErrorCode::ConversionFailed))?;
+            .ok_or(error!(ConversionFailed))?;
         msg!("ratio: {:?}", ratio);
 
         // Convert total_claimable into `PreciseNumber`
         let total_claimable_precise: PreciseNumber = PreciseNumber::new(
             self.total_claimable as u128
-        ).ok_or(error!(ErrorCode::ConversionFailed))?;
+        ).ok_or(error!(ConversionFailed))?;
         msg!("total_claimable: {:?}", total_claimable_precise);
 
         // Multiply ratio by total that is to be claimed
         let claim_this_time: PreciseNumber = ratio
             .checked_mul(&total_claimable_precise)
-            .ok_or(error!(ErrorCode::ConversionFailed))?;
+            .ok_or(error!(ConversionFailed))?;
         msg!("claiming this time: {:?}", claim_this_time);
 
         // Convert the claim_this_time from a `PreciseNumber` back to a `u64`
         claim_this_time
             .to_imprecise()
             .map(|v| v as u64)
-            .ok_or(error!(ErrorCode::ConversionFailed))
+            .ok_or(error!(ConversionFailed))
     }
     // Claim but with safe math
 }

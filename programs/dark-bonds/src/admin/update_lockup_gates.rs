@@ -1,4 +1,4 @@
-use crate::errors::errors::ErrorCode;
+use crate::common::errors::BondErrors;
 use crate::common::*;
 use crate::state::*;
 use anchor_lang::prelude::*;
@@ -11,7 +11,7 @@ pub struct UpdateGates<'info> {
     #[account(mut)]
     pub admin: Signer<'info>,
     // TODO wrong error code
-    #[account(mut, has_one = admin, constraint = ibo.actions.gate_modification @ErrorCode::IboLockupsLocked)]
+    #[account(mut, has_one = admin, constraint = ibo.actions.gate_modification @BondErrors::IboLockupsLocked)]
     pub ibo: Account<'info, Ibo>,
     #[account(mut, seeds = [LOCKUP_SEED.as_bytes(), ibo.key().as_ref(), &lockup_idx.to_be_bytes()], bump)]
     pub lockup: Account<'info, Lockup>,

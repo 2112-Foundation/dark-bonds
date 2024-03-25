@@ -1,4 +1,4 @@
-use crate::errors::errors::ErrorCode;
+use crate::common::errors::BondErrors;
 use crate::state::*;
 use anchor_lang::prelude::*;
 
@@ -10,7 +10,7 @@ pub struct AddTree<'info> {
     #[account(mut)]
     pub admin: Signer<'info>,
     // TODO wrong action look-up probably, need to be specific to this
-    #[account(mut, has_one = admin, constraint = ibo.actions.lockup_modification == false @ErrorCode::IboLockupsLocked)]
+    #[account(mut, has_one = admin, constraint = ibo.actions.lockup_modification == false @BondErrors::IboLockupsLocked)]
     pub ibo: Account<'info, Ibo>,
     #[account(
         init,

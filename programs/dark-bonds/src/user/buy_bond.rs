@@ -1,4 +1,4 @@
-use crate::errors::errors::ErrorCode;
+use crate::common::errors::BondErrors;
 use crate::state::*;
 use crate::common::*;
 use anchor_spl::{
@@ -63,11 +63,11 @@ pub struct BuyBond<'info> {
     #[account(mut, token::mint = ibo.liquidity_token, token::authority = master.master_recipient)]
     pub master_recipient_ata: Box<Account<'info, TokenAccount>>, // Matches specified owner and mint
 
-    #[account(mut)] //= ibo_ata.mint == ibo.underlying_token @ErrorCode::MintMismatch)]
+    #[account(mut)] //= ibo_ata.mint == ibo.underlying_token @BondErrors::MintMismatch)]
     pub ibo_ata: Box<Account<'info, TokenAccount>>,
     // Check for bond substitution attack
     #[account(mut, token::authority = bond)]
-    ///, constraint = ibo_ata.mint == ibo.underlying_token @ErrorCode::MintMismatch)]
+    ///, constraint = ibo_ata.mint == ibo.underlying_token @BondErrors::MintMismatch)]
     pub bond_ata: Box<Account<'info, TokenAccount>>,
 
     pub token_program: Program<'info, Token>,
@@ -157,7 +157,7 @@ pub fn buy_bond<'a, 'b, 'c, 'info>(
     bond_pointer.bond_address = bond.key();
 
     // Within the purchase period
-    require!(lockup.within_sale(ibo.live_date, ibo.end_date), ErrorCode::NotWithinSale);
+    require!(lockup.within_sale(ibo.live_date, ibo.end_date), BondErrors::NotWithinSale);
 
     // Calcilate bond amount based on the stable amount provided
     let (cut, remainder) = calculate_cut_and_remainder(
@@ -181,11 +181,11 @@ pub fn buy_bond<'a, 'b, 'c, 'info>(
     // Check if it has at least one access gate
     if lockup.gates.len() > 0 {
         // Check if gate index exists within the lockup
-        require!(lockup.gates.contains(&gate_idx), ErrorCode::PurchaseInvalidGateOption);
+        require!(lockup.gates.contains(&gate_idx), BondErrors::PurchaseInvalidGateOption);
 
         // Remaining acounts can't be empty
         let remaining_accounts_vec: Vec<AccountInfo<'_>> = ctx.remaining_accounts.to_vec();
-        require!(remaining_accounts_vec.len() > 0, ErrorCode::RestrictedLockup);
+        require!(remaining_accounts_vec.len() > 0, BondErrors::RestrictedLockup);
         let (gate_account, verification_accounts) = remaining_accounts_vec
             .split_first()
             .ok_or(ProgramError::InvalidArgument)?;
@@ -197,7 +197,7 @@ pub fn buy_bond<'a, 'b, 'c, 'info>(
         );
 
         // Correct gate has been given
-        require!(&gate_pda == gate_account.key, ErrorCode::PurchaseInvalidGateAccount);
+        require!(&gate_pda == gate_account.key, BondErrors::PurchaseInvalidGateAccount);
 
         // Extract gate accoutn content from the remaining accounts
         let gate_acc: Account<Gate> = Account::try_from(gate_account)?;
@@ -210,7 +210,7 @@ pub fn buy_bond<'a, 'b, 'c, 'info>(
             // Get instance of the gate to feed it accounts
             let gate: &GateType = gate_acc.gate_settings
                 .get(index)
-                .ok_or(ErrorCode::PurchaseWrongGateStored)?;
+                .ok_or(BondErrors::PurchaseWrongGateStored)?;
 
             // Pass whatever accounts are left to the gate
             gate.verify(&buyer, v_vec.clone())?;
@@ -233,7 +233,7 @@ pub fn buy_bond<'a, 'b, 'c, 'info>(
                         msg!("\n\nBURNING\n");
                         require!(
                             spl_token_account.amount > amount_to_burn,
-                            ErrorCode::GateSplNotEnoughWlTokens
+                            BondErrors::GateSplNotEnoughWlTokens
                         );
                         burn_wl(amount_to_burn, &mint, &spl_token_account, token_program, buyer)?;
                     }

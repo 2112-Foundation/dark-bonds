@@ -1,5 +1,5 @@
 use crate::state::*;
-use crate::errors::errors::ErrorCode;
+use crate::common::errors::BondErrors;
 use anchor_lang::prelude::*;
 use anchor_spl::token::{ self, Token, TokenAccount, Transfer };
 use crate::common::*;
@@ -12,7 +12,7 @@ pub struct LoadNfts<'info> {
     pub admin: Signer<'info>,
     // Rederive ibo to ensure it is the correct one
     // TODO wrong action look-up probably, need to be specific to this
-    #[account(mut, has_one = admin, constraint = ibo.actions.lockup_modification == false @ErrorCode::IboLockupsLocked)]
+    #[account(mut, has_one = admin, constraint = ibo.actions.lockup_modification == false @BondErrors::IboLockupsLocked)]
     pub ibo: Box<Account<'info, Ibo>>,
     #[account(seeds = ["tree".as_bytes(), ibo.key().as_ref(), &tree_idx.to_be_bytes()], bump)]
     pub tree: Box<Account<'info, Tree>>,
@@ -45,7 +45,7 @@ pub fn load_nfts<'a, 'b, 'c, 'd: 'a + 'e, 'e: 'a + 'd>(
     let accounts: &mut Vec<AccountInfo> = &mut ctx.remaining_accounts.to_vec();
 
     // TODO maybe make it larger than since need at least 3 acounts afterwards for this function to be useful
-    require!((accounts.len() as u8) >= tree.depth, ErrorCode::MissingVertexAccount);
+    require!((accounts.len() as u8) >= tree.depth, BondErrors::MissingVertexAccount);
     msg!("accounts length: {:?}", accounts.len());
     msg!("tree.depth : {:?}", tree.depth);
     let (vertices, rest) = accounts.split_at((tree.depth as usize) + 1); // TODO needs to be unified what depth is
@@ -67,7 +67,7 @@ pub fn load_nfts<'a, 'b, 'c, 'd: 'a + 'e, 'e: 'a + 'd>(
     )?;
 
     // Needs to be divisible by 2
-    require!(rest_vec.len() % 2 == 0, ErrorCode::IncorrectRatioRemaining);
+    require!(rest_vec.len() % 2 == 0, BondErrors::IncorrectRatioRemaining);
 
     msg!("ATAs size: {:?}", rest_vec.len());
 

@@ -1,4 +1,5 @@
-use crate::errors::errors::ErrorCode;
+use crate::common::errors::BondErrors::*;
+use crate::common::errors::BondErrors;
 use crate::state::*;
 use anchor_lang::prelude::*;
 use spl_math::precise_number::PreciseNumber;
@@ -54,12 +55,12 @@ pub fn recursive_pda_derivation(
                 &vertex_idx_bytes[2]
             ],
         _ => {
-            return Err(ErrorCode::InvalidRecursiveIdx.into());
+            return Err(InvalidRecursiveIdx.into());
         }
     };
 
     let (derived_address, _) = Pubkey::find_program_address(&seeds, program_id);
-    require!(vertices[current_depth as usize] == &derived_address, ErrorCode::WrongVertexAccount);
+    require!(vertices[current_depth as usize] == &derived_address, BondErrors::WrongVertexAccount);
 
     msg!("Provided address: {}", vertices[current_depth as usize]);
     msg!("Derived address: {}", derived_address);
@@ -125,7 +126,7 @@ pub fn take_fee<'info>(
 /** Splits liquidity fee between master and IBO admin */
 pub fn calculate_cut_and_remainder(amount: u64, cut_percentage: f64) -> Result<(u64, u64)> {
     // Validate percentage
-    require!(cut_percentage > 0.0 || cut_percentage < 100.0, ErrorCode::WorngCutTMP);
+    require!(cut_percentage > 0.0 || cut_percentage < 100.0, BondErrors::WorngCutTMP);
 
     // Convert u64 to u128 for internal calculations
     let amount_128 = amount as u128;
@@ -143,18 +144,18 @@ pub fn calculate_cut_and_remainder(amount: u64, cut_percentage: f64) -> Result<(
 pub fn conversion(amount_liqduity: &u64, _exchange_rate: &u64) -> Result<u64> {
     // Conversion of parameters to PreciseNumber
     let liquidity_in: PreciseNumber = PreciseNumber::new(*amount_liqduity as u128).ok_or(
-        error!(ErrorCode::ConversionFailed)
+        error!(ConversionFailed)
     )?;
     let exchange_rate: PreciseNumber = PreciseNumber::new(*_exchange_rate as u128).ok_or(
-        error!(ErrorCode::ConversionFailed)
+        error!(ConversionFailed)
     )?;
 
     // Multuply amount lqiudity by exhcange rate, cast as u64 and return it
     let amount_stable: u64 = liquidity_in
         .checked_mul(&exchange_rate)
-        .ok_or(error!(ErrorCode::ConversionFailed))?
+        .ok_or(error!(ConversionFailed))?
         .to_imprecise()
-        .ok_or(error!(ErrorCode::ConversionFailed))? as u64;
+        .ok_or(error!(ConversionFailed))? as u64;
 
     Ok(amount_stable)
 }

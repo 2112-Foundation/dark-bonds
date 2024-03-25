@@ -1,6 +1,6 @@
 use crate::state::*;
 use crate::common::*;
-use crate::errors::errors::ErrorCode;
+use crate::common::errors::BondErrors;
 use anchor_lang::prelude::*;
 
 use anchor_spl::token::{ self, Token, TokenAccount, Transfer };
@@ -9,7 +9,7 @@ use anchor_spl::token::{ self, Token, TokenAccount, Transfer };
 pub struct Claim<'info> {
     #[account(mut)]
     pub bond_owner: Signer<'info>,
-    #[account(mut, constraint = bond.owner == *bond_owner.key @ErrorCode::BondInvalidCaller)]
+    #[account(mut, constraint = bond.owner == *bond_owner.key @BondErrors::BondInvalidCaller)]
     pub bond: Account<'info, Bond>,
     // Need PDA of the to be derived of some shared register which is incremented
     #[account(mut)]
@@ -42,10 +42,10 @@ pub fn claim(ctx: Context<Claim>, ibo_address: Pubkey, bond_idx: u32) -> Result<
     // msg!("Stored bond idx: {:?}", bond.idx);
 
     // Ensure can only withdraw once a day TODO leave it in only when going to prod
-    // require!(bond.time_elapsed(), ErrorCode::WithdrawTooEarly);
+    // require!(bond.time_elapsed(), BondErrors::WithdrawTooEarly);
 
     // Ensure the bond is not one of those where you can only claim it all at the end
-    require!(!bond.mature_only, ErrorCode::BondMatureOnly);
+    require!(!bond.mature_only, BondErrors::BondMatureOnly);
 
     // Take SOL fee for buying a bond
     take_fee(&master.to_account_info(), &bond_owner, master.user_fees.bond_claim_fee as u64, 0)?;

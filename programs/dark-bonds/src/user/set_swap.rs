@@ -1,4 +1,4 @@
-use crate::errors::errors::ErrorCode;
+use crate::common::errors::BondErrors;
 use crate::state::*;
 use anchor_lang::prelude::*;
 
@@ -6,7 +6,7 @@ use anchor_lang::prelude::*;
 pub struct SetSwap<'info> {
     #[account(mut)]
     pub owner: Signer<'info>,
-    #[account(mut, has_one = owner @ErrorCode::BondNotBondOwner)]
+    #[account(mut, has_one = owner @BondErrors::BondNotBondOwner)]
     pub bond: Account<'info, Bond>,
 }
 

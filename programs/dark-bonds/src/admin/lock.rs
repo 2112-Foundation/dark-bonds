@@ -1,4 +1,4 @@
-use crate::errors::errors::ErrorCode;
+use crate::common::errors::BondErrors;
 use crate::state::*;
 use anchor_lang::prelude::*;
 
@@ -6,7 +6,7 @@ use anchor_lang::prelude::*;
 pub struct Lock<'info> {
     #[account(mut)]
     pub admin: Signer<'info>,
-    #[account(mut, has_one = admin @ErrorCode::IboNotdmin)]
+    #[account(mut, has_one = admin @BondErrors::IboNotdmin)]
     pub ibo: Account<'info, Ibo>,
 }
 

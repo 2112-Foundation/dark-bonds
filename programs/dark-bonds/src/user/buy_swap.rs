@@ -1,4 +1,4 @@
-use crate::errors::errors::ErrorCode;
+use crate::common::errors::BondErrors;
 use crate::state::*;
 use crate::common::*;
 use anchor_lang::prelude::*;
@@ -16,7 +16,7 @@ pub struct BuySwap<'info> {
     pub buyer: Signer<'info>,
 
     // Can't buy swap that is not listed
-    #[account(mut, constraint = bond.swap_price > 0 @ErrorCode::BondNotForSale)]
+    #[account(mut, constraint = bond.swap_price > 0 @BondErrors::BondNotForSale)]
     pub bond: Account<'info, Bond>,
     #[account(mut, seeds = [MASTER_SEED.as_bytes()], bump)]
     pub master: Account<'info, Master>,

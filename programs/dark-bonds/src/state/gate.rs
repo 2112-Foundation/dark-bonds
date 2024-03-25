@@ -1,5 +1,7 @@
 use anchor_lang::prelude::*;
-use crate::errors::errors::ErrorCode;
+use crate::common::errors::BondErrors::*;
+use crate::common::errors::BondErrors;
+
 use anchor_spl::token::{ self, Mint, Token, TokenAccount, Burn };
 use mpl_token_metadata::accounts::Metadata;
 
@@ -60,7 +62,7 @@ impl<'a> Verifiable<'a> for CollectionType {
 
         if _args.len() < 3 {
             msg!("Not enough accounts provided. At least 3 required.");
-            return Err(ErrorCode::GateCollectionInsufficientAccounts.into());
+            return Err(GateCollectionInsufficientAccounts.into());
         }
 
         let account1: &AccountInfo<'_> = &_args[0];
@@ -80,12 +82,12 @@ impl<'a> Verifiable<'a> for CollectionType {
         msg!("Extarcted nft token account");
 
         // Caller is the owner of the nft
-        require!(&nft_token_account.owner == &owner.key(), ErrorCode::GateCollectionInvalidOwner);
+        require!(&nft_token_account.owner == &owner.key(), BondErrors::GateCollectionInvalidOwner);
 
         // Token accout is for that particular  mint
         require!(
             &nft_token_account.mint == &nft_mint.key(),
-            ErrorCode::GateCollectionInvalidTokenAccount
+            BondErrors::GateCollectionInvalidTokenAccount
         );
 
         // Nft metadta matches the nft mint
@@ -93,7 +95,7 @@ impl<'a> Verifiable<'a> for CollectionType {
         // msg!("Provided NFT mint: {:?}", nft_mint.key());
 
         // Ensure mint in the metadata matches provided mint
-        require!(nft_metadata.mint == nft_mint.key(), ErrorCode::GateCollectionInvalidNftMetadata);
+        require!(nft_metadata.mint == nft_mint.key(), BondErrors::GateCollectionInvalidNftMetadata);
 
         let temp = nft_metadata.collection.unwrap();
 
@@ -103,7 +105,7 @@ impl<'a> Verifiable<'a> for CollectionType {
         // msg!("nft_metadata. colection: {:?} ", temp.key);
 
         // Ensure daddy mint matches one inside nft metadata
-        require!(self.master_mint == temp.key, ErrorCode::GateCollectionNftNotFromCollection);
+        require!(self.master_mint == temp.key, BondErrors::GateCollectionNftNotFromCollection);
 
         // Ensure caller owns provided nft mint
         msg!("verified collection gate_settings");
@@ -117,7 +119,7 @@ impl<'a> Verifiable<'a> for SplType {
         msg!("Provided {:?} accounts.", _args.len());
         if _args.len() < 2 {
             msg!("Not enough accounts provided. At least 2 required.");
-            return Err(ErrorCode::GateSplInsufficientAccounts.into());
+            return Err(GateSplInsufficientAccounts.into());
         }
 
         let account1: &AccountInfo<'_> = &_args[0];
@@ -125,21 +127,21 @@ impl<'a> Verifiable<'a> for SplType {
 
         // Mint mathes the one stored
         let mint: Account<Mint> = Account::try_from(account1)?;
-        require!(&mint.key() == &self.spl_mint, ErrorCode::GateSplIncorrectMint);
+        require!(&mint.key() == &self.spl_mint, BondErrors::GateSplIncorrectMint);
 
         // Token account derived from this mint
         let spl_token_account: Account<TokenAccount> = Account::try_from(account2)?;
-        require!(&spl_token_account.mint == &mint.key(), ErrorCode::GateSplInvalidTokenAccount);
+        require!(&spl_token_account.mint == &mint.key(), BondErrors::GateSplInvalidTokenAccount);
 
         // let token_program: Program<Token> = Program::try_from(account3)?;
 
         // User owns provieded token account
-        require!(&spl_token_account.owner == &owner.key(), ErrorCode::GateSplInvalidOwner);
+        require!(&spl_token_account.owner == &owner.key(), BondErrors::GateSplInvalidOwner);
 
         // User has enough tokens
         require!(
             spl_token_account.amount > self.minimum_ownership,
-            ErrorCode::GateSplCallerNotEnoughToken
+            BondErrors::GateSplCallerNotEnoughToken
         );
 
         msg!(

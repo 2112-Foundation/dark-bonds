@@ -1,4 +1,4 @@
-use crate::errors::errors::ErrorCode;
+use crate::common::errors::BondErrors;
 use crate::state::*;
 use crate::common::*;
 use anchor_lang::prelude::*;
@@ -9,7 +9,7 @@ use solana_program::pubkey::Pubkey;
 pub struct RemoveLockup<'info> {
     #[account(mut)]
     pub admin: Signer<'info>,
-    #[account(mut, has_one = admin, constraint = ibo.actions.lockup_modification @ErrorCode::IboLockupsLocked)]
+    #[account(mut, has_one = admin, constraint = ibo.actions.lockup_modification @BondErrors::IboLockupsLocked)]
     pub ibo: Account<'info, Ibo>,
     #[account(        
         mut,

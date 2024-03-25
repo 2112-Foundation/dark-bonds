@@ -1,13 +1,12 @@
 use anchor_lang::prelude::*;
 
-pub mod errors;
 pub mod instructions;
 pub mod state;
 pub mod common;
 pub mod admin;
 pub mod user;
 pub mod superadmin;
-pub use errors::*;
+
 pub use instructions::*;
 pub use admin::*;
 pub use state::*;

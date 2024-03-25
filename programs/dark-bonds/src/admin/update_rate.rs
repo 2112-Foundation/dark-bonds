@@ -1,6 +1,6 @@
 use crate::state::*;
 use crate::common::*;
-use crate::errors::errors::ErrorCode;
+use crate::common::errors::BondErrors;
 use anchor_lang::prelude::*;
 use solana_program::pubkey::Pubkey;
 
@@ -41,7 +41,7 @@ pub fn update_rate(ctx: Context<UpdateRate>, fixed_exchange_rate: u64) -> Result
     )?;
 
     // Assert it can be done
-    require!(ibo.actions.exchange_rate_change == true, ErrorCode::IboRateLocked);
+    require!(ibo.actions.exchange_rate_change == true, BondErrors::IboRateLocked);
     ibo.fixed_exchange_rate = fixed_exchange_rate;
 
     Ok(())

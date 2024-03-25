@@ -1,4 +1,4 @@
-use crate::errors::errors::ErrorCode;
+use crate::common::errors::BondErrors;
 use crate::state::*;
 use crate::common::*;
 use anchor_lang::prelude::*;
@@ -7,7 +7,7 @@ use anchor_lang::prelude::*;
 pub struct AddLockUp<'info> {
     #[account(mut)]
     pub admin: Signer<'info>,
-    #[account(mut, has_one = admin, constraint = ibo.actions.lockup_modification @ErrorCode::IboLockupsLocked)]
+    #[account(mut, has_one = admin, constraint = ibo.actions.lockup_modification @BondErrors::IboLockupsLocked)]
     pub ibo: Account<'info, Ibo>,
     #[account(
         init,
@@ -39,8 +39,8 @@ pub fn add_lockup(
 
     // Ensure APY and lockup duration are non-zero
     msg!("lockup duration: {:?}", lockup_duration);
-    require!(lockup_duration >= SECONDS_IN_A_DAY, ErrorCode::LockupDurationUnderDay);
-    require!(lockup_apy > 0, ErrorCode::LockupZeroApy);
+    require!(lockup_duration >= SECONDS_IN_A_DAY, BondErrors::LockupDurationUnderDay);
+    require!(lockup_apy > 0, BondErrors::LockupZeroApy);
     lockup.period = lockup_duration;
     lockup.apy = lockup_apy; // TODO check correctens
 

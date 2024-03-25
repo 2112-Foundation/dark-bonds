@@ -1,4 +1,4 @@
-use crate::errors::errors::ErrorCode;
+use crate::common::errors::BondErrors;
 use crate::common::*;
 use crate::state::*;
 use anchor_lang::prelude::*;
@@ -11,7 +11,7 @@ use anchor_spl::{
 pub struct Withdraw<'info> {
     #[account(mut)]
     pub admin: Signer<'info>,
-    #[account(mut, has_one = admin @ErrorCode::IboNotdmin)]
+    #[account(mut, has_one = admin @BondErrors::IboNotdmin)]
     pub ibo: Account<'info, Ibo>,
     #[account(               
         mut, 
@@ -45,7 +45,7 @@ pub fn withdraw(ctx: Context<Withdraw>, withdraw_amount: u64, ibo_idx: u64) -> R
     // If trying to withdraw underlying asset and withdraw for that have been marked as locked
     if ibo_ata.mint == ibo.underlying_token && ibo.actions.admin_withdraws {
         // Otherwise ensure its over by asserting deadline has expired
-        require!(Clock::get().unwrap().unix_timestamp >= ibo.end_date, ErrorCode::WithdrawLocked);
+        require!(Clock::get().unwrap().unix_timestamp >= ibo.end_date, BondErrors::WithdrawLocked);
     }
 
     let master_ibo_address = master.key().clone();
