@@ -1,28 +1,28 @@
 # Bonds
 
-BondFort is a decentralized finance (DeFi) protocol built on the Solana blockchain, which allows participants to engage in the issuance, trading, and management of tokenized bonds. The platform works by allowing an entity, (referred to as the bond master), to issue bonds. Each bond represents a promise to pay a certain amount (the face value) at a future date (maturity date).
+BondFort is a decentralized finance (DeFi) protocol built on the Solana blockchain, which allows participants to engage in the issuance, trading, and management of tokenized bonds. The platform works by allowing an entity, (referred to as the bond main), to issue bonds. Each bond represents a promise to pay a certain amount (the face value) at a future date (maturity date).
 
 ![image description](pepe_bond.png)
 
-For each bond, the bond master can set different lock-up types. Each of these lock-up types would have their own unique set of parameters:
+For each bond, the bond main can set different lock-up types. Each of these lock-up types would have their own unique set of parameters:
 
 - Lock-up period: This is the length of time during which the bond must be held before it can be fully redeemed. This period could range from a few months to several years. During this time, the bondholder can't redeem the bond for its full value, although they might be able to sell it to another user.
 
-- APY: The Annual Percentage Yield represents the rate of return that bondholders can expect over a one-year period, taking into account the effect of compounding. The bond master can set different APYs for different lock-up types, offering higher returns for longer lock-up periods as an incentive for users to hold the bond for a longer time.
+- APY: The Annual Percentage Yield represents the rate of return that bondholders can expect over a one-year period, taking into account the effect of compounding. The bond main can set different APYs for different lock-up types, offering higher returns for longer lock-up periods as an incentive for users to hold the bond for a longer time.
 
-The bond master can also introduce additional restrictions or features for each lock-up type:
+The bond main can also introduce additional restrictions or features for each lock-up type:
 
-- NFT community restrictions: The bond master can restrict certain lock-up types to be exclusive to specific NFT communities.
+- NFT community restrictions: The bond main can restrict certain lock-up types to be exclusive to specific NFT communities.
 
-- Maturity-only claims: In some cases, the bond master might set up a lock-up type where the returns can only be claimed when the bond reaches maturity. This would mean that the bondholders have to hold the bond for the entire lock-up period to get their returns. This could be used to encourage long-term holding and stabilize the price of the bond.
+- Maturity-only claims: In some cases, the bond main might set up a lock-up type where the returns can only be claimed when the bond reaches maturity. This would mean that the bondholders have to hold the bond for the entire lock-up period to get their returns. This could be used to encourage long-term holding and stabilize the price of the bond.
 
 These bonds are represented by a unique record entry for this specic bond offering. This fractionalisation allows for the easy and secure transfer of ownership of these bonds.
 
-Once issued, these bonds are available for purchase by the users. A user purchases a bond by paying in the underlying token specified by the bond master. The purchased bond earns interest over time, which is paid out to the bondholder. The interest can be withdrawn by the bondholder as it accrues, which provides an income stream for the bondholder. Though interest is calculated based on compounding APY, this is done once at the start, after that locked tokens are released linearly.
+Once issued, these bonds are available for purchase by the users. A user purchases a bond by paying in the underlying token specified by the bond main. The purchased bond earns interest over time, which is paid out to the bondholder. The interest can be withdrawn by the bondholder as it accrues, which provides an income stream for the bondholder. Though interest is calculated based on compounding APY, this is done once at the start, after that locked tokens are released linearly.
 
-Additionally, bondholders can sell their bonds to other users. This is facilitated by a secondary market function within the platform, where bonds can be listed for sale. The seller can set the sale price, and potential buyers can browse the listed bonds and purchase ones they are interested in. When a bond is sold, the sale price is divided among various parties. The seller receives the majority of the sale price. However, a portion of the sale price is taken as a cut by the bond master. This cut is further divided between the bond master and the master master.
+Additionally, bondholders can sell their bonds to other users. This is facilitated by a secondary market function within the platform, where bonds can be listed for sale. The seller can set the sale price, and potential buyers can browse the listed bonds and purchase ones they are interested in. When a bond is sold, the sale price is divided among various parties. The seller receives the majority of the sale price. However, a portion of the sale price is taken as a cut by the bond main. This cut is further divided between the bond main and the main main.
 
-Each bond offering also includes lockups. These prevent bond master from draining the bond PDA of underlying token or introducing lockups that favour them over those that have already pruchsed some bonds.
+Each bond offering also includes lockups. These prevent bond main from draining the bond PDA of underlying token or introducing lockups that favour them over those that have already pruchsed some bonds.
 
 ## State architecture
 
@@ -85,7 +85,7 @@ Then you need to:
 ### Safety
 
 [x] createIBO needs to take some sort of pubkey which represents the desired bond token to purchase  
-[x] Correct ATA and ata mint/owner provided as the master recipient
+[x] Correct ATA and ata mint/owner provided as the main recipient
 [x] Use the safe math from staking for calculation of total interest
 [x] ~~Use compound math, use different price ranges to subtract comppound gain from (0-t1) - (0-t2) to get difference between invocations. Subbed from main balance.~~ fuck it.
 

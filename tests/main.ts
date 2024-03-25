@@ -28,10 +28,13 @@ import {
 
 import {
   LOCKUP_SEED,
-  MASTER_SEED,
+  MAIN_SEED,
   BOND_SEED,
   IBO_SEED,
   GATE_SEED,
+  LISTING_BANK_SEED,
+  BOND_BANK_SEED,
+  IBO_BANK_SEED,
   TREE_SEED,
   VERTEX_SEED,
   NFT_BASKET_SEED,
@@ -98,7 +101,7 @@ export class CollectionSetting extends GateSetting {
   constructor(
     /** The mint key for the gate. */
     public mintKey: PublicKey,
-    /** The master key for the gate. */
+    /** The main key for the gate. */
     public masterKey: PublicKey,
     /** The creator key for the gate. */
     public creatorKey: PublicKey
@@ -440,7 +443,7 @@ export class Master {
   /** Admin field, not sure if needed. */
   public admin: PublicKey;
 
-  /** Recipient field related to the master, not sure if needed. */
+  /** Recipient field related to the main, not sure if needed. */
   public masterRecipient: PublicKey;
 
   async addIbo(
@@ -486,6 +489,17 @@ export class Master {
     this.iboCounter++;
     return newIbo;
   }
+
+  async deriveIboBank(index: number): Promise<PublicKey> {
+    // Derive PDA for blackbox_bank
+    const [iboBank, _] = await PublicKey.findProgramAddress(
+      [Buffer.from(IBO_BANK_SEED), new BN(index).toArrayLike(Buffer, "be", 2)],
+      this.programAddress
+    );
+
+    return iboBank;
+  }
+
   constructor(
     programAddress: PublicKey,
     public connection: anchor.web3.Connection,
@@ -493,7 +507,7 @@ export class Master {
   ) {
     this.programAddress = programAddress;
     this.address = PublicKey.findProgramAddressSync(
-      [Buffer.from(MASTER_SEED)],
+      [Buffer.from(MAIN_SEED)],
       this.programAddress
     )[0];
   }

@@ -255,7 +255,7 @@ createErrorFromNameLookup.set(
 );
 
 /**
- * InvalidMasterEdition: 'The NFT master edition account is not valid'
+ * InvalidMasterEdition: 'The NFT main edition account is not valid'
  *
  * @category Errors
  * @category generated
@@ -264,7 +264,7 @@ export class InvalidMasterEditionError extends Error {
   readonly code: number = 0x177b;
   readonly name: string = "InvalidMasterEdition";
   constructor() {
-    super("The NFT master edition account is not valid");
+    super("The NFT main edition account is not valid");
     if (typeof Error.captureStackTrace === "function") {
       Error.captureStackTrace(this, InvalidMasterEditionError);
     }

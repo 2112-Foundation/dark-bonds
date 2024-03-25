@@ -5,9 +5,9 @@
  * See: https://github.com/metaplex-foundation/solita
  */
 
-import * as beet from '@metaplex-foundation/beet'
-import * as web3 from '@solana/web3.js'
-import { PurchasePeriod, purchasePeriodBeet } from '../types/PurchasePeriod'
+import * as beet from "@metaplex-foundation/beet";
+import * as web3 from "@solana/web3.js";
+import { PurchasePeriod, purchasePeriodBeet } from "../types/PurchasePeriod";
 
 /**
  * @category Instructions
@@ -15,12 +15,12 @@ import { PurchasePeriod, purchasePeriodBeet } from '../types/PurchasePeriod'
  * @category generated
  */
 export type AddLockupInstructionArgs = {
-  lockupDuration: beet.bignum
-  lockupApy: beet.bignum
-  matureOnly: boolean
-  limit: beet.bignum
-  purchasePeriod: PurchasePeriod
-}
+  lockupDuration: beet.bignum;
+  lockupApy: beet.bignum;
+  matureOnly: boolean;
+  limit: beet.bignum;
+  purchasePeriod: PurchasePeriod;
+};
 /**
  * @category Instructions
  * @category AddLockup
@@ -28,42 +28,42 @@ export type AddLockupInstructionArgs = {
  */
 export const addLockupStruct = new beet.FixableBeetArgsStruct<
   AddLockupInstructionArgs & {
-    instructionDiscriminator: number[] /* size: 8 */
+    instructionDiscriminator: number[] /* size: 8 */;
   }
 >(
   [
-    ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
-    ['lockupDuration', beet.i64],
-    ['lockupApy', beet.u64],
-    ['matureOnly', beet.bool],
-    ['limit', beet.u64],
-    ['purchasePeriod', purchasePeriodBeet],
+    ["instructionDiscriminator", beet.uniformFixedSizeArray(beet.u8, 8)],
+    ["lockupDuration", beet.i64],
+    ["lockupApy", beet.u64],
+    ["matureOnly", beet.bool],
+    ["limit", beet.u64],
+    ["purchasePeriod", purchasePeriodBeet],
   ],
-  'AddLockupInstructionArgs'
-)
+  "AddLockupInstructionArgs"
+);
 /**
  * Accounts required by the _addLockup_ instruction
  *
  * @property [_writable_, **signer**] admin
  * @property [_writable_] ibo
  * @property [_writable_] lockup
- * @property [_writable_] master
+ * @property [_writable_] main
  * @category Instructions
  * @category AddLockup
  * @category generated
  */
 export type AddLockupInstructionAccounts = {
-  admin: web3.PublicKey
-  ibo: web3.PublicKey
-  lockup: web3.PublicKey
-  master: web3.PublicKey
-  systemProgram?: web3.PublicKey
-  anchorRemainingAccounts?: web3.AccountMeta[]
-}
+  admin: web3.PublicKey;
+  ibo: web3.PublicKey;
+  lockup: web3.PublicKey;
+  main: web3.PublicKey;
+  systemProgram?: web3.PublicKey;
+  anchorRemainingAccounts?: web3.AccountMeta[];
+};
 
 export const addLockupInstructionDiscriminator = [
   147, 104, 186, 239, 85, 181, 98, 24,
-]
+];
 
 /**
  * Creates a _AddLockup_ instruction.
@@ -78,12 +78,12 @@ export const addLockupInstructionDiscriminator = [
 export function createAddLockupInstruction(
   accounts: AddLockupInstructionAccounts,
   args: AddLockupInstructionArgs,
-  programId = new web3.PublicKey('8ZP1cSpVPVPp5aeake5f1BtgW1xv1e39zkoG8bWobbwV')
+  programId = new web3.PublicKey("8ZP1cSpVPVPp5aeake5f1BtgW1xv1e39zkoG8bWobbwV")
 ) {
   const [data] = addLockupStruct.serialize({
     instructionDiscriminator: addLockupInstructionDiscriminator,
     ...args,
-  })
+  });
   const keys: web3.AccountMeta[] = [
     {
       pubkey: accounts.admin,
@@ -101,7 +101,7 @@ export function createAddLockupInstruction(
       isSigner: false,
     },
     {
-      pubkey: accounts.master,
+      pubkey: accounts.main,
       isWritable: true,
       isSigner: false,
     },
@@ -110,11 +110,11 @@ export function createAddLockupInstruction(
       isWritable: false,
       isSigner: false,
     },
-  ]
+  ];
 
   if (accounts.anchorRemainingAccounts != null) {
     for (const acc of accounts.anchorRemainingAccounts) {
-      keys.push(acc)
+      keys.push(acc);
     }
   }
 
@@ -122,6 +122,6 @@ export function createAddLockupInstruction(
     programId,
     keys,
     data,
-  })
-  return ix
+  });
+  return ix;
 }

@@ -5,9 +5,9 @@
  * See: https://github.com/metaplex-foundation/solita
  */
 
-import * as splToken from '@solana/spl-token'
-import * as beet from '@metaplex-foundation/beet'
-import * as web3 from '@solana/web3.js'
+import * as splToken from "@solana/spl-token";
+import * as beet from "@metaplex-foundation/beet";
+import * as web3 from "@solana/web3.js";
 
 /**
  * @category Instructions
@@ -15,11 +15,11 @@ import * as web3 from '@solana/web3.js'
  * @category generated
  */
 export type BuyBondInstructionArgs = {
-  lockupIdx: number
-  iboIdx: beet.bignum
-  liquidityProvided: beet.bignum
-  gateIdxs: number
-}
+  lockupIdx: number;
+  iboIdx: beet.bignum;
+  liquidityProvided: beet.bignum;
+  gateIdxs: number;
+};
 /**
  * @category Instructions
  * @category BuyBond
@@ -27,25 +27,25 @@ export type BuyBondInstructionArgs = {
  */
 export const buyBondStruct = new beet.BeetArgsStruct<
   BuyBondInstructionArgs & {
-    instructionDiscriminator: number[] /* size: 8 */
+    instructionDiscriminator: number[] /* size: 8 */;
   }
 >(
   [
-    ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
-    ['lockupIdx', beet.u32],
-    ['iboIdx', beet.u64],
-    ['liquidityProvided', beet.u64],
-    ['gateIdxs', beet.u32],
+    ["instructionDiscriminator", beet.uniformFixedSizeArray(beet.u8, 8)],
+    ["lockupIdx", beet.u32],
+    ["iboIdx", beet.u64],
+    ["liquidityProvided", beet.u64],
+    ["gateIdxs", beet.u32],
   ],
-  'BuyBondInstructionArgs'
-)
+  "BuyBondInstructionArgs"
+);
 /**
  * Accounts required by the _buyBond_ instruction
  *
  * @property [_writable_, **signer**] buyer
  * @property [_writable_] bond
  * @property [_writable_] ibo
- * @property [_writable_] master
+ * @property [_writable_] main
  * @property [_writable_] lockup
  * @property [_writable_] userAccount
  * @property [_writable_] bondPointer
@@ -60,28 +60,28 @@ export const buyBondStruct = new beet.BeetArgsStruct<
  * @category generated
  */
 export type BuyBondInstructionAccounts = {
-  buyer: web3.PublicKey
-  bond: web3.PublicKey
-  ibo: web3.PublicKey
-  master: web3.PublicKey
-  lockup: web3.PublicKey
-  userAccount: web3.PublicKey
-  bondPointer: web3.PublicKey
-  buyerAta: web3.PublicKey
-  recipientAta: web3.PublicKey
-  masterRecipientAta: web3.PublicKey
-  iboAta: web3.PublicKey
-  bondAta: web3.PublicKey
-  tokenProgram?: web3.PublicKey
-  associatedTokenProgram: web3.PublicKey
-  rent?: web3.PublicKey
-  systemProgram?: web3.PublicKey
-  anchorRemainingAccounts?: web3.AccountMeta[]
-}
+  buyer: web3.PublicKey;
+  bond: web3.PublicKey;
+  ibo: web3.PublicKey;
+  main: web3.PublicKey;
+  lockup: web3.PublicKey;
+  userAccount: web3.PublicKey;
+  bondPointer: web3.PublicKey;
+  buyerAta: web3.PublicKey;
+  recipientAta: web3.PublicKey;
+  masterRecipientAta: web3.PublicKey;
+  iboAta: web3.PublicKey;
+  bondAta: web3.PublicKey;
+  tokenProgram?: web3.PublicKey;
+  associatedTokenProgram: web3.PublicKey;
+  rent?: web3.PublicKey;
+  systemProgram?: web3.PublicKey;
+  anchorRemainingAccounts?: web3.AccountMeta[];
+};
 
 export const buyBondInstructionDiscriminator = [
   213, 80, 222, 237, 246, 145, 5, 94,
-]
+];
 
 /**
  * Creates a _BuyBond_ instruction.
@@ -96,12 +96,12 @@ export const buyBondInstructionDiscriminator = [
 export function createBuyBondInstruction(
   accounts: BuyBondInstructionAccounts,
   args: BuyBondInstructionArgs,
-  programId = new web3.PublicKey('8ZP1cSpVPVPp5aeake5f1BtgW1xv1e39zkoG8bWobbwV')
+  programId = new web3.PublicKey("8ZP1cSpVPVPp5aeake5f1BtgW1xv1e39zkoG8bWobbwV")
 ) {
   const [data] = buyBondStruct.serialize({
     instructionDiscriminator: buyBondInstructionDiscriminator,
     ...args,
-  })
+  });
   const keys: web3.AccountMeta[] = [
     {
       pubkey: accounts.buyer,
@@ -119,7 +119,7 @@ export function createBuyBondInstruction(
       isSigner: false,
     },
     {
-      pubkey: accounts.master,
+      pubkey: accounts.main,
       isWritable: true,
       isSigner: false,
     },
@@ -183,11 +183,11 @@ export function createBuyBondInstruction(
       isWritable: false,
       isSigner: false,
     },
-  ]
+  ];
 
   if (accounts.anchorRemainingAccounts != null) {
     for (const acc of accounts.anchorRemainingAccounts) {
-      keys.push(acc)
+      keys.push(acc);
     }
   }
 
@@ -195,6 +195,6 @@ export function createBuyBondInstruction(
     programId,
     keys,
     data,
-  })
-  return ix
+  });
+  return ix;
 }

@@ -5,9 +5,9 @@
  * See: https://github.com/metaplex-foundation/solita
  */
 
-import * as beet from '@metaplex-foundation/beet'
-import * as web3 from '@solana/web3.js'
-import * as beetSolana from '@metaplex-foundation/beet-solana'
+import * as beet from "@metaplex-foundation/beet";
+import * as web3 from "@solana/web3.js";
+import * as beetSolana from "@metaplex-foundation/beet-solana";
 
 /**
  * @category Instructions
@@ -15,17 +15,17 @@ import * as beetSolana from '@metaplex-foundation/beet-solana'
  * @category generated
  */
 export type UpdateIboInstructionArgs = {
-  iboIdx: beet.bignum
-  description: string
-  link: string
-  fixedExchangeRate: beet.bignum
-  liveDate: beet.bignum
-  endDate: beet.bignum
-  swapCut: number
-  liquidityToken: web3.PublicKey
-  underlyingToken: web3.PublicKey
-  recipient: web3.PublicKey
-}
+  iboIdx: beet.bignum;
+  description: string;
+  link: string;
+  fixedExchangeRate: beet.bignum;
+  liveDate: beet.bignum;
+  endDate: beet.bignum;
+  swapCut: number;
+  liquidityToken: web3.PublicKey;
+  underlyingToken: web3.PublicKey;
+  recipient: web3.PublicKey;
+};
 /**
  * @category Instructions
  * @category UpdateIbo
@@ -33,44 +33,44 @@ export type UpdateIboInstructionArgs = {
  */
 export const updateIboStruct = new beet.FixableBeetArgsStruct<
   UpdateIboInstructionArgs & {
-    instructionDiscriminator: number[] /* size: 8 */
+    instructionDiscriminator: number[] /* size: 8 */;
   }
 >(
   [
-    ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
-    ['iboIdx', beet.u64],
-    ['description', beet.utf8String],
-    ['link', beet.utf8String],
-    ['fixedExchangeRate', beet.u64],
-    ['liveDate', beet.i64],
-    ['endDate', beet.i64],
-    ['swapCut', beet.u32],
-    ['liquidityToken', beetSolana.publicKey],
-    ['underlyingToken', beetSolana.publicKey],
-    ['recipient', beetSolana.publicKey],
+    ["instructionDiscriminator", beet.uniformFixedSizeArray(beet.u8, 8)],
+    ["iboIdx", beet.u64],
+    ["description", beet.utf8String],
+    ["link", beet.utf8String],
+    ["fixedExchangeRate", beet.u64],
+    ["liveDate", beet.i64],
+    ["endDate", beet.i64],
+    ["swapCut", beet.u32],
+    ["liquidityToken", beetSolana.publicKey],
+    ["underlyingToken", beetSolana.publicKey],
+    ["recipient", beetSolana.publicKey],
   ],
-  'UpdateIboInstructionArgs'
-)
+  "UpdateIboInstructionArgs"
+);
 /**
  * Accounts required by the _updateIbo_ instruction
  *
  * @property [_writable_, **signer**] admin
  * @property [_writable_] ibo
- * @property [_writable_] master
+ * @property [_writable_] main
  * @category Instructions
  * @category UpdateIbo
  * @category generated
  */
 export type UpdateIboInstructionAccounts = {
-  admin: web3.PublicKey
-  ibo: web3.PublicKey
-  master: web3.PublicKey
-  anchorRemainingAccounts?: web3.AccountMeta[]
-}
+  admin: web3.PublicKey;
+  ibo: web3.PublicKey;
+  main: web3.PublicKey;
+  anchorRemainingAccounts?: web3.AccountMeta[];
+};
 
 export const updateIboInstructionDiscriminator = [
   175, 218, 123, 26, 24, 191, 67, 83,
-]
+];
 
 /**
  * Creates a _UpdateIbo_ instruction.
@@ -85,12 +85,12 @@ export const updateIboInstructionDiscriminator = [
 export function createUpdateIboInstruction(
   accounts: UpdateIboInstructionAccounts,
   args: UpdateIboInstructionArgs,
-  programId = new web3.PublicKey('8ZP1cSpVPVPp5aeake5f1BtgW1xv1e39zkoG8bWobbwV')
+  programId = new web3.PublicKey("8ZP1cSpVPVPp5aeake5f1BtgW1xv1e39zkoG8bWobbwV")
 ) {
   const [data] = updateIboStruct.serialize({
     instructionDiscriminator: updateIboInstructionDiscriminator,
     ...args,
-  })
+  });
   const keys: web3.AccountMeta[] = [
     {
       pubkey: accounts.admin,
@@ -103,15 +103,15 @@ export function createUpdateIboInstruction(
       isSigner: false,
     },
     {
-      pubkey: accounts.master,
+      pubkey: accounts.main,
       isWritable: true,
       isSigner: false,
     },
-  ]
+  ];
 
   if (accounts.anchorRemainingAccounts != null) {
     for (const acc of accounts.anchorRemainingAccounts) {
-      keys.push(acc)
+      keys.push(acc);
     }
   }
 
@@ -119,6 +119,6 @@ export function createUpdateIboInstruction(
     programId,
     keys,
     data,
-  })
-  return ix
+  });
+  return ix;
 }

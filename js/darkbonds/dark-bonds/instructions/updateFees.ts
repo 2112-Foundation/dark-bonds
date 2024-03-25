@@ -5,8 +5,8 @@
  * See: https://github.com/metaplex-foundation/solita
  */
 
-import * as beet from '@metaplex-foundation/beet'
-import * as web3 from '@solana/web3.js'
+import * as beet from "@metaplex-foundation/beet";
+import * as web3 from "@solana/web3.js";
 
 /**
  * @category Instructions
@@ -14,15 +14,15 @@ import * as web3 from '@solana/web3.js'
  * @category generated
  */
 export type UpdateFeesInstructionArgs = {
-  iboCreationFee: beet.bignum
-  lockupFee: beet.bignum
-  gateAdditionFee: beet.bignum
-  purchaseCut: beet.bignum
-  resaleCut: beet.bignum
-  bondClaimFee: beet.bignum
-  bondPurchaseFee: beet.bignum
-  bondSplitFee: beet.bignum
-}
+  iboCreationFee: beet.bignum;
+  lockupFee: beet.bignum;
+  gateAdditionFee: beet.bignum;
+  purchaseCut: beet.bignum;
+  resaleCut: beet.bignum;
+  bondClaimFee: beet.bignum;
+  bondPurchaseFee: beet.bignum;
+  bondSplitFee: beet.bignum;
+};
 /**
  * @category Instructions
  * @category UpdateFees
@@ -30,41 +30,41 @@ export type UpdateFeesInstructionArgs = {
  */
 export const updateFeesStruct = new beet.BeetArgsStruct<
   UpdateFeesInstructionArgs & {
-    instructionDiscriminator: number[] /* size: 8 */
+    instructionDiscriminator: number[] /* size: 8 */;
   }
 >(
   [
-    ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
-    ['iboCreationFee', beet.u64],
-    ['lockupFee', beet.u64],
-    ['gateAdditionFee', beet.u64],
-    ['purchaseCut', beet.u64],
-    ['resaleCut', beet.u64],
-    ['bondClaimFee', beet.u64],
-    ['bondPurchaseFee', beet.u64],
-    ['bondSplitFee', beet.u64],
+    ["instructionDiscriminator", beet.uniformFixedSizeArray(beet.u8, 8)],
+    ["iboCreationFee", beet.u64],
+    ["lockupFee", beet.u64],
+    ["gateAdditionFee", beet.u64],
+    ["purchaseCut", beet.u64],
+    ["resaleCut", beet.u64],
+    ["bondClaimFee", beet.u64],
+    ["bondPurchaseFee", beet.u64],
+    ["bondSplitFee", beet.u64],
   ],
-  'UpdateFeesInstructionArgs'
-)
+  "UpdateFeesInstructionArgs"
+);
 /**
  * Accounts required by the _updateFees_ instruction
  *
  * @property [_writable_, **signer**] superadmin
- * @property [_writable_] master
+ * @property [_writable_] main
  * @category Instructions
  * @category UpdateFees
  * @category generated
  */
 export type UpdateFeesInstructionAccounts = {
-  superadmin: web3.PublicKey
-  master: web3.PublicKey
-  systemProgram?: web3.PublicKey
-  anchorRemainingAccounts?: web3.AccountMeta[]
-}
+  superadmin: web3.PublicKey;
+  main: web3.PublicKey;
+  systemProgram?: web3.PublicKey;
+  anchorRemainingAccounts?: web3.AccountMeta[];
+};
 
 export const updateFeesInstructionDiscriminator = [
   225, 27, 13, 6, 69, 84, 172, 191,
-]
+];
 
 /**
  * Creates a _UpdateFees_ instruction.
@@ -79,12 +79,12 @@ export const updateFeesInstructionDiscriminator = [
 export function createUpdateFeesInstruction(
   accounts: UpdateFeesInstructionAccounts,
   args: UpdateFeesInstructionArgs,
-  programId = new web3.PublicKey('8ZP1cSpVPVPp5aeake5f1BtgW1xv1e39zkoG8bWobbwV')
+  programId = new web3.PublicKey("8ZP1cSpVPVPp5aeake5f1BtgW1xv1e39zkoG8bWobbwV")
 ) {
   const [data] = updateFeesStruct.serialize({
     instructionDiscriminator: updateFeesInstructionDiscriminator,
     ...args,
-  })
+  });
   const keys: web3.AccountMeta[] = [
     {
       pubkey: accounts.superadmin,
@@ -92,7 +92,7 @@ export function createUpdateFeesInstruction(
       isSigner: true,
     },
     {
-      pubkey: accounts.master,
+      pubkey: accounts.main,
       isWritable: true,
       isSigner: false,
     },
@@ -101,11 +101,11 @@ export function createUpdateFeesInstruction(
       isWritable: false,
       isSigner: false,
     },
-  ]
+  ];
 
   if (accounts.anchorRemainingAccounts != null) {
     for (const acc of accounts.anchorRemainingAccounts) {
-      keys.push(acc)
+      keys.push(acc);
     }
   }
 
@@ -113,6 +113,6 @@ export function createUpdateFeesInstruction(
     programId,
     keys,
     data,
-  })
-  return ix
+  });
+  return ix;
 }

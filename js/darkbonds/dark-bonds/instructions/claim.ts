@@ -5,10 +5,10 @@
  * See: https://github.com/metaplex-foundation/solita
  */
 
-import * as splToken from '@solana/spl-token'
-import * as web3 from '@solana/web3.js'
-import * as beetSolana from '@metaplex-foundation/beet-solana'
-import * as beet from '@metaplex-foundation/beet'
+import * as splToken from "@solana/spl-token";
+import * as web3 from "@solana/web3.js";
+import * as beetSolana from "@metaplex-foundation/beet-solana";
+import * as beet from "@metaplex-foundation/beet";
 
 /**
  * @category Instructions
@@ -16,9 +16,9 @@ import * as beet from '@metaplex-foundation/beet'
  * @category generated
  */
 export type ClaimInstructionArgs = {
-  iboAddress: web3.PublicKey
-  bondIdx: number
-}
+  iboAddress: web3.PublicKey;
+  bondIdx: number;
+};
 /**
  * @category Instructions
  * @category Claim
@@ -26,16 +26,16 @@ export type ClaimInstructionArgs = {
  */
 export const claimStruct = new beet.BeetArgsStruct<
   ClaimInstructionArgs & {
-    instructionDiscriminator: number[] /* size: 8 */
+    instructionDiscriminator: number[] /* size: 8 */;
   }
 >(
   [
-    ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
-    ['iboAddress', beetSolana.publicKey],
-    ['bondIdx', beet.u32],
+    ["instructionDiscriminator", beet.uniformFixedSizeArray(beet.u8, 8)],
+    ["iboAddress", beetSolana.publicKey],
+    ["bondIdx", beet.u32],
   ],
-  'ClaimInstructionArgs'
-)
+  "ClaimInstructionArgs"
+);
 /**
  * Accounts required by the _claim_ instruction
  *
@@ -43,25 +43,25 @@ export const claimStruct = new beet.BeetArgsStruct<
  * @property [_writable_] bond
  * @property [_writable_] bondOwnerAta
  * @property [_writable_] bondAta
- * @property [_writable_] master
+ * @property [_writable_] main
  * @category Instructions
  * @category Claim
  * @category generated
  */
 export type ClaimInstructionAccounts = {
-  bondOwner: web3.PublicKey
-  bond: web3.PublicKey
-  bondOwnerAta: web3.PublicKey
-  bondAta: web3.PublicKey
-  master: web3.PublicKey
-  systemProgram?: web3.PublicKey
-  tokenProgram?: web3.PublicKey
-  anchorRemainingAccounts?: web3.AccountMeta[]
-}
+  bondOwner: web3.PublicKey;
+  bond: web3.PublicKey;
+  bondOwnerAta: web3.PublicKey;
+  bondAta: web3.PublicKey;
+  main: web3.PublicKey;
+  systemProgram?: web3.PublicKey;
+  tokenProgram?: web3.PublicKey;
+  anchorRemainingAccounts?: web3.AccountMeta[];
+};
 
 export const claimInstructionDiscriminator = [
   62, 198, 214, 193, 213, 159, 108, 210,
-]
+];
 
 /**
  * Creates a _Claim_ instruction.
@@ -76,12 +76,12 @@ export const claimInstructionDiscriminator = [
 export function createClaimInstruction(
   accounts: ClaimInstructionAccounts,
   args: ClaimInstructionArgs,
-  programId = new web3.PublicKey('8ZP1cSpVPVPp5aeake5f1BtgW1xv1e39zkoG8bWobbwV')
+  programId = new web3.PublicKey("8ZP1cSpVPVPp5aeake5f1BtgW1xv1e39zkoG8bWobbwV")
 ) {
   const [data] = claimStruct.serialize({
     instructionDiscriminator: claimInstructionDiscriminator,
     ...args,
-  })
+  });
   const keys: web3.AccountMeta[] = [
     {
       pubkey: accounts.bondOwner,
@@ -104,7 +104,7 @@ export function createClaimInstruction(
       isSigner: false,
     },
     {
-      pubkey: accounts.master,
+      pubkey: accounts.main,
       isWritable: true,
       isSigner: false,
     },
@@ -118,11 +118,11 @@ export function createClaimInstruction(
       isWritable: false,
       isSigner: false,
     },
-  ]
+  ];
 
   if (accounts.anchorRemainingAccounts != null) {
     for (const acc of accounts.anchorRemainingAccounts) {
-      keys.push(acc)
+      keys.push(acc);
     }
   }
 
@@ -130,6 +130,6 @@ export function createClaimInstruction(
     programId,
     keys,
     data,
-  })
-  return ix
+  });
+  return ix;
 }

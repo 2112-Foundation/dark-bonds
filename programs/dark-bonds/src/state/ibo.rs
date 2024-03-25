@@ -60,6 +60,12 @@ pub struct Ibo {
     pub descriptin: String,
     /** Link to the project launching this offering */
     pub link: String,
+
+    /** Counters for banks storing blackboxes aces. */
+    pub current_bond_bank_counter: u16,
+    pub next_bond_bank_counter: u16,
+    /** Counters for banks storing secondary market listings. */
+    pub next_listing_bank_counter: u16,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq, Eq)]

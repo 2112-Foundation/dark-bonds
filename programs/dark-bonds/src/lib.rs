@@ -79,6 +79,10 @@ pub mod dark_bonds {
         )
     }
 
+    /** Function to add bank ibo */
+    pub fn add_ibo_bank(ctx: Context<AddIboBank>) -> Result<()> {
+        superadmin::add_ibo_bank::add_ibo_bank(ctx)
+    }
     // Bond admin functions
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

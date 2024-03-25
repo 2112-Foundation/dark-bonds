@@ -10,20 +10,20 @@ pub struct UpdateMasterWithdraw<'info> {
     pub superadmin: Signer<'info>,
     #[account(        
         mut,      
-        seeds = [MASTER_SEED.as_bytes()], 
-        bump = master.bump,                      
+        seeds = [MAIN_SEED.as_bytes()], 
+        bump = main.bump,                      
     )]
-    pub master: Account<'info, Master>,
+    pub main: Account<'info, Main>,
     pub system_program: Program<'info, System>,
 }
 
 // TODO I think this function is pointless
 pub fn update_withdraw(ctx: Context<UpdateMasterWithdraw>, master_recipient: Pubkey) -> Result<()> {
     let superadmin: &Signer = &mut ctx.accounts.superadmin;
-    let master: &mut Account<Master> = &mut ctx.accounts.master;
+    let main: &mut Account<Main> = &mut ctx.accounts.main;
 
     // TODO not sure if admin is needed tbh at all
-    master.master_recipient = master_recipient; // TODO option for this to be different
+    main.master_recipient = master_recipient; // TODO option for this to be different
 
     Ok(())
 }

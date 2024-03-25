@@ -5,8 +5,8 @@
  * See: https://github.com/metaplex-foundation/solita
  */
 
-import * as beet from '@metaplex-foundation/beet'
-import * as web3 from '@solana/web3.js'
+import * as beet from "@metaplex-foundation/beet";
+import * as web3 from "@solana/web3.js";
 
 /**
  * @category Instructions
@@ -14,11 +14,11 @@ import * as web3 from '@solana/web3.js'
  * @category generated
  */
 export type UpdateLockupGatesInstructionArgs = {
-  iboIdx: number
-  lockupIdx: number
-  gatesAdd: number[]
-  gatesRemove: number[]
-}
+  iboIdx: number;
+  lockupIdx: number;
+  gatesAdd: number[];
+  gatesRemove: number[];
+};
 /**
  * @category Instructions
  * @category UpdateLockupGates
@@ -26,41 +26,41 @@ export type UpdateLockupGatesInstructionArgs = {
  */
 export const updateLockupGatesStruct = new beet.FixableBeetArgsStruct<
   UpdateLockupGatesInstructionArgs & {
-    instructionDiscriminator: number[] /* size: 8 */
+    instructionDiscriminator: number[] /* size: 8 */;
   }
 >(
   [
-    ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
-    ['iboIdx', beet.u32],
-    ['lockupIdx', beet.u32],
-    ['gatesAdd', beet.array(beet.u32)],
-    ['gatesRemove', beet.array(beet.u32)],
+    ["instructionDiscriminator", beet.uniformFixedSizeArray(beet.u8, 8)],
+    ["iboIdx", beet.u32],
+    ["lockupIdx", beet.u32],
+    ["gatesAdd", beet.array(beet.u32)],
+    ["gatesRemove", beet.array(beet.u32)],
   ],
-  'UpdateLockupGatesInstructionArgs'
-)
+  "UpdateLockupGatesInstructionArgs"
+);
 /**
  * Accounts required by the _updateLockupGates_ instruction
  *
  * @property [_writable_, **signer**] admin
  * @property [_writable_] ibo
  * @property [_writable_] lockup
- * @property [_writable_] master
+ * @property [_writable_] main
  * @category Instructions
  * @category UpdateLockupGates
  * @category generated
  */
 export type UpdateLockupGatesInstructionAccounts = {
-  admin: web3.PublicKey
-  ibo: web3.PublicKey
-  lockup: web3.PublicKey
-  master: web3.PublicKey
-  systemProgram?: web3.PublicKey
-  anchorRemainingAccounts?: web3.AccountMeta[]
-}
+  admin: web3.PublicKey;
+  ibo: web3.PublicKey;
+  lockup: web3.PublicKey;
+  main: web3.PublicKey;
+  systemProgram?: web3.PublicKey;
+  anchorRemainingAccounts?: web3.AccountMeta[];
+};
 
 export const updateLockupGatesInstructionDiscriminator = [
   176, 248, 88, 52, 3, 207, 35, 98,
-]
+];
 
 /**
  * Creates a _UpdateLockupGates_ instruction.
@@ -75,12 +75,12 @@ export const updateLockupGatesInstructionDiscriminator = [
 export function createUpdateLockupGatesInstruction(
   accounts: UpdateLockupGatesInstructionAccounts,
   args: UpdateLockupGatesInstructionArgs,
-  programId = new web3.PublicKey('8ZP1cSpVPVPp5aeake5f1BtgW1xv1e39zkoG8bWobbwV')
+  programId = new web3.PublicKey("8ZP1cSpVPVPp5aeake5f1BtgW1xv1e39zkoG8bWobbwV")
 ) {
   const [data] = updateLockupGatesStruct.serialize({
     instructionDiscriminator: updateLockupGatesInstructionDiscriminator,
     ...args,
-  })
+  });
   const keys: web3.AccountMeta[] = [
     {
       pubkey: accounts.admin,
@@ -98,7 +98,7 @@ export function createUpdateLockupGatesInstruction(
       isSigner: false,
     },
     {
-      pubkey: accounts.master,
+      pubkey: accounts.main,
       isWritable: true,
       isSigner: false,
     },
@@ -107,11 +107,11 @@ export function createUpdateLockupGatesInstruction(
       isWritable: false,
       isSigner: false,
     },
-  ]
+  ];
 
   if (accounts.anchorRemainingAccounts != null) {
     for (const acc of accounts.anchorRemainingAccounts) {
-      keys.push(acc)
+      keys.push(acc);
     }
   }
 
@@ -119,6 +119,6 @@ export function createUpdateLockupGatesInstruction(
     programId,
     keys,
     data,
-  })
-  return ix
+  });
+  return ix;
 }

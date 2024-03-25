@@ -5,9 +5,9 @@
  * See: https://github.com/metaplex-foundation/solita
  */
 
-import * as beet from '@metaplex-foundation/beet'
-import * as web3 from '@solana/web3.js'
-import { GateType, gateTypeBeet } from '../types/GateType'
+import * as beet from "@metaplex-foundation/beet";
+import * as web3 from "@solana/web3.js";
+import { GateType, gateTypeBeet } from "../types/GateType";
 
 /**
  * @category Instructions
@@ -15,10 +15,10 @@ import { GateType, gateTypeBeet } from '../types/GateType'
  * @category generated
  */
 export type AddGateInstructionArgs = {
-  iboIdx: number
-  lockupIdx: number
-  gateSettings: GateType[]
-}
+  iboIdx: number;
+  lockupIdx: number;
+  gateSettings: GateType[];
+};
 /**
  * @category Instructions
  * @category AddGate
@@ -26,17 +26,17 @@ export type AddGateInstructionArgs = {
  */
 export const addGateStruct = new beet.FixableBeetArgsStruct<
   AddGateInstructionArgs & {
-    instructionDiscriminator: number[] /* size: 8 */
+    instructionDiscriminator: number[] /* size: 8 */;
   }
 >(
   [
-    ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
-    ['iboIdx', beet.u32],
-    ['lockupIdx', beet.u32],
-    ['gateSettings', beet.array(gateTypeBeet)],
+    ["instructionDiscriminator", beet.uniformFixedSizeArray(beet.u8, 8)],
+    ["iboIdx", beet.u32],
+    ["lockupIdx", beet.u32],
+    ["gateSettings", beet.array(gateTypeBeet)],
   ],
-  'AddGateInstructionArgs'
-)
+  "AddGateInstructionArgs"
+);
 /**
  * Accounts required by the _addGate_ instruction
  *
@@ -44,24 +44,24 @@ export const addGateStruct = new beet.FixableBeetArgsStruct<
  * @property [_writable_] ibo
  * @property [_writable_] lockup
  * @property [_writable_] gate
- * @property [_writable_] master
+ * @property [_writable_] main
  * @category Instructions
  * @category AddGate
  * @category generated
  */
 export type AddGateInstructionAccounts = {
-  admin: web3.PublicKey
-  ibo: web3.PublicKey
-  lockup: web3.PublicKey
-  gate: web3.PublicKey
-  master: web3.PublicKey
-  systemProgram?: web3.PublicKey
-  anchorRemainingAccounts?: web3.AccountMeta[]
-}
+  admin: web3.PublicKey;
+  ibo: web3.PublicKey;
+  lockup: web3.PublicKey;
+  gate: web3.PublicKey;
+  main: web3.PublicKey;
+  systemProgram?: web3.PublicKey;
+  anchorRemainingAccounts?: web3.AccountMeta[];
+};
 
 export const addGateInstructionDiscriminator = [
   89, 220, 103, 18, 25, 101, 194, 176,
-]
+];
 
 /**
  * Creates a _AddGate_ instruction.
@@ -76,12 +76,12 @@ export const addGateInstructionDiscriminator = [
 export function createAddGateInstruction(
   accounts: AddGateInstructionAccounts,
   args: AddGateInstructionArgs,
-  programId = new web3.PublicKey('8ZP1cSpVPVPp5aeake5f1BtgW1xv1e39zkoG8bWobbwV')
+  programId = new web3.PublicKey("8ZP1cSpVPVPp5aeake5f1BtgW1xv1e39zkoG8bWobbwV")
 ) {
   const [data] = addGateStruct.serialize({
     instructionDiscriminator: addGateInstructionDiscriminator,
     ...args,
-  })
+  });
   const keys: web3.AccountMeta[] = [
     {
       pubkey: accounts.admin,
@@ -104,7 +104,7 @@ export function createAddGateInstruction(
       isSigner: false,
     },
     {
-      pubkey: accounts.master,
+      pubkey: accounts.main,
       isWritable: true,
       isSigner: false,
     },
@@ -113,11 +113,11 @@ export function createAddGateInstruction(
       isWritable: false,
       isSigner: false,
     },
-  ]
+  ];
 
   if (accounts.anchorRemainingAccounts != null) {
     for (const acc of accounts.anchorRemainingAccounts) {
-      keys.push(acc)
+      keys.push(acc);
     }
   }
 
@@ -125,6 +125,6 @@ export function createAddGateInstruction(
     programId,
     keys,
     data,
-  })
-  return ix
+  });
+  return ix;
 }

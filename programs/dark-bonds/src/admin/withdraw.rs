@@ -23,16 +23,17 @@ pub struct Withdraw<'info> {
     pub ibo: Account<'info, Ibo>,
     #[account(               
         mut, 
-        seeds = [MASTER_SEED.as_bytes()], 
-        bump,       
+        seeds = [MAIN_SEED.as_bytes()], 
+        bump = main.bump,       
     )]
-    pub master: Account<'info, Master>, // TODO do that everwyehre where master is used
-
+    pub main: Account<'info, Main>, // TODO do that everwyehre where main is used
     #[account(mut)]
     pub ibo_ata: Box<Account<'info, TokenAccount>>,
-    #[account(mut, token::authority = ibo.recipient_address)]
+    #[account(
+        mut, 
+        token::authority = ibo.recipient_address
+    )]
     pub recipient_ata: Box<Account<'info, TokenAccount>>,
-
     pub token_program: Program<'info, Token>,
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub rent: Sysvar<'info, Rent>,
@@ -48,7 +49,7 @@ pub struct Withdraw<'info> {
 pub fn withdraw(ctx: Context<Withdraw>, withdraw_amount: u64, ibo_idx: u64) -> Result<()> {
     let ibo_ata: &mut Account<TokenAccount> = &mut ctx.accounts.ibo_ata;
     let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
-    let master: &mut Account<Master> = &mut ctx.accounts.master;
+    let main: &mut Account<Main> = &mut ctx.accounts.main;
 
     // If trying to withdraw underlying asset and withdraw for that have been marked as locked
     if ibo_ata.mint == ibo.underlying_token && ibo.actions.admin_withdraws {
@@ -56,7 +57,7 @@ pub fn withdraw(ctx: Context<Withdraw>, withdraw_amount: u64, ibo_idx: u64) -> R
         require!(Clock::get().unwrap().unix_timestamp >= ibo.end_date, BondErrors::WithdrawLocked);
     }
 
-    let master_ibo_address = master.key().clone();
+    let master_ibo_address = main.key().clone();
 
     // Get the seeds
     let seeds = &[

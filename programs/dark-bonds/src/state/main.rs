@@ -1,14 +1,14 @@
 use anchor_lang::prelude::*;
 
 #[account]
-pub struct Master {
+pub struct Main {
     /** Bump.*/
     pub bump: u8,
     /** Counter for all of the IBOs intialised to date.*/
     pub ibo_counter: u64,
     /** Cut take of each bond issuance transaction. Needs to be scaled down by 1000*/
     pub master_cut: u64, // Could be just hardcoded it is
-    /** Master admin that can.*/
+    /** Main admin that can.*/
     pub admin: Pubkey, // Not sure what it can do really, withdraw
     /** Receives all the cuts.*/
     pub master_recipient: Pubkey,
@@ -18,6 +18,9 @@ pub struct Master {
     pub user_fees: UserFees,
     /** Cuts. Like meat cuts */
     pub cuts: Cuts,
+    /** Counters for banks storing blackboxes aces. */
+    pub current_ibo_bank_counter: u16,
+    pub next_ibo_bank_counter: u16,
 }
 
 // Create me a rust struct for selling bond fees in one single struct beneth this line

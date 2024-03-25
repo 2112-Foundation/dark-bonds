@@ -8,8 +8,8 @@ pub struct UpdateFees<'info> {
     #[account(mut)]
     pub superadmin: Signer<'info>,
     // Need PDA of the to be derived of some shared register which is incremented
-    #[account(mut, seeds = [MASTER_SEED.as_bytes()], bump = master.bump)]
-    pub master: Account<'info, Master>,
+    #[account(mut, seeds = [MAIN_SEED.as_bytes()], bump = main.bump)]
+    pub main: Account<'info, Main>,
     pub system_program: Program<'info, System>,
 }
 
@@ -28,25 +28,25 @@ pub fn update_fees(
     bond_purchase_fee: u64,
     bond_split_fee: u64
 ) -> Result<()> {
-    let master: &mut Account<Master> = &mut ctx.accounts.master;
+    let main: &mut Account<Main> = &mut ctx.accounts.main;
     require!(
         ibo_creation_fee > 0 && lockup_fee > 0 && gate_addition_fee > 0,
         BondErrors::NonZeroFees
     );
 
     // Set ibo admin fees
-    master.admin_fees.ibo_creation_fee = ibo_creation_fee;
-    master.admin_fees.lockup_fee = lockup_fee;
-    master.admin_fees.gate_addition_fee = gate_addition_fee;
+    main.admin_fees.ibo_creation_fee = ibo_creation_fee;
+    main.admin_fees.lockup_fee = lockup_fee;
+    main.admin_fees.gate_addition_fee = gate_addition_fee;
 
     // Set cuts
-    master.cuts.purchase_cut = purchase_cut;
-    master.cuts.resale_cut = resale_cut;
+    main.cuts.purchase_cut = purchase_cut;
+    main.cuts.resale_cut = resale_cut;
 
     // Ser user fees
-    master.user_fees.bond_claim_fee = bond_claim_fee;
-    master.user_fees.bond_purchase_fee = bond_purchase_fee;
-    master.user_fees.bond_split_fee = bond_split_fee;
+    main.user_fees.bond_claim_fee = bond_claim_fee;
+    main.user_fees.bond_purchase_fee = bond_purchase_fee;
+    main.user_fees.bond_split_fee = bond_split_fee;
 
     Ok(())
 }

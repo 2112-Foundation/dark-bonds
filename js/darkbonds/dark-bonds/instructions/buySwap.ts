@@ -5,9 +5,9 @@
  * See: https://github.com/metaplex-foundation/solita
  */
 
-import * as splToken from '@solana/spl-token'
-import * as beet from '@metaplex-foundation/beet'
-import * as web3 from '@solana/web3.js'
+import * as splToken from "@solana/spl-token";
+import * as beet from "@metaplex-foundation/beet";
+import * as web3 from "@solana/web3.js";
 
 /**
  * @category Instructions
@@ -15,17 +15,17 @@ import * as web3 from '@solana/web3.js'
  * @category generated
  */
 export const buySwapStruct = new beet.BeetArgsStruct<{
-  instructionDiscriminator: number[] /* size: 8 */
+  instructionDiscriminator: number[] /* size: 8 */;
 }>(
-  [['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)]],
-  'BuySwapInstructionArgs'
-)
+  [["instructionDiscriminator", beet.uniformFixedSizeArray(beet.u8, 8)]],
+  "BuySwapInstructionArgs"
+);
 /**
  * Accounts required by the _buySwap_ instruction
  *
  * @property [_writable_, **signer**] buyer
  * @property [_writable_] bond
- * @property [_writable_] master
+ * @property [_writable_] main
  * @property [] ibo
  * @property [_writable_] buyerAta
  * @property [_writable_] userAccount
@@ -39,25 +39,25 @@ export const buySwapStruct = new beet.BeetArgsStruct<{
  * @category generated
  */
 export type BuySwapInstructionAccounts = {
-  buyer: web3.PublicKey
-  bond: web3.PublicKey
-  master: web3.PublicKey
-  ibo: web3.PublicKey
-  buyerAta: web3.PublicKey
-  userAccount: web3.PublicKey
-  bondPointer: web3.PublicKey
-  sellerAta: web3.PublicKey
-  masterRecipientAta: web3.PublicKey
-  iboAdminAta: web3.PublicKey
-  associatedTokenProgram: web3.PublicKey
-  tokenProgram?: web3.PublicKey
-  systemProgram?: web3.PublicKey
-  anchorRemainingAccounts?: web3.AccountMeta[]
-}
+  buyer: web3.PublicKey;
+  bond: web3.PublicKey;
+  main: web3.PublicKey;
+  ibo: web3.PublicKey;
+  buyerAta: web3.PublicKey;
+  userAccount: web3.PublicKey;
+  bondPointer: web3.PublicKey;
+  sellerAta: web3.PublicKey;
+  masterRecipientAta: web3.PublicKey;
+  iboAdminAta: web3.PublicKey;
+  associatedTokenProgram: web3.PublicKey;
+  tokenProgram?: web3.PublicKey;
+  systemProgram?: web3.PublicKey;
+  anchorRemainingAccounts?: web3.AccountMeta[];
+};
 
 export const buySwapInstructionDiscriminator = [
   130, 102, 71, 248, 171, 112, 156, 167,
-]
+];
 
 /**
  * Creates a _BuySwap_ instruction.
@@ -69,11 +69,11 @@ export const buySwapInstructionDiscriminator = [
  */
 export function createBuySwapInstruction(
   accounts: BuySwapInstructionAccounts,
-  programId = new web3.PublicKey('8ZP1cSpVPVPp5aeake5f1BtgW1xv1e39zkoG8bWobbwV')
+  programId = new web3.PublicKey("8ZP1cSpVPVPp5aeake5f1BtgW1xv1e39zkoG8bWobbwV")
 ) {
   const [data] = buySwapStruct.serialize({
     instructionDiscriminator: buySwapInstructionDiscriminator,
-  })
+  });
   const keys: web3.AccountMeta[] = [
     {
       pubkey: accounts.buyer,
@@ -86,7 +86,7 @@ export function createBuySwapInstruction(
       isSigner: false,
     },
     {
-      pubkey: accounts.master,
+      pubkey: accounts.main,
       isWritable: true,
       isSigner: false,
     },
@@ -140,11 +140,11 @@ export function createBuySwapInstruction(
       isWritable: false,
       isSigner: false,
     },
-  ]
+  ];
 
   if (accounts.anchorRemainingAccounts != null) {
     for (const acc of accounts.anchorRemainingAccounts) {
-      keys.push(acc)
+      keys.push(acc);
     }
   }
 
@@ -152,6 +152,6 @@ export function createBuySwapInstruction(
     programId,
     keys,
     data,
-  })
-  return ix
+  });
+  return ix;
 }

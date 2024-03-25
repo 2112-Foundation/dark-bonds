@@ -26,8 +26,8 @@ pub struct AddLockUp<'info> {
         space = 400
     )]
     pub lockup: Account<'info, Lockup>,
-    #[account(mut, seeds = [MASTER_SEED.as_bytes()], bump = master.bump)]
-    pub master: Account<'info, Master>,
+    #[account(mut, seeds = [MAIN_SEED.as_bytes()], bump = main.bump)]
+    pub main: Account<'info, Main>,
     pub system_program: Program<'info, System>,
 }
 
@@ -41,11 +41,11 @@ pub fn add_lockup(
     purchase_period: PurchasePeriod
 ) -> Result<()> {
     let lockup: &mut Account<Lockup> = &mut ctx.accounts.lockup;
-    let master: &mut Account<Master> = &mut ctx.accounts.master;
+    let main: &mut Account<Main> = &mut ctx.accounts.main;
     let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
 
     // Take SOL fee for adding a lockup
-    take_fee(&master.to_account_info(), &ctx.accounts.admin, master.admin_fees.lockup_fee, 0)?;
+    take_fee(&main.to_account_info(), &ctx.accounts.admin, main.admin_fees.lockup_fee, 0)?;
 
     // Ensure APY and lockup duration are non-zero
     msg!("lockup duration: {:?}", lockup_duration);

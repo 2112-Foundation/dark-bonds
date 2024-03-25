@@ -96,7 +96,7 @@ describe("dark-bonds", async () => {
   }
 
   const bondProgram = anchor.workspace.DarkBonds as Program<DarkBonds>;
-  // const superAdmin = loadKeypairFromFile("./master-keypair.json"); // reused so that ATA are
+  // const superAdmin = loadKeypairFromFile("./main-keypair.json"); // reused so that ATA are
   const superAdmin = anchor.web3.Keypair.generate();
   const adminIbo0 = anchor.web3.Keypair.generate();
   const bondBuyer1 = anchor.web3.Keypair.generate();
@@ -422,12 +422,12 @@ describe("dark-bonds", async () => {
 
   it("Main register initialised!", async () => {
     [mainIbo] = await PublicKey.findProgramAddress(
-      [Buffer.from(MASTER_SEED)],
+      [Buffer.from(MAIN_SEED)],
       bondProgram.programId
     );
 
     try {
-      let main_state = await bondProgram.account.master.fetch(mainIbo);
+      let main_state = await bondProgram.account.main.fetch(mainIbo);
       ibo_index = parseInt(main_state.iboCounter.toString());
       console.log("\nAlreadyt deployed\n");
       console.log("ibo_index at ibo make: ", ibo_index);
@@ -435,7 +435,7 @@ describe("dark-bonds", async () => {
       const tx = await bondProgram.methods
         .init()
         .accounts({
-          master: mainIbo,
+          main: mainIbo,
           superadmin: superAdmin.publicKey,
           systemProgram: anchor.web3.SystemProgram.programId,
         })
@@ -447,7 +447,7 @@ describe("dark-bonds", async () => {
 
   it("Register bond offering.", async () => {
     // Get ibo counter for this run
-    let main_state = await bondProgram.account.master.fetch(mainIbo);
+    let main_state = await bondProgram.account.main.fetch(mainIbo);
     ibo_index = parseInt(main_state.iboCounter.toString());
 
     console.log("ibo_index at ibo make: ", ibo_index);
@@ -488,7 +488,7 @@ describe("dark-bonds", async () => {
         adminIbo0.publicKey
       )
       .accounts({
-        master: mainIbo,
+        main: mainIbo,
         admin: adminIbo0.publicKey,
         ibo: ibo0,
         systemProgram: anchor.web3.SystemProgram.programId,

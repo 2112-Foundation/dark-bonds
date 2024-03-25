@@ -5,9 +5,9 @@
  * See: https://github.com/metaplex-foundation/solita
  */
 
-import * as beet from '@metaplex-foundation/beet'
-import * as web3 from '@solana/web3.js'
-import * as beetSolana from '@metaplex-foundation/beet-solana'
+import * as beet from "@metaplex-foundation/beet";
+import * as web3 from "@solana/web3.js";
+import * as beetSolana from "@metaplex-foundation/beet-solana";
 
 /**
  * @category Instructions
@@ -15,13 +15,13 @@ import * as beetSolana from '@metaplex-foundation/beet-solana'
  * @category generated
  */
 export type CreateIboInstructionArgs = {
-  fixedExchangeRate: beet.bignum
-  liveDate: beet.bignum
-  endDate: beet.bignum
-  swapCut: number
-  liquidityToken: web3.PublicKey
-  recipient: web3.PublicKey
-}
+  fixedExchangeRate: beet.bignum;
+  liveDate: beet.bignum;
+  endDate: beet.bignum;
+  swapCut: number;
+  liquidityToken: web3.PublicKey;
+  recipient: web3.PublicKey;
+};
 /**
  * @category Instructions
  * @category CreateIbo
@@ -29,41 +29,41 @@ export type CreateIboInstructionArgs = {
  */
 export const createIboStruct = new beet.BeetArgsStruct<
   CreateIboInstructionArgs & {
-    instructionDiscriminator: number[] /* size: 8 */
+    instructionDiscriminator: number[] /* size: 8 */;
   }
 >(
   [
-    ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
-    ['fixedExchangeRate', beet.u64],
-    ['liveDate', beet.i64],
-    ['endDate', beet.i64],
-    ['swapCut', beet.u32],
-    ['liquidityToken', beetSolana.publicKey],
-    ['recipient', beetSolana.publicKey],
+    ["instructionDiscriminator", beet.uniformFixedSizeArray(beet.u8, 8)],
+    ["fixedExchangeRate", beet.u64],
+    ["liveDate", beet.i64],
+    ["endDate", beet.i64],
+    ["swapCut", beet.u32],
+    ["liquidityToken", beetSolana.publicKey],
+    ["recipient", beetSolana.publicKey],
   ],
-  'CreateIboInstructionArgs'
-)
+  "CreateIboInstructionArgs"
+);
 /**
  * Accounts required by the _createIbo_ instruction
  *
  * @property [_writable_, **signer**] admin
  * @property [_writable_] ibo
- * @property [_writable_] master
+ * @property [_writable_] main
  * @category Instructions
  * @category CreateIbo
  * @category generated
  */
 export type CreateIboInstructionAccounts = {
-  admin: web3.PublicKey
-  ibo: web3.PublicKey
-  master: web3.PublicKey
-  systemProgram?: web3.PublicKey
-  anchorRemainingAccounts?: web3.AccountMeta[]
-}
+  admin: web3.PublicKey;
+  ibo: web3.PublicKey;
+  main: web3.PublicKey;
+  systemProgram?: web3.PublicKey;
+  anchorRemainingAccounts?: web3.AccountMeta[];
+};
 
 export const createIboInstructionDiscriminator = [
   19, 39, 169, 8, 118, 170, 246, 209,
-]
+];
 
 /**
  * Creates a _CreateIbo_ instruction.
@@ -78,12 +78,12 @@ export const createIboInstructionDiscriminator = [
 export function createCreateIboInstruction(
   accounts: CreateIboInstructionAccounts,
   args: CreateIboInstructionArgs,
-  programId = new web3.PublicKey('8ZP1cSpVPVPp5aeake5f1BtgW1xv1e39zkoG8bWobbwV')
+  programId = new web3.PublicKey("8ZP1cSpVPVPp5aeake5f1BtgW1xv1e39zkoG8bWobbwV")
 ) {
   const [data] = createIboStruct.serialize({
     instructionDiscriminator: createIboInstructionDiscriminator,
     ...args,
-  })
+  });
   const keys: web3.AccountMeta[] = [
     {
       pubkey: accounts.admin,
@@ -96,7 +96,7 @@ export function createCreateIboInstruction(
       isSigner: false,
     },
     {
-      pubkey: accounts.master,
+      pubkey: accounts.main,
       isWritable: true,
       isSigner: false,
     },
@@ -105,11 +105,11 @@ export function createCreateIboInstruction(
       isWritable: false,
       isSigner: false,
     },
-  ]
+  ];
 
   if (accounts.anchorRemainingAccounts != null) {
     for (const acc of accounts.anchorRemainingAccounts) {
-      keys.push(acc)
+      keys.push(acc);
     }
   }
 
@@ -117,6 +117,6 @@ export function createCreateIboInstruction(
     programId,
     keys,
     data,
-  })
-  return ix
+  });
+  return ix;
 }

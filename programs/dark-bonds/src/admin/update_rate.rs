@@ -23,22 +23,22 @@ pub struct UpdateRate<'info> {
     // Checks for correct main account provided
     #[account(               
         mut, 
-        seeds = [MASTER_SEED.as_bytes()], 
-        bump = master.bump,       
+        seeds = [MAIN_SEED.as_bytes()], 
+        bump = main.bump,       
     )]
-    pub master: Account<'info, Master>,
+    pub main: Account<'info, Main>,
 }
 
 pub fn update_rate(ctx: Context<UpdateRate>, fixed_exchange_rate: u64) -> Result<()> {
     let admin: &Signer = &mut ctx.accounts.admin;
     let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
-    let master: &mut Account<Master> = &mut ctx.accounts.master;
+    let main: &mut Account<Main> = &mut ctx.accounts.main;
 
-    // Transfer lamports to the master recipient account for updating ibo
+    // Transfer lamports to the main recipient account for updating ibo
     take_fee(
-        &master.to_account_info(),
+        &main.to_account_info(),
         &admin,
-        ((master.admin_fees.ibo_creation_fee as f64) / 10.0) as u64,
+        ((main.admin_fees.ibo_creation_fee as f64) / 10.0) as u64,
         0
     )?;
 

@@ -25,9 +25,9 @@ pub struct UpdateGates<'info> {
     pub lockup: Account<'info, Lockup>,
     #[account(
         mut, 
-        seeds = [MASTER_SEED.as_bytes()], bump = master.bump
+        seeds = [MAIN_SEED.as_bytes()], bump = main.bump
     )]
-    pub master: Account<'info, Master>,
+    pub main: Account<'info, Main>,
     pub system_program: Program<'info, System>,
 }
 
@@ -39,7 +39,7 @@ pub fn update_lockup_gates(
     gates_remove: Vec<u32>
 ) -> Result<()> {
     let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
-    let master: &mut Account<Master> = &mut ctx.accounts.master;
+    let main: &mut Account<Main> = &mut ctx.accounts.main;
     let lockup: &mut Account<Lockup> = &mut ctx.accounts.lockup;
 
     // Loop over gates to add and update allowed lockups
@@ -52,9 +52,9 @@ pub fn update_lockup_gates(
 
     // Take SOL fee for adding a gate
     take_fee(
-        &master.to_account_info(),
+        &main.to_account_info(),
         &ctx.accounts.admin,
-        ((master.admin_fees.gate_addition_fee as f64) / 10.0) as u64,
+        ((main.admin_fees.gate_addition_fee as f64) / 10.0) as u64,
         0
     )?;
 

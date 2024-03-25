@@ -5,8 +5,8 @@
  * See: https://github.com/metaplex-foundation/solita
  */
 
-import * as beet from '@metaplex-foundation/beet'
-import * as web3 from '@solana/web3.js'
+import * as beet from "@metaplex-foundation/beet";
+import * as web3 from "@solana/web3.js";
 
 /**
  * @category Instructions
@@ -14,30 +14,30 @@ import * as web3 from '@solana/web3.js'
  * @category generated
  */
 export const initStruct = new beet.BeetArgsStruct<{
-  instructionDiscriminator: number[] /* size: 8 */
+  instructionDiscriminator: number[] /* size: 8 */;
 }>(
-  [['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)]],
-  'InitInstructionArgs'
-)
+  [["instructionDiscriminator", beet.uniformFixedSizeArray(beet.u8, 8)]],
+  "InitInstructionArgs"
+);
 /**
  * Accounts required by the _init_ instruction
  *
  * @property [_writable_, **signer**] superadmin
- * @property [_writable_] master
+ * @property [_writable_] main
  * @category Instructions
  * @category Init
  * @category generated
  */
 export type InitInstructionAccounts = {
-  superadmin: web3.PublicKey
-  master: web3.PublicKey
-  systemProgram?: web3.PublicKey
-  anchorRemainingAccounts?: web3.AccountMeta[]
-}
+  superadmin: web3.PublicKey;
+  main: web3.PublicKey;
+  systemProgram?: web3.PublicKey;
+  anchorRemainingAccounts?: web3.AccountMeta[];
+};
 
 export const initInstructionDiscriminator = [
   220, 59, 207, 236, 108, 250, 47, 100,
-]
+];
 
 /**
  * Creates a _Init_ instruction.
@@ -49,11 +49,11 @@ export const initInstructionDiscriminator = [
  */
 export function createInitInstruction(
   accounts: InitInstructionAccounts,
-  programId = new web3.PublicKey('8ZP1cSpVPVPp5aeake5f1BtgW1xv1e39zkoG8bWobbwV')
+  programId = new web3.PublicKey("8ZP1cSpVPVPp5aeake5f1BtgW1xv1e39zkoG8bWobbwV")
 ) {
   const [data] = initStruct.serialize({
     instructionDiscriminator: initInstructionDiscriminator,
-  })
+  });
   const keys: web3.AccountMeta[] = [
     {
       pubkey: accounts.superadmin,
@@ -61,7 +61,7 @@ export function createInitInstruction(
       isSigner: true,
     },
     {
-      pubkey: accounts.master,
+      pubkey: accounts.main,
       isWritable: true,
       isSigner: false,
     },
@@ -70,11 +70,11 @@ export function createInitInstruction(
       isWritable: false,
       isSigner: false,
     },
-  ]
+  ];
 
   if (accounts.anchorRemainingAccounts != null) {
     for (const acc of accounts.anchorRemainingAccounts) {
-      keys.push(acc)
+      keys.push(acc);
     }
   }
 
@@ -82,6 +82,6 @@ export function createInitInstruction(
     programId,
     keys,
     data,
-  })
-  return ix
+  });
+  return ix;
 }

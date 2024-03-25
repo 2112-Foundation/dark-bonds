@@ -12,7 +12,7 @@ import {
 } from "@solana/spl-token";
 
 import { Mint } from "./mint";
-import { Bond } from "./master";
+import { Bond } from "./main";
 import { USER_ACCOUNT_SEED, BOND_POINTER_SEED } from "./constants";
 
 export class User {

@@ -5,10 +5,10 @@
  * See: https://github.com/metaplex-foundation/solita
  */
 
-import * as splToken from '@solana/spl-token'
-import * as web3 from '@solana/web3.js'
-import * as beet from '@metaplex-foundation/beet'
-import * as beetSolana from '@metaplex-foundation/beet-solana'
+import * as splToken from "@solana/spl-token";
+import * as web3 from "@solana/web3.js";
+import * as beet from "@metaplex-foundation/beet";
+import * as beetSolana from "@metaplex-foundation/beet-solana";
 
 /**
  * @category Instructions
@@ -16,10 +16,10 @@ import * as beetSolana from '@metaplex-foundation/beet-solana'
  * @category generated
  */
 export type SplitInstructionArgs = {
-  percentNew: number
-  iboAddress: web3.PublicKey
-  bondIdx: number
-}
+  percentNew: number;
+  iboAddress: web3.PublicKey;
+  bondIdx: number;
+};
 /**
  * @category Instructions
  * @category Split
@@ -27,17 +27,17 @@ export type SplitInstructionArgs = {
  */
 export const splitStruct = new beet.BeetArgsStruct<
   SplitInstructionArgs & {
-    instructionDiscriminator: number[] /* size: 8 */
+    instructionDiscriminator: number[] /* size: 8 */;
   }
 >(
   [
-    ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
-    ['percentNew', beet.u16],
-    ['iboAddress', beetSolana.publicKey],
-    ['bondIdx', beet.u32],
+    ["instructionDiscriminator", beet.uniformFixedSizeArray(beet.u8, 8)],
+    ["percentNew", beet.u16],
+    ["iboAddress", beetSolana.publicKey],
+    ["bondIdx", beet.u32],
   ],
-  'SplitInstructionArgs'
-)
+  "SplitInstructionArgs"
+);
 /**
  * Accounts required by the _split_ instruction
  *
@@ -46,28 +46,28 @@ export const splitStruct = new beet.BeetArgsStruct<
  * @property [_writable_] bondAtaOld
  * @property [_writable_] bondAtaNew
  * @property [_writable_] newBond
- * @property [_writable_] master
+ * @property [_writable_] main
  * @property [_writable_] ibo
  * @category Instructions
  * @category Split
  * @category generated
  */
 export type SplitInstructionAccounts = {
-  owner: web3.PublicKey
-  bond: web3.PublicKey
-  bondAtaOld: web3.PublicKey
-  bondAtaNew: web3.PublicKey
-  newBond: web3.PublicKey
-  master: web3.PublicKey
-  ibo: web3.PublicKey
-  tokenProgram?: web3.PublicKey
-  systemProgram?: web3.PublicKey
-  anchorRemainingAccounts?: web3.AccountMeta[]
-}
+  owner: web3.PublicKey;
+  bond: web3.PublicKey;
+  bondAtaOld: web3.PublicKey;
+  bondAtaNew: web3.PublicKey;
+  newBond: web3.PublicKey;
+  main: web3.PublicKey;
+  ibo: web3.PublicKey;
+  tokenProgram?: web3.PublicKey;
+  systemProgram?: web3.PublicKey;
+  anchorRemainingAccounts?: web3.AccountMeta[];
+};
 
 export const splitInstructionDiscriminator = [
   124, 189, 27, 43, 216, 40, 147, 66,
-]
+];
 
 /**
  * Creates a _Split_ instruction.
@@ -82,12 +82,12 @@ export const splitInstructionDiscriminator = [
 export function createSplitInstruction(
   accounts: SplitInstructionAccounts,
   args: SplitInstructionArgs,
-  programId = new web3.PublicKey('8ZP1cSpVPVPp5aeake5f1BtgW1xv1e39zkoG8bWobbwV')
+  programId = new web3.PublicKey("8ZP1cSpVPVPp5aeake5f1BtgW1xv1e39zkoG8bWobbwV")
 ) {
   const [data] = splitStruct.serialize({
     instructionDiscriminator: splitInstructionDiscriminator,
     ...args,
-  })
+  });
   const keys: web3.AccountMeta[] = [
     {
       pubkey: accounts.owner,
@@ -115,7 +115,7 @@ export function createSplitInstruction(
       isSigner: false,
     },
     {
-      pubkey: accounts.master,
+      pubkey: accounts.main,
       isWritable: true,
       isSigner: false,
     },
@@ -134,11 +134,11 @@ export function createSplitInstruction(
       isWritable: false,
       isSigner: false,
     },
-  ]
+  ];
 
   if (accounts.anchorRemainingAccounts != null) {
     for (const acc of accounts.anchorRemainingAccounts) {
-      keys.push(acc)
+      keys.push(acc);
     }
   }
 
@@ -146,6 +146,6 @@ export function createSplitInstruction(
     programId,
     keys,
     data,
-  })
-  return ix
+  });
+  return ix;
 }

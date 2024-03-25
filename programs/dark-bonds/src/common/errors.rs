@@ -1,6 +1,8 @@
 use anchor_lang::prelude::*;
 #[error_code]
 pub enum BondErrors {
+    #[msg("Bruh we ain't charity")]
+    ToDo,
     #[msg("Need 24h between withdraws")]
     WithdrawTooEarly,
     #[msg("Wrong cut?")]
@@ -43,7 +45,7 @@ pub enum BondErrors {
     InvalidNFTAccountMint,
     #[msg("The amount of the NFT token account is not 1")]
     InvalidNFTAccountAmount,
-    #[msg("The NFT master edition account is not valid")]
+    #[msg("The NFT main edition account is not valid")]
     InvalidMasterEdition,
     #[msg("The NFT metadata account is not valid")]
     InvalidMetadata,

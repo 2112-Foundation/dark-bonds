@@ -5,8 +5,8 @@
  * See: https://github.com/metaplex-foundation/solita
  */
 
-import * as beet from '@metaplex-foundation/beet'
-import * as web3 from '@solana/web3.js'
+import * as beet from "@metaplex-foundation/beet";
+import * as web3 from "@solana/web3.js";
 
 /**
  * @category Instructions
@@ -14,9 +14,9 @@ import * as web3 from '@solana/web3.js'
  * @category generated
  */
 export type UpdateRateInstructionArgs = {
-  iboIdx: beet.bignum
-  newRate: beet.bignum
-}
+  iboIdx: beet.bignum;
+  newRate: beet.bignum;
+};
 /**
  * @category Instructions
  * @category UpdateRate
@@ -24,36 +24,36 @@ export type UpdateRateInstructionArgs = {
  */
 export const updateRateStruct = new beet.BeetArgsStruct<
   UpdateRateInstructionArgs & {
-    instructionDiscriminator: number[] /* size: 8 */
+    instructionDiscriminator: number[] /* size: 8 */;
   }
 >(
   [
-    ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
-    ['iboIdx', beet.u64],
-    ['newRate', beet.u64],
+    ["instructionDiscriminator", beet.uniformFixedSizeArray(beet.u8, 8)],
+    ["iboIdx", beet.u64],
+    ["newRate", beet.u64],
   ],
-  'UpdateRateInstructionArgs'
-)
+  "UpdateRateInstructionArgs"
+);
 /**
  * Accounts required by the _updateRate_ instruction
  *
  * @property [_writable_, **signer**] admin
  * @property [_writable_] ibo
- * @property [_writable_] master
+ * @property [_writable_] main
  * @category Instructions
  * @category UpdateRate
  * @category generated
  */
 export type UpdateRateInstructionAccounts = {
-  admin: web3.PublicKey
-  ibo: web3.PublicKey
-  master: web3.PublicKey
-  anchorRemainingAccounts?: web3.AccountMeta[]
-}
+  admin: web3.PublicKey;
+  ibo: web3.PublicKey;
+  main: web3.PublicKey;
+  anchorRemainingAccounts?: web3.AccountMeta[];
+};
 
 export const updateRateInstructionDiscriminator = [
   24, 225, 53, 189, 72, 212, 225, 178,
-]
+];
 
 /**
  * Creates a _UpdateRate_ instruction.
@@ -68,12 +68,12 @@ export const updateRateInstructionDiscriminator = [
 export function createUpdateRateInstruction(
   accounts: UpdateRateInstructionAccounts,
   args: UpdateRateInstructionArgs,
-  programId = new web3.PublicKey('8ZP1cSpVPVPp5aeake5f1BtgW1xv1e39zkoG8bWobbwV')
+  programId = new web3.PublicKey("8ZP1cSpVPVPp5aeake5f1BtgW1xv1e39zkoG8bWobbwV")
 ) {
   const [data] = updateRateStruct.serialize({
     instructionDiscriminator: updateRateInstructionDiscriminator,
     ...args,
-  })
+  });
   const keys: web3.AccountMeta[] = [
     {
       pubkey: accounts.admin,
@@ -86,15 +86,15 @@ export function createUpdateRateInstruction(
       isSigner: false,
     },
     {
-      pubkey: accounts.master,
+      pubkey: accounts.main,
       isWritable: true,
       isSigner: false,
     },
-  ]
+  ];
 
   if (accounts.anchorRemainingAccounts != null) {
     for (const acc of accounts.anchorRemainingAccounts) {
-      keys.push(acc)
+      keys.push(acc);
     }
   }
 
@@ -102,6 +102,6 @@ export function createUpdateRateInstruction(
     programId,
     keys,
     data,
-  })
-  return ix
+  });
+  return ix;
 }

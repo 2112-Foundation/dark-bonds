@@ -29,8 +29,8 @@ pub struct BuyBond<'info> {
         bump = ibo.bump,
     )]
     pub ibo: Account<'info, Ibo>,
-    #[account(mut, seeds = [MASTER_SEED.as_bytes()], bump = master.bump)]
-    pub master: Account<'info, Master>,
+    #[account(mut, seeds = [MAIN_SEED.as_bytes()], bump = main.bump)]
+    pub main: Account<'info, Main>,
 
     #[account(
         mut,
@@ -48,25 +48,12 @@ pub struct BuyBond<'info> {
     )]
     pub user_account: Account<'info, UserAccount>,
 
-    #[account(
-        init_if_needed,
-        seeds = [
-            BOND_POINTER_SEED.as_bytes(),
-            buyer.key().as_ref(),
-            &user_account.bond_counter.to_be_bytes(),
-        ],
-        bump,
-        space = 8 + 40, // change
-        payer = buyer
-    )]
-    pub bond_pointer: Account<'info, BondPointer>,
-
     // Provided token account for the buyer has to be same mint as the one set in ibo
     #[account(mut, token::mint = ibo.liquidity_token, token::authority = buyer)]
     pub buyer_ata: Box<Account<'info, TokenAccount>>,
     #[account(mut, token::mint = ibo.liquidity_token, token::authority = ibo.recipient_address)]
     pub recipient_ata: Box<Account<'info, TokenAccount>>,
-    #[account(mut, token::mint = ibo.liquidity_token, token::authority = master.master_recipient)]
+    #[account(mut, token::mint = ibo.liquidity_token, token::authority = main.master_recipient)]
     pub master_recipient_ata: Box<Account<'info, TokenAccount>>, // Matches specified owner and mint
 
     #[account(mut)] //= ibo_ata.mint == ibo.underlying_token @BondErrors::MintMismatch)]
@@ -151,8 +138,8 @@ pub fn buy_bond<'a, 'b, 'c, 'info>(
     let accounts: &mut BuyBond = ctx.accounts;
     let buyer: &Signer = &mut accounts.buyer;
     let user_account: &mut Account<UserAccount> = &mut accounts.user_account;
-    let bond_pointer: &mut Account<BondPointer> = &mut accounts.bond_pointer;
-    let master: &Account<Master> = &mut accounts.master;
+
+    let main: &Account<Main> = &mut accounts.main;
     let lockup: &mut Account<Lockup> = &mut accounts.lockup;
     let ibo: &mut Account<Ibo> = &mut accounts.ibo;
     let bond: &mut Account<Bond> = &mut accounts.bond;
@@ -160,7 +147,7 @@ pub fn buy_bond<'a, 'b, 'c, 'info>(
 
     // Increment bond pointer counter and store pointer in the pointer PDA
     user_account.bond_counter += 1;
-    bond_pointer.bond_address = bond.key();
+    // bond_pointer.bond_address = bond.key();
 
     // Within the purchase period
     require!(lockup.within_sale(ibo.live_date, ibo.end_date), BondErrors::NotWithinSale);
@@ -168,7 +155,7 @@ pub fn buy_bond<'a, 'b, 'c, 'info>(
     // Calcilate bond amount based on the stable amount provided
     let (cut, remainder) = calculate_cut_and_remainder(
         amount_liquidity,
-        (master.cuts.purchase_cut as f64) / SCALE
+        (main.cuts.purchase_cut as f64) / SCALE
     ).unwrap();
 
     msg!("\ncut  : {:?}\n remainder: {:?}", cut, remainder);
@@ -182,7 +169,7 @@ pub fn buy_bond<'a, 'b, 'c, 'info>(
     let bond_amount_comp: u64 = lockup.compounded_amount(bond_amount)?;
 
     // Take SOL fee for buying a bond
-    take_fee(&master.to_account_info(), &buyer, master.user_fees.bond_purchase_fee as u64, 0)?;
+    take_fee(&main.to_account_info(), &buyer, main.user_fees.bond_purchase_fee as u64, 0)?;
 
     // Check if it has at least one access gate
     if lockup.gates.len() > 0 {
@@ -271,7 +258,7 @@ pub fn buy_bond<'a, 'b, 'c, 'info>(
 
     // Transfer liquidity coin cut to us
     accounts.transfer_liquidity(cut, &accounts.master_recipient_ata)?;
-    msg!("Transfered cut to master");
+    msg!("Transfered cut to main");
     accounts.transfer_liquidity(remainder, &accounts.recipient_ata)?;
     msg!("Transfered remainder to recipient");
 

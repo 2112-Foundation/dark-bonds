@@ -123,7 +123,7 @@ pub fn take_fee<'info>(
     Ok(())
 }
 
-/** Splits liquidity fee between master and IBO admin */
+/** Splits liquidity fee between main and IBO admin */
 pub fn calculate_cut_and_remainder(amount: u64, cut_percentage: f64) -> Result<(u64, u64)> {
     // Validate percentage
     require!(cut_percentage > 0.0 || cut_percentage < 100.0, BondErrors::WorngCutTMP);

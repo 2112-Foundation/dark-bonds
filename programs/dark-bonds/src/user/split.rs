@@ -26,10 +26,10 @@ pub struct Split<'info> {
     pub new_bond: Account<'info, Bond>,
     #[account(               
         mut, 
-        seeds = [MASTER_SEED.as_bytes()], 
-        bump = master.bump,       
+        seeds = [MAIN_SEED.as_bytes()], 
+        bump = main.bump,       
     )]
-    pub master: Account<'info, Master>, // TODO do that everwyehre
+    pub main: Account<'info, Main>, // TODO do that everwyehre
     #[account(
         mut,  
         seeds = [
@@ -61,7 +61,7 @@ pub fn split(
     let bond: &mut Account<Bond> = &mut ctx.accounts.bond;
     let new_bond: &mut Account<Bond> = &mut ctx.accounts.new_bond;
     let owner: &Signer = &mut ctx.accounts.owner;
-    let master: &mut Account<Master> = &mut ctx.accounts.master;
+    let main: &mut Account<Main> = &mut ctx.accounts.main;
     let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
 
     let percent_new_fraction: f64 = (percent_new as f64) / 100.0;
@@ -83,8 +83,8 @@ pub fn split(
         ibo.bond_counter
     );
 
-    // Transfer lamports to the master recipient account for splitting the bond
-    take_fee(&master.to_account_info(), &owner, master.user_fees.bond_split_fee as u64, 0)?;
+    // Transfer lamports to the main recipient account for splitting the bond
+    take_fee(&main.to_account_info(), &owner, main.user_fees.bond_split_fee as u64, 0)?;
 
     let seeds = &[
         BOND_SEED.as_bytes(),
