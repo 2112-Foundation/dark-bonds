@@ -149,6 +149,8 @@ export class LockUp {
     public period: number,
     /** The yearly gain for the lockup. */
     public apy: number,
+
+    public principalRatio: number,
     /** Determines if the lockup will be transferred to the bond. */
     public matureOnly: boolean,
     /** Has special deal on. */
@@ -266,6 +268,7 @@ export class Ibo {
     period: number,
     apy: number,
     matureOnly: boolean,
+    principalRatio: number,
     gateIdx?: number
   ): Promise<LockUp> {
     console.log("Using counter of: ", this.lockupCounter);
@@ -284,6 +287,7 @@ export class Ibo {
       this.lockupCounter,
       period,
       apy,
+      principalRatio,
       matureOnly,
       gateIdx !== undefined,
       []

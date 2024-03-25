@@ -324,15 +324,31 @@ describe("dark-bonds", async () => {
   });
 
   it("Add three different lockups.", async () => {
-    let lockUp0: LockUp = await ibo.addLockUp(lockUp0Period, lockUp0Apy, false);
-    let lockUp1: LockUp = await ibo.addLockUp(lockUp1Period, lockUp1Apy, false);
-    let lockUp2: LockUp = await ibo.addLockUp(lockUp2Period, lockUp2Apy, false);
+    let lockUp0: LockUp = await ibo.addLockUp(
+      lockUp0Period,
+      lockUp0Apy,
+      false,
+      0
+    );
+    let lockUp1: LockUp = await ibo.addLockUp(
+      lockUp1Period,
+      lockUp1Apy,
+      false,
+      0
+    );
+    let lockUp2: LockUp = await ibo.addLockUp(
+      lockUp2Period,
+      lockUp2Apy,
+      false,
+      0
+    );
 
     let lockUp0Instruction = bondProgram.instruction.addLockup(
       new BN(lockUp0Period),
       new BN(lockUp0Apy),
       false,
       new BN(0),
+      0,
       pp,
       {
         accounts: {
@@ -349,6 +365,7 @@ describe("dark-bonds", async () => {
       new BN(lockUp1Apy),
       false,
       new BN(0),
+      0,
       pp,
       {
         accounts: {
@@ -365,6 +382,7 @@ describe("dark-bonds", async () => {
       new BN(lockUp2Apy),
       false,
       new BN(0),
+      0,
       pp,
       {
         accounts: {
@@ -408,6 +426,7 @@ describe("dark-bonds", async () => {
         new BN(lockUp3.apy),
         false,
         new BN(0),
+        0,
         pp
       )
       .accounts({
@@ -481,6 +500,7 @@ describe("dark-bonds", async () => {
         new BN(lockUp4.apy),
         false,
         new BN(0),
+        0,
         pp
       )
       .accounts({
@@ -543,6 +563,7 @@ describe("dark-bonds", async () => {
         new BN(lockUp5.apy),
         false,
         new BN(0),
+        0,
         pp
       )
       .accounts({

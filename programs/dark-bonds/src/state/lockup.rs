@@ -19,6 +19,8 @@ pub struct Lockup {
     pub purchase_period: PurchasePeriod,
     /** If the tokens are unlocked linearly or exponentially.*/
     pub unlock: UnlockType,
+    /** Ratio for how much of the principal is returned upon maturity.*/
+    pub principal_ratio: Option<u16>, // Number from 0 to 1000
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq, Eq)]

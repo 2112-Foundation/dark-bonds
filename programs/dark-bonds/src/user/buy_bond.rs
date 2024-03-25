@@ -263,6 +263,7 @@ pub fn buy_bond<'a, 'b, 'c, 'info>(
     bond.maturity_date = lockup.compute_bond_completion_date();
     bond.owner = buyer.key();
     bond.bump = *ctx.bumps.get("bond").unwrap();
+    bond.principal_ratio = lockup.principal_ratio;
 
     // Transfer liquidity coin cut to us
     accounts.transfer_liquidity(cut, &accounts.master_recipient_ata)?;

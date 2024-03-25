@@ -29,7 +29,7 @@ pub struct Bond {
     /** Redemption possible only once full maturity is reached.*/
     pub mature_only: bool, // Set based on lockup type
     /** Ratio for how much of the principal is returned upon maturity.*/
-    pub principal_return: Option<u16>, // Number from 0 to 1000
+    pub principal_ratio: Option<u16>, // Number from 0 to 1000
 }
 
 impl Bond {

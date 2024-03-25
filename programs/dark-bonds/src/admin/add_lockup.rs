@@ -28,6 +28,7 @@ pub fn add_lockup(
     lockup_apy: u64,
     mature_only: bool,
     limit: u64,
+    principal_ratio: u16,
     purchase_period: PurchasePeriod
 ) -> Result<()> {
     let lockup: &mut Account<Lockup> = &mut ctx.accounts.lockup;
@@ -47,6 +48,13 @@ pub fn add_lockup(
     // Set additional settings
     lockup.mature_only = mature_only;
     lockup.purchase_period = purchase_period;
+
+    // If set to some value, set principal ratio
+    if principal_ratio > 0 {
+        lockup.principal_ratio = Some(principal_ratio);
+    } else {
+        lockup.principal_ratio = None;
+    }
 
     // Set total limit
     if limit > 0 {

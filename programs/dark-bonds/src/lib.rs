@@ -143,6 +143,7 @@ pub mod dark_bonds {
         lockup_apy: u64,
         mature_only: bool,
         limit: u64,
+        principal_ratio: u16,
         purchase_period: PurchasePeriod
     ) -> Result<()> {
         admin::add_lockup::add_lockup(
@@ -151,6 +152,7 @@ pub mod dark_bonds {
             lockup_apy,
             mature_only,
             limit,
+            principal_ratio,
             purchase_period
         )
     }
