@@ -64,12 +64,12 @@ pub fn claim(ctx: Context<Claim>, ibo_address: Pubkey, bond_idx: u32) -> Result<
     // Update withdraw date to now
     bond.update_claim_date();
 
-    let (der, bump) = anchor_lang::prelude::Pubkey::find_program_address(
-        &[BOND_SEED.as_bytes(), ibo_address.as_ref(), &bond_idx.to_be_bytes()],
-        &ctx.program_id
-    );
-
-    let seeds = &[BOND_SEED.as_bytes(), ibo_address.as_ref(), &bond_idx.to_be_bytes(), &[bump]];
+    let seeds = &[
+        BOND_SEED.as_bytes(),
+        ibo_address.as_ref(),
+        &bond_idx.to_be_bytes(),
+        &[bond.bump],
+    ];
 
     // msg!("total claimable_now: {:?}", bond.total_claimable);
     // msg!("claiming now: {:?}", claimable_now);

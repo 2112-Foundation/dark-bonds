@@ -8,6 +8,9 @@ pub struct Ibo {
     // /** After being set to true, IBO admin can't withdraw underlying token until end of the IBO set by end_date */
     // pub withdraws_locked: bool,
 
+    /**  Self explanatory */
+    pub bump: u8,
+
     /** All the different features that can be locked (once!) by the admin to make suers have more confidence */
     pub actions: PermittedAction,
 

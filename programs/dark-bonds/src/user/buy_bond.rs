@@ -77,12 +77,14 @@ pub struct BuyBond<'info> {
 }
 
 impl<'info> BuyBond<'info> {
-    fn transfer_bond(&self, bond_amount: u64, ibo_idx: u64, program_id: &Pubkey) -> Result<()> {
-        let (_, bump) = anchor_lang::prelude::Pubkey::find_program_address(
-            &[IBO_SEED.as_bytes(), &ibo_idx.to_be_bytes()],
-            program_id
-        );
-        let seeds = &[IBO_SEED.as_bytes(), &ibo_idx.to_be_bytes(), &[bump]];
+    fn transfer_bond(
+        &self,
+        ibo_bump: &u8,
+        bond_amount: u64,
+        ibo_idx: u64,
+        program_id: &Pubkey
+    ) -> Result<()> {
+        let seeds = &[IBO_SEED.as_bytes(), &ibo_idx.to_be_bytes(), &[*ibo_bump]];
 
         // Transfer bond to the vested account
         token::transfer(
@@ -260,6 +262,7 @@ pub fn buy_bond<'a, 'b, 'c, 'info>(
     bond.total_claimable = bond_amount_comp;
     bond.maturity_date = lockup.compute_bond_completion_date();
     bond.owner = buyer.key();
+    bond.bump = *ctx.bumps.get("bond").unwrap();
 
     // Transfer liquidity coin cut to us
     accounts.transfer_liquidity(cut, &accounts.master_recipient_ata)?;
@@ -269,7 +272,7 @@ pub fn buy_bond<'a, 'b, 'c, 'info>(
 
     // Send bond calculated amonut to buyer
     msg!("Transfering {:?} from account with {:?}", bond_amount_comp, accounts.ibo_ata.amount);
-    accounts.transfer_bond(bond_amount_comp, ibo_idx, &ctx.program_id)?;
+    accounts.transfer_bond(&accounts.ibo.bump, bond_amount_comp, ibo_idx, &ctx.program_id)?;
     msg!("Transfered bond to buyer");
 
     msg!("\nEnd of BuyBond");

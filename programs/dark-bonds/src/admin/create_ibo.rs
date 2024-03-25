@@ -49,6 +49,9 @@ pub fn create_ibo(
     // Take SOL fee for creating the IBO
     take_fee(&master.to_account_info(), &admin, master.admin_fees.ibo_creation_fee, 0)?;
 
+    // Set the bump
+    ibo.bump = *ctx.bumps.get("ibo").unwrap();
+
     // Fill out details of the new Ibo
     ibo.live_date = live_date;
     ibo.fixed_exchange_rate = fixed_exchange_rate;

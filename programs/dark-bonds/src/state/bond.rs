@@ -10,6 +10,8 @@ const SECONDS_DAY: i64 = 86_400;
 
 #[account]
 pub struct Bond {
+    /** Bump */
+    pub bump: u8,
     /** Public key of the owner that can sell/split this bond.*/
     pub owner: Pubkey,
     /** Index of the bonc_counter at the ibo state account at the instance this bond was created.*/
@@ -33,12 +35,14 @@ pub struct Bond {
 impl Bond {
     pub fn new(
         &mut self,
+        bump: &u8,
         owner: Pubkey,
         maturity_date: i64,
         total_gains: u64,
         mature_only: bool,
         idx: u32
     ) {
+        self.bump = *bump;
         self.maturity_date = maturity_date;
         self.owner = owner;
         self.bond_start = Clock::get().unwrap().unix_timestamp;

@@ -68,6 +68,7 @@ pub fn split(
 
     // Set new bond
     new_bond.new(
+        ctx.bumps.get("new_bond").unwrap(),
         owner.key(),
         bond.maturity_date,
         balance_new_bond,
@@ -78,12 +79,12 @@ pub fn split(
     // Transfer lamports to the master recipient account for splitting the bond
     take_fee(&master.to_account_info(), &owner, master.user_fees.bond_split_fee as u64, 0)?;
 
-    // Get signing dets
-    let (_, bump) = anchor_lang::prelude::Pubkey::find_program_address(
-        &[BOND_SEED.as_bytes(), ibo_address.as_ref(), &bond_idx.to_be_bytes()],
-        &ctx.program_id
-    );
-    let seeds = &[BOND_SEED.as_bytes(), ibo_address.as_ref(), &bond_idx.to_be_bytes(), &[bump]];
+    let seeds = &[
+        BOND_SEED.as_bytes(),
+        ibo_address.as_ref(),
+        &bond_idx.to_be_bytes(),
+        &[bond.bump],
+    ];
 
     // Get balance
     let current_bond_balance = ctx.accounts.bond_ata_old.amount as f64;

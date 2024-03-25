@@ -50,18 +50,12 @@ pub fn withdraw(ctx: Context<Withdraw>, withdraw_amount: u64, ibo_idx: u64) -> R
 
     let master_ibo_address = master.key().clone();
 
-    // Get the bump
-    let (_, bump) = anchor_lang::prelude::Pubkey::find_program_address(
-        &[IBO_SEED.as_bytes(), master_ibo_address.clone().as_ref(), &ibo_idx.to_be_bytes()],
-        &ctx.program_id
-    );
-
     // Get the seeds
     let seeds = &[
         IBO_SEED.as_bytes(),
         master_ibo_address.as_ref(),
         &ibo_idx.to_be_bytes(),
-        &[bump],
+        &[ibo.bump],
     ];
 
     token::transfer(
