@@ -6,16 +6,27 @@ use anchor_lang::prelude::*;
 use solana_program::pubkey::Pubkey;
 
 #[derive(Accounts)]
-#[instruction(ibo_idx: u32, lockup_idx: u32)]
 pub struct UpdateGates<'info> {
     #[account(mut)]
     pub admin: Signer<'info>,
     // TODO wrong error code
-    #[account(mut, has_one = admin, constraint = ibo.actions.gate_modification @BondErrors::IboLockupsLocked)]
+    #[account(
+        mut, 
+        has_one = admin, 
+        seeds = [
+            IBO_SEED.as_bytes(),  
+            &ibo.index.to_be_bytes()
+        ],
+        bump = ibo.bump,
+        constraint = ibo.actions.gate_modification @BondErrors::IboLockupsLocked
+    )]
     pub ibo: Account<'info, Ibo>,
-    #[account(mut, seeds = [LOCKUP_SEED.as_bytes(), ibo.key().as_ref(), &lockup_idx.to_be_bytes()], bump)]
+    #[account(mut, seeds = [LOCKUP_SEED.as_bytes(), ibo.key().as_ref(), &lockup.index.to_be_bytes()], bump)]
     pub lockup: Account<'info, Lockup>,
-    #[account(mut, seeds = [MASTER_SEED.as_bytes()], bump)]
+    #[account(
+        mut, 
+        seeds = [MASTER_SEED.as_bytes()], bump = master.bump
+    )]
     pub master: Account<'info, Master>,
     pub system_program: Program<'info, System>,
 }

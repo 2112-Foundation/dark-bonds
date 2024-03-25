@@ -11,7 +11,15 @@ use anchor_spl::{
 pub struct Withdraw<'info> {
     #[account(mut)]
     pub admin: Signer<'info>,
-    #[account(mut, has_one = admin @BondErrors::IboNotdmin)]
+    #[account(
+        mut, 
+        seeds = [
+            IBO_SEED.as_bytes(), 
+            &ibo.index.to_be_bytes()
+        ],
+        bump = ibo.bump,        
+        has_one = admin @BondErrors::IboNotdmin
+    )]
     pub ibo: Account<'info, Ibo>,
     #[account(               
         mut, 

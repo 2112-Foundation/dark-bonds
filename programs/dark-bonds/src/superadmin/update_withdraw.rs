@@ -11,7 +11,7 @@ pub struct UpdateMasterWithdraw<'info> {
     #[account(        
         mut,      
         seeds = [MASTER_SEED.as_bytes()], 
-        bump,                      
+        bump = master.bump,                      
     )]
     pub master: Account<'info, Master>,
     pub system_program: Program<'info, System>,

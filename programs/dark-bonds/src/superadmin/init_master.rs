@@ -8,7 +8,7 @@ pub struct Init<'info> {
     #[account(mut)]
     pub superadmin: Signer<'info>,
     // Need PDA of the to be derived of some shared register which is incremented
-    #[account(init, seeds = [MASTER_SEED.as_bytes()], bump, payer = superadmin, space = 400)]
+    #[account(init, seeds = [MASTER_SEED.as_bytes()], bump, payer = superadmin, space = 450)]
     pub master: Account<'info, Master>,
     pub system_program: Program<'info, System>,
 }
@@ -33,6 +33,7 @@ pub fn init_master(
 
     master.admin = superadmin.key();
     master.master_recipient = superadmin.key();
+    master.bump = *ctx.bumps.get("master").unwrap();
 
     require!(
         ibo_creation_fee > 0 && lockup_fee > 0 && gate_addition_fee > 0,

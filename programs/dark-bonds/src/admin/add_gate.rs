@@ -6,14 +6,19 @@ use anchor_lang::prelude::*;
 use solana_program::pubkey::Pubkey;
 
 #[derive(Accounts)]
-#[instruction(ibo_idx: u32, lockup_idx: u32)]
 pub struct AddGate<'info> {
     #[account(mut)]
     pub admin: Signer<'info>,
     // TODO the error is for rates, not for the addition of a gate
-    #[account(mut, has_one = admin, constraint = ibo.actions.gate_modification @BondErrors::IboLockupsLocked)]
+    #[account(
+        mut, 
+        has_one = admin, 
+        seeds = [IBO_SEED.as_bytes(),  &ibo.index.to_be_bytes()],
+        bump = ibo.bump,
+        constraint = ibo.actions.gate_modification @BondErrors::IboLockupsLocked
+    )]
     pub ibo: Account<'info, Ibo>,
-    #[account(mut, seeds = [LOCKUP_SEED.as_bytes(), ibo.key().as_ref(), &lockup_idx.to_be_bytes()], bump)]
+    #[account(mut, seeds = [LOCKUP_SEED.as_bytes(), ibo.key().as_ref(), &lockup.index.to_be_bytes()], bump)]
     pub lockup: Account<'info, Lockup>,
     #[account(
         init,
@@ -23,17 +28,12 @@ pub struct AddGate<'info> {
         space = 400
     )]
     pub gate: Account<'info, Gate>,
-    #[account(mut, seeds = [MASTER_SEED.as_bytes()], bump)]
+    #[account(mut, seeds = [MASTER_SEED.as_bytes()], bump = master.bump)]
     pub master: Account<'info, Master>,
     pub system_program: Program<'info, System>,
 }
 
-pub fn add_gate(
-    ctx: Context<AddGate>,
-    _ibo_idx: u32,
-    _lockup_idx: u32,
-    gate_settings: Vec<GateType>
-) -> Result<()> {
+pub fn add_gate(ctx: Context<AddGate>, gate_settings: Vec<GateType>) -> Result<()> {
     let ibo: &mut Account<Ibo> = &mut ctx.accounts.ibo;
     let gate: &mut Account<Gate> = &mut ctx.accounts.gate;
     let master: &mut Account<Master> = &mut ctx.accounts.master;

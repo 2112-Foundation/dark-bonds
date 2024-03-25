@@ -11,8 +11,11 @@ pub struct UpdateIbo<'info> {
 
     #[account(
         mut,
-        seeds = [IBO_SEED.as_bytes(), &ibo_idx.to_be_bytes()],
-        bump,        
+        seeds = [
+            IBO_SEED.as_bytes(), 
+            &ibo.index.to_be_bytes()
+        ],
+        bump = ibo.bump,        
         has_one = admin
     )]
     pub ibo: Account<'info, Ibo>,
@@ -21,7 +24,7 @@ pub struct UpdateIbo<'info> {
     #[account(               
         mut, 
         seeds = [MASTER_SEED.as_bytes()], 
-        bump,       
+        bump = master.bump,       
     )]
     pub master: Account<'info, Master>,
 }

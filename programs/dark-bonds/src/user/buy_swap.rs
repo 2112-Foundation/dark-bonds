@@ -18,9 +18,17 @@ pub struct BuySwap<'info> {
     // Can't buy swap that is not listed
     #[account(mut, constraint = bond.swap_price > 0 @BondErrors::BondNotForSale)]
     pub bond: Account<'info, Bond>,
-    #[account(mut, seeds = [MASTER_SEED.as_bytes()], bump)]
+    #[account(mut, seeds = [MASTER_SEED.as_bytes()], bump = master.bump)]
     pub master: Account<'info, Master>,
 
+    #[account(
+        mut,         
+        seeds = [
+            IBO_SEED.as_bytes(),  
+            &ibo.index.to_be_bytes()
+        ],
+        bump = ibo.bump,        
+    )]
     pub ibo: Account<'info, Ibo>,
     #[account(mut,
         token::mint = ibo.liquidity_token,

@@ -14,9 +14,16 @@ pub struct Claim<'info> {
     // Need PDA of the to be derived of some shared register which is incremented
     #[account(mut)]
     pub bond_owner_ata: Box<Account<'info, TokenAccount>>,
-    #[account(mut, token::authority = bond.key())]
+    #[account(
+        mut, 
+        token::authority = bond.key()
+    )]
     pub bond_ata: Box<Account<'info, TokenAccount>>,
-    #[account(mut, seeds = [MASTER_SEED.as_bytes()], bump)]
+    #[account(
+        mut, 
+        seeds = [MASTER_SEED.as_bytes()], 
+        bump = master.bump
+    )]
     pub master: Account<'info, Master>,
     pub system_program: Program<'info, System>,
     pub token_program: Program<'info, Token>,

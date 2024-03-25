@@ -11,6 +11,8 @@ pub struct Ibo {
     /**  Self explanatory */
     pub bump: u8,
 
+    pub index: u64,
+
     /** All the different features that can be locked (once!) by the admin to make suers have more confidence */
     pub actions: PermittedAction,
 

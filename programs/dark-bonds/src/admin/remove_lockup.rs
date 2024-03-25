@@ -9,12 +9,25 @@ use solana_program::pubkey::Pubkey;
 pub struct RemoveLockup<'info> {
     #[account(mut)]
     pub admin: Signer<'info>,
-    #[account(mut, has_one = admin, constraint = ibo.actions.lockup_modification @BondErrors::IboLockupsLocked)]
+    #[account(
+        mut, 
+        has_one = admin, 
+        seeds = [
+            IBO_SEED.as_bytes(), 
+            &ibo.index.to_be_bytes()
+        ],
+        bump = ibo.bump,        
+        constraint = ibo.actions.lockup_modification @BondErrors::IboLockupsLocked
+    )]
     pub ibo: Account<'info, Ibo>,
     #[account(        
         mut,
         close = admin,      
-        seeds = [LOCKUP_SEED.as_bytes(), ibo.key().as_ref(), &ibo.lockup_counter.to_be_bytes()],         
+        seeds = [
+            LOCKUP_SEED.as_bytes(), 
+            ibo.key().as_ref(), 
+            &ibo.lockup_counter.to_be_bytes()
+        ],         
         bump
     )]
     pub lockup: Account<'info, Lockup>,

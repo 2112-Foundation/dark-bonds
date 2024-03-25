@@ -7,7 +7,16 @@ use anchor_lang::prelude::*;
 pub struct AddLockUp<'info> {
     #[account(mut)]
     pub admin: Signer<'info>,
-    #[account(mut, has_one = admin, constraint = ibo.actions.lockup_modification @BondErrors::IboLockupsLocked)]
+    #[account(
+        mut, 
+        has_one = admin, 
+        seeds = [
+            IBO_SEED.as_bytes(),  
+            &ibo.index.to_be_bytes()
+        ],
+        bump = ibo.bump,
+        constraint = ibo.actions.lockup_modification @BondErrors::IboLockupsLocked
+    )]
     pub ibo: Account<'info, Ibo>,
     #[account(
         init,
@@ -17,7 +26,7 @@ pub struct AddLockUp<'info> {
         space = 400
     )]
     pub lockup: Account<'info, Lockup>,
-    #[account(mut, seeds = [MASTER_SEED.as_bytes()], bump)]
+    #[account(mut, seeds = [MASTER_SEED.as_bytes()], bump = master.bump)]
     pub master: Account<'info, Master>,
     pub system_program: Program<'info, System>,
 }
@@ -48,6 +57,8 @@ pub fn add_lockup(
     // Set additional settings
     lockup.mature_only = mature_only;
     lockup.purchase_period = purchase_period;
+    lockup.bump = *ctx.bumps.get("lockup").unwrap();
+    lockup.index = ibo.lockup_counter;
 
     // If set to some value, set principal ratio
     if principal_ratio > 0 {

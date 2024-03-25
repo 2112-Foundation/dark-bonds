@@ -165,8 +165,6 @@ pub mod dark_bonds {
     /** Updates on the lockup account which gates can be used to purchase bonds under this lockup option. */
     pub fn update_lockup_gates(
         ctx: Context<UpdateGates>,
-        _ibo_idx: u32,
-        _lockup_idx: u32,
         gates_add: Vec<u32>,
         gates_remove: Vec<u32>
     ) -> Result<()> {
@@ -179,22 +177,13 @@ pub mod dark_bonds {
     }
 
     /** Adds a gate which can be used to restrict access to a specific lockup*/
-    pub fn add_gate(
-        ctx: Context<AddGate>,
-        ibo_idx: u32,
-        lockup_idx: u32,
-        gate_settings: Vec<GateType>
-    ) -> Result<()> {
-        admin::add_gate::add_gate(ctx, ibo_idx, lockup_idx, gate_settings)
+    pub fn add_gate(ctx: Context<AddGate>, gate_settings: Vec<GateType>) -> Result<()> {
+        admin::add_gate::add_gate(ctx, gate_settings)
     }
 
     /** Removes an existing gate*/
-    pub fn remove_gate(
-        ctx: Context<RemoveGatedSettings>,
-        ibo_idx: u32,
-        lockup_idx: u32
-    ) -> Result<()> {
-        admin::remove_gate::remove_gate(ctx, ibo_idx, lockup_idx)
+    pub fn remove_gate(ctx: Context<RemoveGatedSettings>) -> Result<()> {
+        admin::remove_gate::remove_gate(ctx)
     }
 
     pub fn lock(ctx: Context<Lock>, new_actions: PermittedAction) -> Result<()> {
@@ -207,12 +196,10 @@ pub mod dark_bonds {
     /** User purchases bond from an IBO by supplying liqyuidity token. */
     pub fn buy_bond<'a, 'b, 'c, 'info>(
         ctx: Context<'a, 'b, 'c, 'info, BuyBond<'info>>,
-        lockup_idx: u32,
-        ibo_idx: u64,
         liquidity_provided: u64,
         gate_idxs: u32
     ) -> Result<()> {
-        user::buy_bond::buy_bond(ctx, lockup_idx, ibo_idx, liquidity_provided, gate_idxs)
+        user::buy_bond::buy_bond(ctx, liquidity_provided, gate_idxs)
     }
 
     /** Claim tokens yielded for that specifc bond bond. */

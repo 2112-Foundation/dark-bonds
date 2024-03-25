@@ -24,7 +24,7 @@ pub struct CreateIBO<'info> {
     #[account(               
         mut, 
         seeds = [MASTER_SEED.as_bytes()], 
-        bump,       
+        bump = master.bump,       
     )]
     pub master: Account<'info, Master>, // TODO do that everwyehre
     pub system_program: Program<'info, System>,
@@ -49,9 +49,6 @@ pub fn create_ibo(
     // Take SOL fee for creating the IBO
     take_fee(&master.to_account_info(), &admin, master.admin_fees.ibo_creation_fee, 0)?;
 
-    // Set the bump
-    ibo.bump = *ctx.bumps.get("ibo").unwrap();
-
     // Fill out details of the new Ibo
     ibo.live_date = live_date;
     ibo.fixed_exchange_rate = fixed_exchange_rate;
@@ -61,6 +58,8 @@ pub fn create_ibo(
     ibo.recipient_address = recipient;
     ibo.swap_cut = swap_cut as u64;
     ibo.end_date = end_date;
+    ibo.bump = *ctx.bumps.get("ibo").unwrap();
+    ibo.index = master.ibo_counter;
 
     // Set additional details for buyers
     ibo.descriptin = description;

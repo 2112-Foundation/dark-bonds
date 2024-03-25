@@ -2,6 +2,8 @@ use anchor_lang::prelude::*;
 
 #[account]
 pub struct Master {
+    /** Bump.*/
+    pub bump: u8,
     /** Counter for all of the IBOs intialised to date.*/
     pub ibo_counter: u64,
     /** Cut take of each bond issuance transaction. Needs to be scaled down by 1000*/

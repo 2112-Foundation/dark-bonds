@@ -6,14 +6,22 @@ use anchor_lang::prelude::*;
 use solana_program::pubkey::Pubkey;
 
 #[derive(Accounts)]
-#[instruction(ibo_idx: u32, lockup_idx: u32)]
 pub struct RemoveGatedSettings<'info> {
     #[account(mut)]
     pub admin: Signer<'info>,
-    #[account(mut, has_one = admin, constraint = ibo.actions.gate_modification == false @BondErrors::IboGatedSettingsLocked)]
+    #[account(
+        mut, 
+        has_one = admin, 
+        seeds = [
+            IBO_SEED.as_bytes(),  
+            &ibo.index.to_be_bytes()
+        ],
+        bump = ibo.bump,
+        constraint = ibo.actions.gate_modification == false @BondErrors::IboGatedSettingsLocked
+    )]
     pub ibo: Account<'info, Ibo>,
     #[account(
-        seeds = [LOCKUP_SEED.as_bytes(), ibo.key().as_ref(), &lockup_idx.to_be_bytes()],
+        seeds = [LOCKUP_SEED.as_bytes(), ibo.key().as_ref(), &lockup.index.to_be_bytes()],
         bump
     )]
     pub lockup: Account<'info, Lockup>,
@@ -27,10 +35,6 @@ pub struct RemoveGatedSettings<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn remove_gate(
-    _ctx: Context<RemoveGatedSettings>,
-    _ibo_idx: u32,
-    _lockup_idx: u32
-) -> Result<()> {
+pub fn remove_gate(_ctx: Context<RemoveGatedSettings>) -> Result<()> {
     Ok(())
 }

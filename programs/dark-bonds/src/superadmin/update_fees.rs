@@ -8,7 +8,7 @@ pub struct UpdateFees<'info> {
     #[account(mut)]
     pub superadmin: Signer<'info>,
     // Need PDA of the to be derived of some shared register which is incremented
-    #[account(mut, seeds = [MASTER_SEED.as_bytes()], bump)]
+    #[account(mut, seeds = [MASTER_SEED.as_bytes()], bump = master.bump)]
     pub master: Account<'info, Master>,
     pub system_program: Program<'info, System>,
 }

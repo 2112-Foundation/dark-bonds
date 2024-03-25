@@ -257,28 +257,33 @@ describe("dark-bonds", async () => {
       // If it exists set IBO counter
       master.iboCounter = parseInt(main_state.iboCounter.toString());
     } catch (err) {
-      const tx = await bondProgram.methods
-        .initMaster(
-          // Admin fees
-          new BN(iboCreationFee),
-          new BN(gateCreationFee),
-          new BN(lockupCreationFee),
-          // Cuts
-          new BN(bondPurchaseCut),
-          new BN(bondResaleCut),
-          // User fees
-          new BN(bondClaimFee),
-          new BN(bondPurchaseFee),
-          new BN(bondSplitFee)
-        )
-        .accounts({
-          master: master.address,
-          superadmin: superAdmin.publicKey,
-          systemProgram: anchor.web3.SystemProgram.programId,
-        })
-        .signers([superAdmin])
-        .rpc();
-      console.log("Your transaction signature", tx);
+      console.log("Error fetch main: ", err, "\n\nRedeploying");
+      try {
+        const tx = await bondProgram.methods
+          .initMaster(
+            // Admin fees
+            new BN(iboCreationFee),
+            new BN(gateCreationFee),
+            new BN(lockupCreationFee),
+            // Cuts
+            new BN(bondPurchaseCut),
+            new BN(bondResaleCut),
+            // User fees
+            new BN(bondClaimFee),
+            new BN(bondPurchaseFee),
+            new BN(bondSplitFee)
+          )
+          .accounts({
+            master: master.address,
+            superadmin: superAdmin.publicKey,
+            systemProgram: anchor.web3.SystemProgram.programId,
+          })
+          .signers([superAdmin])
+          .rpc();
+        console.log("Your transaction signature", tx);
+      } catch (err) {
+        console.log("Error init main: ", err);
+      }
     }
   });
 
@@ -457,7 +462,7 @@ describe("dark-bonds", async () => {
     console.log("\n\nTHIS GATE INDEX: ", gate0.index);
 
     const tx2 = await bondProgram.methods
-      .addGate(ibo.index, lockUp3.index, [gateType])
+      .addGate([gateType])
       .accounts({
         admin: ibo.admin.publicKey,
         ibo: ibo.address,
@@ -472,8 +477,6 @@ describe("dark-bonds", async () => {
     // Update lock up to reflect those changes
     const tx3 = await bondProgram.methods
       .updateLockupGates(
-        ibo.index,
-        lockUp3.index,
         [0], // 0th gate PDA
         []
       )
@@ -519,7 +522,7 @@ describe("dark-bonds", async () => {
     console.log("\n\nTHIS GATE INDEX: ", newGateSetting);
 
     const tx2 = await bondProgram.methods
-      .addGate(ibo.index, lockUp4.index, [newGateSetting])
+      .addGate([newGateSetting])
       .accounts({
         admin: ibo.admin.publicKey,
         ibo: ibo.address,
@@ -534,8 +537,6 @@ describe("dark-bonds", async () => {
     // Update lock up to reflect those changes
     const tx3 = await bondProgram.methods
       .updateLockupGates(
-        ibo.index,
-        lockUp4.index,
         [gate1.index], // 0th gate PDA
         []
       )
@@ -602,7 +603,7 @@ describe("dark-bonds", async () => {
 
     // Adding both types at once
     const tx2 = await bondProgram.methods
-      .addGate(ibo.index, lockUp5.index, [gateType1, gateType2])
+      .addGate([gateType1, gateType2])
       .accounts({
         admin: ibo.admin.publicKey,
         ibo: ibo.address,
@@ -617,8 +618,6 @@ describe("dark-bonds", async () => {
     // Update lock up to reflect those changes
     const tx3 = await bondProgram.methods
       .updateLockupGates(
-        ibo.index,
-        lockUp5.index,
         [gate2.index], // 0th gate PDA
         []
       )
@@ -674,7 +673,7 @@ describe("dark-bonds", async () => {
     );
     // try {
     const tx_lu1 = await bondProgram.methods
-      .buyBond(0, new BN(ibo.index), new BN(purchaseAmount), 0)
+      .buyBond(new BN(purchaseAmount), 0)
       .accounts({
         buyer: user.publicKey,
         bond: bond.address,
@@ -748,7 +747,7 @@ describe("dark-bonds", async () => {
     );
 
     const tx_lu1 = await bondProgram.methods
-      .buyBond(0, new BN(ibo.index), new BN(purchaseAmount), 0)
+      .buyBond(new BN(purchaseAmount), 0)
       .accounts({
         buyer: user.publicKey,
         bond: bond.address,
@@ -1012,7 +1011,7 @@ describe("dark-bonds", async () => {
 
     async function submit() {
       const tx_lu1 = await bondProgram.methods
-        .buyBond(lockup.index, new BN(ibo.index), new BN(10000), gate.index)
+        .buyBond(new BN(10000), gate.index)
         .accounts({
           buyer: user.publicKey,
           bond: bond.address,
@@ -1109,7 +1108,7 @@ describe("dark-bonds", async () => {
 
     async function submit() {
       const tx_lu1 = await bondProgram.methods
-        .buyBond(lockup.index, new BN(ibo.index), new BN(10000), gate.index)
+        .buyBond(new BN(10000), gate.index)
         .accounts({
           buyer: user.publicKey,
           bond: bond.address,
@@ -1211,7 +1210,7 @@ describe("dark-bonds", async () => {
 
     async function submit() {
       const tx_lu1 = await bondProgram.methods
-        .buyBond(lockup.index, new BN(ibo.index), new BN(10000), gate.index)
+        .buyBond(new BN(10000), gate.index)
         .accounts({
           buyer: user.publicKey,
           bond: bond.address,

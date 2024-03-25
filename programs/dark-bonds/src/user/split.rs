@@ -27,10 +27,17 @@ pub struct Split<'info> {
     #[account(               
         mut, 
         seeds = [MASTER_SEED.as_bytes()], 
-        bump,       
+        bump = master.bump,       
     )]
     pub master: Account<'info, Master>, // TODO do that everwyehre
-    #[account(mut)]
+    #[account(
+        mut,  
+        seeds = [
+            IBO_SEED.as_bytes(),  
+            &ibo.index.to_be_bytes()
+        ],
+        bump = ibo.bump,
+    )]
     pub ibo: Account<'info, Ibo>,
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,

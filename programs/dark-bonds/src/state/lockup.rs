@@ -5,6 +5,10 @@ use crate::common::*;
 
 #[account]
 pub struct Lockup {
+    /** Bump.*/
+    pub bump: u8,
+    /** Index of this lockup.*/
+    pub index: u32,
     /** Minimum lockup period in seconds.*/
     pub period: i64,
     /** Yearly APY for this lockup. As it is f64 disguised as u64 due to solita, need to divide by 1000*/

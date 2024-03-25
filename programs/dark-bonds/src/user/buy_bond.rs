@@ -9,7 +9,6 @@ use anchor_spl::{
 use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
-#[instruction(lockup_idx: u32)]
 pub struct BuyBond<'info> {
     #[account(mut)]
     pub buyer: Signer<'info>,
@@ -21,15 +20,22 @@ pub struct BuyBond<'info> {
         space = 400
     )]
     pub bond: Account<'info, Bond>,
-    #[account(mut)]
+    #[account(
+        mut,
+        seeds = [
+            IBO_SEED.as_bytes(),  
+            &ibo.index.to_be_bytes()
+        ],
+        bump = ibo.bump,
+    )]
     pub ibo: Account<'info, Ibo>,
-    #[account(mut, seeds = [MASTER_SEED.as_bytes()], bump)]
+    #[account(mut, seeds = [MASTER_SEED.as_bytes()], bump = master.bump)]
     pub master: Account<'info, Master>,
 
     #[account(
         mut,
-        seeds = [LOCKUP_SEED.as_bytes(), ibo.key().as_ref(), &lockup_idx.to_be_bytes()],
-        bump        
+        seeds = [LOCKUP_SEED.as_bytes(), ibo.key().as_ref(), &lockup.index.to_be_bytes()],
+        bump = lockup.bump        
     )]
     pub lockup: Account<'info, Lockup>,
 
@@ -139,8 +145,6 @@ fn burn_wl<'a, 'info>(
 
 pub fn buy_bond<'a, 'b, 'c, 'info>(
     ctx: Context<'a, 'b, 'c, 'info, BuyBond<'info>>,
-    _lockup_idx: u32,
-    ibo_idx: u64,
     amount_liquidity: u64,
     gate_idx: u32 // Gate selector
 ) -> Result<()> {
@@ -273,7 +277,12 @@ pub fn buy_bond<'a, 'b, 'c, 'info>(
 
     // Send bond calculated amonut to buyer
     msg!("Transfering {:?} from account with {:?}", bond_amount_comp, accounts.ibo_ata.amount);
-    accounts.transfer_bond(&accounts.ibo.bump, bond_amount_comp, ibo_idx, &ctx.program_id)?;
+    accounts.transfer_bond(
+        &accounts.ibo.bump,
+        bond_amount_comp,
+        accounts.ibo.index,
+        &ctx.program_id
+    )?;
     msg!("Transfered bond to buyer");
 
     msg!("\nEnd of BuyBond");
