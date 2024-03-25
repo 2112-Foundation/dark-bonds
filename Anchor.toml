@@ -11,6 +11,11 @@ url = "https://api.apr.dev"
 cluster = "localnet"
 wallet = "/Users/wincentdulkowski/.config/solana/id.json"
 
+# Sbv3 IDL
+[[test.genesis]]
+address = "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
+program = "./metaplex_token_metadata_program.so"
+
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/dark-bonds.ts"
 nft = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/vertex-nft.test.ts"
