@@ -362,7 +362,7 @@ describe("dark-bonds", async () => {
       const bondBank = await main.deriveBondBankFromIbo(ibo, i);
 
       try {
-        console.log(`Creating ibo bank account ${i}`);
+        console.log(`Creating bond bank account (${bondBank}) [${i}]`);
         const tx1 = await bondProgram.methods
           .addBondBank()
           .accounts({
@@ -379,7 +379,7 @@ describe("dark-bonds", async () => {
     }
   });
 
-  xit("Add three different lockups.", async () => {
+  it("Add three different lockups.", async () => {
     // Fetch the first ibo bank
     const iboBank = await main.deriveIboBank(0);
     let iboBankState = await bondProgram.account.iboBank.fetch(iboBank);
@@ -786,75 +786,109 @@ describe("dark-bonds", async () => {
   //   // Check calculation of bond to receive is correct
   // });
 
-  // it("Buyer 0 buys with lockkup rate 0 bond idx1", async () => {
-  //   // masterBalance = await getTokenBalance(superAdminAta_sc);
-  //   console.log("superAdmin: ", superAdmin.publicKey.toBase58()); // Add a bond
-  //   let lockUp: LockUp = ibo.lockups[0];
-  //   const user: User = users.users[0]; // take some user out
-  //   const bond: Bond = await ibo.issueBond(ibo.bondCounter, purchaseAmount);
-  //   user.issueBond(bond);
+  it("Buyer 0 buys with lockkup rate 0 bond idx1", async () => {
+    // masterBalance = await getTokenBalance(superAdminAta_sc);
+    // console.log("superAdmin: ", superAdmin.publicKey.toBase58()); // Add a bond
+    // let lockUp: LockUp = ibo.lockups[0];
+    const user: User = users.users[0]; // take some user out
+    // const bond: Bond = await ibo.issueBond(ibo.bondCounter, purchaseAmount);
+    // user.issueBond(bond);
 
-  //   console.log("/sc mint: ", mintSC.toBase58());
-  //   console.log("mint buyer ata mint: ", user.liquidityAccount.mint.toBase58());
-  //   console.log(
-  //     "masterRecipientAta ata mint: ",
-  //     superAdminAta_sc.mint.toBase58()
-  //   );
+    // Fetch the first ibo bank
+    const iboBank = await main.deriveIboBank(0);
+    let iboBankState = await bondProgram.account.iboBank.fetch(iboBank);
 
-  //   // Get latest bond pointer
-  //   let bp: PublicKey = await user.getBondPointerAddress();
+    // Derive pda from the seeds in inex 0
+    const ibo = await main.rederiveIboPdaRand(iboBankState.aces[0]);
 
-  //   console.log(
-  //     `Using  bp ${bp.toBase58()} at index ${user.bondPointers.length}`
-  //   );
+    // Derive the ata of the recipient based on the value from ibo
 
-  //   const tx_lu1 = await bondProgram.methods
-  //     .buyBond(new BN(purchaseAmount), 0)
-  //     .accounts({
-  //       buyer: user.publicKey,
-  //       bond: bond.address,
-  //       ibo: ibo.address,
-  //       lockup: lockUp.address,
-  //       buyerAta: user.liquidityAccount.address,
-  //       recipientAta: ibo.recipientAddressAccount.address,
-  //       main: main.address,
-  //       masterRecipientAta: superAdminAta_sc.address,
-  //       iboAta: ibo.vaultAccount.address,
-  //       bondAta: bond.account.address,
-  //       userAccount: user.userAccount,
-  //       systemProgram: anchor.web3.SystemProgram.programId,
-  //       tokenProgram: TOKEN_PROGRAM_ID,
-  //       associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-  //     })
-  //     .signers([user])
-  //     .rpc();
+    // Derive the PDA of the first lockup
+    const lockup = await main.deriveLockupFromIbo(ibo, 0);
 
-  //   // bond_counter += 1;
+    let [bond, aces] = await main.deriveBondPdaRand(ibo);
 
-  //   let bond0_state = await bondProgram.account.bond.fetch(bond.address);
-  //   console.log("bond0 owner: ", bond0_state.owner.toBase58());
-  //   console.log("bond0 maturity date: ", bond0_state.maturityDate.toString());
-  //   console.log(
-  //     "bond0 total to claim: ",
-  //     bond0_state.totalClaimable.toString()
-  //   );
+    // Get latest bond pointer
+    let bp: PublicKey = await user.getBondPointerAddress();
 
-  //   // let ibo0_state = await bondProgram.account.ibo.fetch(ibo.address);
-  //   // console.log("ibo0_state: ", ibo0_state.)
+    // Derive the first bond bank for this ibo
+    const bondBank = await main.deriveBondBankFromIbo(ibo, 0);
 
-  //   let masterBalanceEnd = await getTokenBalance(superAdminAta_sc);
-  //   console.log("masterBalanceEnd: ", masterBalanceEnd);
-  //   // assert(
-  //   //   purchaseAmount * 0.05 == masterBalanceEnd,
-  //   //   "take a cut of exactly 5%"
-  //   // );
+    console.log(`Using bond bank account (${bondBank}) `);
 
-  //   // masterBalance += purchaseAmount * 0.05;
+    // console.log(
+    //   `Using  bp ${bp.toBase58()} at index ${user.bondPointers.length}`
+    // );
 
-  //   // Check that liquidity_token balance decresed
-  //   // Check that buyer set as the owner in the bond
-  //   // Check calculation of bond to receive is correct
-  // });
+    // Top up user with stable coin
+    await mintSc.topUpSPl(user.liquidityAccount.address, 1000000000000000);
+
+    // Top up ibo with bond coin
+    await mintBond.topUpSPl(
+      (
+        await mintBond.makeAta(ibo)
+      ).address,
+      1000000000000000
+    );
+
+    try {
+      const tx_lu1 = await bondProgram.methods
+        .buyBond(aces, new BN(purchaseAmount), 0)
+        .accounts({
+          buyer: user.publicKey,
+          bond,
+          ibo,
+          lockup,
+          buyerAta: user.liquidityAccount.address,
+          recipientAta: (await mintSc.makeAta(adminIbo0.publicKey)).address,
+          main: main.address,
+          masterRecipientAta: superAdminAta_sc.address,
+          iboAta: (await mintBond.makeAta(ibo)).address,
+          bondAta: (await mintBond.makeAta(bond)).address,
+          userAccount: user.userAccount,
+          systemProgram: anchor.web3.SystemProgram.programId,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+        })
+        .remainingAccounts({
+          pubkey: bondBank,
+          isWritable: true,
+          isSigner: false,
+        })
+        .signers([user])
+        .rpc();
+    } catch (e) {
+      console.log("\nerror buying bond:\n\n", e);
+    }
+
+    // bondBank
+
+    // bond_counter += 1;
+
+    // let bond0_state = await bondProgram.account.bond.fetch(bond.address);
+    // console.log("bond0 owner: ", bond0_state.owner.toBase58());
+    // console.log("bond0 maturity date: ", bond0_state.maturityDate.toString());
+    // console.log(
+    //   "bond0 total to claim: ",
+    //   bond0_state.totalClaimable.toString()
+    // );
+
+    // // let ibo0_state = await bondProgram.account.ibo.fetch(ibo.address);
+    // // console.log("ibo0_state: ", ibo0_state.)
+
+    // let masterBalanceEnd = await getTokenBalance(superAdminAta_sc);
+    // console.log("masterBalanceEnd: ", masterBalanceEnd);
+    // // assert(
+    // //   purchaseAmount * 0.05 == masterBalanceEnd,
+    // //   "take a cut of exactly 5%"
+    // // );
+
+    // masterBalance += purchaseAmount * 0.05;
+
+    // Check that liquidity_token balance decresed
+    // Check that buyer set as the owner in the bond
+    // Check calculation of bond to receive is correct
+  });
 
   // it("Claim test 1", async () => {
   //   // console.log("bond: ", bond2.toBase58());

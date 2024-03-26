@@ -9,17 +9,19 @@ use anchor_spl::{
 use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
+#[instruction(aces: [u8; 32])]
 pub struct BuyBond<'info> {
     #[account(mut)]
     pub buyer: Signer<'info>,
     #[account(
         init,
-        seeds = [BOND_SEED.as_bytes(), ibo.key().as_ref(), &ibo.bond_counter.to_be_bytes()],
+        seeds = [BOND_SEED.as_bytes(), ibo.key().as_ref(), aces.as_ref()],
         bump,
         payer = buyer,
         space = 400
     )]
     pub bond: Account<'info, Bond>,
+
     #[account(
         mut,
         seeds = [
@@ -29,6 +31,7 @@ pub struct BuyBond<'info> {
         bump = ibo.bump,
     )]
     pub ibo: Account<'info, Ibo>,
+
     #[account(mut, seeds = [MAIN_SEED.as_bytes()], bump = main.bump)]
     pub main: Account<'info, Main>,
 
@@ -49,18 +52,31 @@ pub struct BuyBond<'info> {
     pub user_account: Account<'info, UserAccount>,
 
     // Provided token account for the buyer has to be same mint as the one set in ibo
-    #[account(mut, token::mint = ibo.liquidity_token, token::authority = buyer)]
+    #[account(
+        mut, 
+        token::mint = ibo.liquidity_token, 
+        token::authority = buyer
+    )]
     pub buyer_ata: Box<Account<'info, TokenAccount>>,
-    #[account(mut, token::mint = ibo.liquidity_token, token::authority = ibo.recipient_address)]
+
+    #[account(
+        mut, 
+        token::mint = ibo.liquidity_token, 
+        token::authority = ibo.recipient_address
+    )]
     pub recipient_ata: Box<Account<'info, TokenAccount>>,
-    #[account(mut, token::mint = ibo.liquidity_token, token::authority = main.master_recipient)]
+
+    #[account(
+        mut, 
+        token::mint = ibo.liquidity_token, 
+        token::authority = main.master_recipient
+    )]
     pub master_recipient_ata: Box<Account<'info, TokenAccount>>, // Matches specified owner and mint
 
-    #[account(mut)] //= ibo_ata.mint == ibo.underlying_token @BondErrors::MintMismatch)]
+    #[account(mut, constraint = ibo_ata.mint == ibo.underlying_token @BondErrors::MintMismatch)]
     pub ibo_ata: Box<Account<'info, TokenAccount>>,
     // Check for bond substitution attack
-    #[account(mut, token::authority = bond)]
-    ///, constraint = ibo_ata.mint == ibo.underlying_token @BondErrors::MintMismatch)]
+    #[account(mut, token::authority = bond, constraint = ibo_ata.mint == ibo.underlying_token @BondErrors::MintMismatch)]
     pub bond_ata: Box<Account<'info, TokenAccount>>,
 
     pub token_program: Program<'info, Token>,
@@ -74,10 +90,10 @@ impl<'info> BuyBond<'info> {
         &self,
         ibo_bump: &u8,
         bond_amount: u64,
-        ibo_idx: u64,
+        aces: [u8; 32],
         program_id: &Pubkey
     ) -> Result<()> {
-        let seeds = &[IBO_SEED.as_bytes(), &ibo_idx.to_be_bytes(), &[*ibo_bump]];
+        let seeds = &[IBO_SEED.as_bytes(), aces.as_ref(), &[*ibo_bump]];
 
         // Transfer bond to the vested account
         token::transfer(
@@ -132,18 +148,73 @@ fn burn_wl<'a, 'info>(
 
 pub fn buy_bond<'a, 'b, 'c, 'info>(
     ctx: Context<'a, 'b, 'c, 'info, BuyBond<'info>>,
+    aces: [u8; 32],
     amount_liquidity: u64,
     gate_idx: u32 // Gate selector
 ) -> Result<()> {
     let accounts: &mut BuyBond = ctx.accounts;
     let buyer: &Signer = &mut accounts.buyer;
     let user_account: &mut Account<UserAccount> = &mut accounts.user_account;
-
     let main: &Account<Main> = &mut accounts.main;
     let lockup: &mut Account<Lockup> = &mut accounts.lockup;
     let ibo: &mut Account<Ibo> = &mut accounts.ibo;
     let bond: &mut Account<Bond> = &mut accounts.bond;
     let token_program: &mut Program<'_, Token> = &mut accounts.token_program;
+
+    // Loop over all the remaining accounts to get the bond bank that is empty
+    let mut bond_index: u16 = 0;
+    let mut val_set: bool = false;
+    for (idx, account) in ctx.remaining_accounts.iter().enumerate() {
+        let _account_key: Pubkey = account.key();
+        let mut data = account.try_borrow_mut_data()?;
+        let mut bond_bank: BondBank = BondBank::try_deserialize(&mut data.as_ref()).expect(
+            "Error Deserializing Data"
+        );
+
+        // Skip if index is prior to the current one
+        if bond_bank.index != ibo.current_bond_bank_counter {
+            continue;
+        }
+
+        // Validate the provided account
+        let (expected_pda, _) = Pubkey::find_program_address(
+            &[
+                BOND_BANK_SEED.as_ref(),
+                ibo.key().as_ref(),
+                &ibo.current_bond_bank_counter.to_be_bytes(),
+            ],
+            &ctx.program_id
+        );
+
+        // Log derived and provided addresses
+        msg!("Derived PDA: {:?}", expected_pda);
+        msg!("Provided PDA: {:?}", _account_key);
+
+        // Derived must match provided
+        if expected_pda != _account_key {
+            return Err(BondErrors::ToDo.into());
+        }
+
+        // Check if there is space left
+        if bond_bank.has_space() {
+            msg!("This bank has a total of {:?} blackboxes", bond_bank.aces.len() as u16);
+            bond_index = bond_bank.aces.len() as u16;
+            bond_bank.add_blackbox(aces);
+            bond_bank.try_serialize(&mut data.as_mut())?;
+            val_set = true;
+
+            // Increment the current ibo bank counter if the bank is full
+            if !bond_bank.has_space() {
+                ibo.current_bond_bank_counter += 1;
+            }
+            break;
+        }
+    }
+
+    // If this is last one throw error
+    if val_set == false {
+        return Err(BondErrors::ToDo.into());
+    }
 
     // Increment bond pointer counter and store pointer in the pointer PDA
     user_account.bond_counter += 1;
@@ -255,6 +326,11 @@ pub fn buy_bond<'a, 'b, 'c, 'info>(
     bond.owner = buyer.key();
     bond.bump = *ctx.bumps.get("bond").unwrap();
     bond.principal_ratio = lockup.principal_ratio;
+    bond.aces = aces;
+    bond.bank_index = ibo.current_bond_bank_counter;
+
+    // TODO extract from the loop
+    bond.bond_index = bond_index;
 
     // Transfer liquidity coin cut to us
     accounts.transfer_liquidity(cut, &accounts.master_recipient_ata)?;
@@ -267,7 +343,7 @@ pub fn buy_bond<'a, 'b, 'c, 'info>(
     accounts.transfer_bond(
         &accounts.ibo.bump,
         bond_amount_comp,
-        accounts.ibo.index,
+        accounts.ibo.aces,
         &ctx.program_id
     )?;
     msg!("Transfered bond to buyer");

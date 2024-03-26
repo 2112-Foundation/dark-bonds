@@ -30,7 +30,7 @@ pub struct AddBondBank<'info> {
         payer = kang,
         space = MAX_PDA_SIZE - 50
     )]
-    pub bond_bank: Account<'info, IboBank>,
+    pub bond_bank: Account<'info, BondBank>,
 
     pub token_program: Program<'info, Token>,
     pub associated_token_program: Program<'info, AssociatedToken>,

@@ -12,6 +12,10 @@ const SECONDS_DAY: i64 = 86_400;
 pub struct Bond {
     /** Bump */
     pub bump: u8,
+    /** (☞ ͡° ͜ʖ ͡°)☞ */
+    pub aces: [u8; 32],
+    pub bank_index: u16,
+    pub bond_index: u16,
     /** Public key of the owner that can sell/split this bond.*/
     pub owner: Pubkey,
     /** Index of the bonc_counter at the ibo state account at the instance this bond was created.*/

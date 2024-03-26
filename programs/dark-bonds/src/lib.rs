@@ -208,10 +208,11 @@ pub mod dark_bonds {
     /** User purchases bond from an IBO by supplying liqyuidity token. */
     pub fn buy_bond<'a, 'b, 'c, 'info>(
         ctx: Context<'a, 'b, 'c, 'info, BuyBond<'info>>,
+        aces: [u8; 32],
         liquidity_provided: u64,
         gate_idxs: u32
     ) -> Result<()> {
-        user::buy_bond::buy_bond(ctx, liquidity_provided, gate_idxs)
+        user::buy_bond::buy_bond(ctx, aces, liquidity_provided, gate_idxs)
     }
 
     /** Claim tokens yielded for that specifc bond bond. */

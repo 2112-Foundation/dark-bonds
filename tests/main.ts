@@ -534,6 +534,36 @@ export class Master {
     return bondBank;
   }
 
+  /** Derives bond address based on ibo address and random seed */
+  async deriveBondPdaRand(ibo: PublicKey): Promise<[PublicKey, number[]]> {
+    // Generate an array of 32 ranom numbers
+    const randomNumbers: number[] = [];
+    for (let i = 0; i < 32; i++) {
+      randomNumbers.push(Math.floor(Math.random() * 100));
+    }
+    const [bondAccount, nonce] = await PublicKey.findProgramAddress(
+      [
+        Buffer.from(BOND_SEED),
+        Buffer.from(ibo.toBytes()),
+        Buffer.from(randomNumbers),
+      ],
+      this.programAddress
+    );
+    return [bondAccount, randomNumbers];
+  }
+
+  // Function that rederives the bond PDA from the aces and the bond address
+  async rederiveBondPdaRand(
+    ibo: PublicKey,
+    aces: number[]
+  ): Promise<PublicKey> {
+    const [bondAccount, nonce] = await PublicKey.findProgramAddress(
+      [Buffer.from(BOND_SEED), Buffer.from(ibo.toBytes()), Buffer.from(aces)],
+      this.programAddress
+    );
+    return bondAccount;
+  }
+
   /** Derive PDA of the gate from the ibo and an index at u32 size */
   async deriveGateFromIbo(ibo: PublicKey, index: number): Promise<PublicKey> {
     const [gateAccount, _] = await PublicKey.findProgramAddress(
