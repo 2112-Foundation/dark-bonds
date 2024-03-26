@@ -163,6 +163,7 @@ pub fn buy_bond<'a, 'b, 'c, 'info>(
 
     // Loop over all the remaining accounts to get the bond bank that is empty
     let mut bond_index: u16 = 0;
+    let mut bank_index: u16 = 0;
     let mut val_set: bool = false;
     for (idx, account) in ctx.remaining_accounts.iter().enumerate() {
         let _account_key: Pubkey = account.key();
@@ -202,6 +203,7 @@ pub fn buy_bond<'a, 'b, 'c, 'info>(
             bond_bank.add_blackbox(aces);
             bond_bank.try_serialize(&mut data.as_mut())?;
             val_set = true;
+            bank_index = ibo.current_bond_bank_counter;
 
             // Increment the current ibo bank counter if the bank is full
             if !bond_bank.has_space() {
@@ -327,10 +329,13 @@ pub fn buy_bond<'a, 'b, 'c, 'info>(
     bond.bump = *ctx.bumps.get("bond").unwrap();
     bond.principal_ratio = lockup.principal_ratio;
     bond.aces = aces;
-    bond.bank_index = ibo.current_bond_bank_counter;
+    bond.bank_index = bank_index;
 
     // TODO extract from the loop
     bond.bond_index = bond_index;
+
+    // Write to the user owned array
+    user_account.add_total_owned(bank_index, bond_index);
 
     // Transfer liquidity coin cut to us
     accounts.transfer_liquidity(cut, &accounts.master_recipient_ata)?;

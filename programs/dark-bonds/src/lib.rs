@@ -216,8 +216,8 @@ pub mod dark_bonds {
     }
 
     /** Claim tokens yielded for that specifc bond bond. */
-    pub fn claim(ctx: Context<Claim>, ibo_address: Pubkey, bond_idx: u32) -> Result<()> {
-        user::claim::claim(ctx, ibo_address, bond_idx)
+    pub fn claim(ctx: Context<Claim>, ibo_address: Pubkey) -> Result<()> {
+        user::claim::claim(ctx, ibo_address)
     }
 
     /** Splits a bond into two distinct bonds, with specified ratio between the bonds. */

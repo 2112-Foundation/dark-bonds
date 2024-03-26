@@ -353,8 +353,6 @@ describe("dark-bonds", async () => {
   it("Add bond banks for the IBO.", async () => {
     const iboBank = await main.deriveIboBank(0);
     let iboBankState = await bondProgram.account.iboBank.fetch(iboBank);
-
-    // Derive the first ibo pda
     const ibo = await main.rederiveIboPdaRand(iboBankState.aces[0]);
 
     for (let i = 0; i <= 10; i++) {
@@ -462,9 +460,7 @@ describe("dark-bonds", async () => {
     }
   });
 
-  xit("Add gated lockup for collection.", async () => {
-    // let lockUp3: LockUp = await ibo.addLockUp(DAY_SECONDS, lockUp2Apy, true, 0);
-
+  it("Add gated lockup for collection.", async () => {
     // Fetch the first ibo bank
     const iboBank = await main.deriveIboBank(0);
     let iboBankState = await bondProgram.account.iboBank.fetch(iboBank);
@@ -542,14 +538,13 @@ describe("dark-bonds", async () => {
       .rpc();
   });
 
-  xit("Add gated lockup for SPL.", async () => {
+  it("Add gated lockup for SPL.", async () => {
     // Fetch the first ibo bank
     const iboBank = await main.deriveIboBank(0);
     let iboBankState = await bondProgram.account.iboBank.fetch(iboBank);
 
     // Derive pda from the seeds in inex 0
     const ibo = await main.rederiveBlackboxPdaRand(iboBankState.aces[0]);
-    // let lockUp4 = await ibo.addLockUp(lockUp2Period, lockUp2Apy, true, 0);
     const lockUp4 = await main.deriveLockupFromIbo(ibo, 4);
 
     const tx = await bondProgram.methods
@@ -572,11 +567,9 @@ describe("dark-bonds", async () => {
       .rpc();
 
     const newGateSetting = createSplTypeInput(mintWhiteList.mint, 100, 40);
-    // let gate1 = await ibo.addGate([newGateSetting]);
 
     // Derive gate from ibo and index 0
     const gate1 = await main.deriveGateFromIbo(ibo, 1);
-
     console.log("\n\nTHIS GATE INDEX: ", newGateSetting);
 
     const tx2 = await bondProgram.methods
@@ -609,7 +602,7 @@ describe("dark-bonds", async () => {
       .rpc();
   });
 
-  xit("Add combined gated lockup with SPL and collection.", async () => {
+  it("Add combined gated lockup with SPL and collection.", async () => {
     // Fetch the first ibo bank
     const iboBank = await main.deriveIboBank(0);
     let iboBankState = await bondProgram.account.iboBank.fetch(iboBank);
@@ -617,7 +610,6 @@ describe("dark-bonds", async () => {
     // Derive pda from the seeds in inex 0
     const ibo = await main.rederiveBlackboxPdaRand(iboBankState.aces[0]);
     let collectionM: NftMint0 = cm.collections[0];
-    // let lockUp5 = await ibo.addLockUp(lockUp2Period, lockUp2Apy, true, 0);
     const lockUp5 = await main.deriveLockupFromIbo(ibo, 5);
     console.log("\nadded lock up with idx: ", lockUp5);
 
@@ -655,16 +647,7 @@ describe("dark-bonds", async () => {
       collectionM.masterEdition
     );
 
-    // Stack gates
-    // let gate2 = await ibo.addGate([
-    //   newGateSettingSpl,
-    //   newGateSettingCollection,
-    //   // newGateSettingCollection,
-    // ]);
-
     const gate2 = await main.deriveGateFromIbo(ibo, 2);
-
-    // console.log("\n\nTHIS GATE INDEX: ", gate2.index);
 
     // Adding both types at once
     const tx2 = await bondProgram.methods
@@ -697,131 +680,15 @@ describe("dark-bonds", async () => {
       .rpc();
   });
 
-  // // TODO implement consuming a whole struct
-  // xit("Lock further lockups.", async () => {
-  //   const tx_lu1 = await bondProgram.methods
-  //     .lock(true, true)
-  //     .accounts({
-  //       admin: ibo.admin.publicKey,
-  //       ibo: ibo.address,
-  //     })
-  //     .signers([ibo.admin])
-  //     .rpc();
-
-  //   // Assert lock changed to true
-  //   // let ibo0_state = await bondProgram.account.ibo.fetch(ibo.address);
-  //   // assert(ibo0_state.lockupsLocked == true);
-  // });
-
-  // it("Buyer 0 buys with lockkup rate 0", async () => {
-  //   // masterBalance = await getTokenBalance(superAdminAta_sc);
-  //   // console.log("superAdmin: ", superAdmin.publicKey.toBase58()); // Add a bond
-  //   // let lockUp: LockUp = ibo.lockups[0];
-  //   const user: User = users.users[0]; // take some user out
-  //   // const bond: Bond = await ibo.issueBond(ibo.bondCounter, purchaseAmount);
-  //   // user.issueBond(bond);
-
-  //   // console.log("/sc mint: ", mintSC.toBase58());
-  //   // console.log("mint buyer ata mint: ", user.liquidityAccount.mint.toBase58());
-  //   // console.log(
-  //   //   "masterRecipientAta ata mint: ",
-  //   //   superAdminAta_sc.mint.toBase58()
-  //   // );
-
-  //   // // Get latest bond pointer
-  //   // let bp: PublicKey = await user.getBondPointerAddress();
-
-  //   // console.log(
-  //   //   `Using  bp ${bp.toBase58()} at index ${user.bondPointers.length}`
-  //   // );
-  //   // try {
-  //   const tx_lu1 = await bondProgram.methods
-  //     .buyBond(new BN(purchaseAmount), 0)
-  //     .accounts({
-  //       buyer: user.publicKey,
-  //       bond: bond.address,
-  //       ibo: ibo.address,
-  //       lockup: lockUp.address,
-  //       buyerAta: user.liquidityAccount.address,
-  //       recipientAta: ibo.recipientAddressAccount.address,
-  //       main: main.address,
-  //       masterRecipientAta: superAdminAta_sc.address,
-  //       iboAta: ibo.vaultAccount.address,
-  //       bondAta: bond.account.address,
-  //       userAccount: user.userAccount,
-  //       systemProgram: anchor.web3.SystemProgram.programId,
-  //       tokenProgram: TOKEN_PROGRAM_ID,
-  //       associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-  //     })
-  //     .signers([user])
-  //     .rpc();
-  //   // } catch (e) {
-  //   //   console.log("\nerror:\n\n", e);
-  //   // }
-
-  //   // bond_counter += 1;
-
-  //   let bond0_state = await bondProgram.account.bond.fetch(bond.address);
-  //   console.log("bond0 owner: ", bond0_state.owner.toBase58());
-  //   console.log("bond0 maturity date: ", bond0_state.maturityDate.toString());
-  //   console.log(
-  //     "bond0 total to claim: ",
-  //     bond0_state.totalClaimable.toString()
-  //   );
-
-  //   // let ibo0_state = await bondProgram.account.ibo.fetch(ibo.address);
-  //   // console.log("ibo0_state: ", ibo0_state.)
-
-  //   let masterBalanceEnd = await getTokenBalance(superAdminAta_sc);
-  //   console.log("masterBalanceEnd: ", masterBalanceEnd);
-  //   // assert(
-  //   //   purchaseAmount * 0.05 == masterBalanceEnd,
-  //   //   "take a cut of exactly 5%"
-  //   // );
-
-  //   // masterBalance += purchaseAmount * 0.05;
-
-  //   // Check that liquidity_token balance decresed
-  //   // Check that buyer set as the owner in the bond
-  //   // Check calculation of bond to receive is correct
-  // });
-
   it("Buyer 0 buys with lockkup rate 0 bond idx1", async () => {
-    // masterBalance = await getTokenBalance(superAdminAta_sc);
-    // console.log("superAdmin: ", superAdmin.publicKey.toBase58()); // Add a bond
-    // let lockUp: LockUp = ibo.lockups[0];
-    const user: User = users.users[0]; // take some user out
-    // const bond: Bond = await ibo.issueBond(ibo.bondCounter, purchaseAmount);
-    // user.issueBond(bond);
-
     // Fetch the first ibo bank
     const iboBank = await main.deriveIboBank(0);
     let iboBankState = await bondProgram.account.iboBank.fetch(iboBank);
 
     // Derive pda from the seeds in inex 0
     const ibo = await main.rederiveIboPdaRand(iboBankState.aces[0]);
-
-    // Derive the ata of the recipient based on the value from ibo
-
-    // Derive the PDA of the first lockup
-    const lockup = await main.deriveLockupFromIbo(ibo, 0);
-
-    let [bond, aces] = await main.deriveBondPdaRand(ibo);
-
-    // Get latest bond pointer
-    let bp: PublicKey = await user.getBondPointerAddress();
-
-    // Derive the first bond bank for this ibo
-    const bondBank = await main.deriveBondBankFromIbo(ibo, 0);
-
-    console.log(`Using bond bank account (${bondBank}) `);
-
-    // console.log(
-    //   `Using  bp ${bp.toBase58()} at index ${user.bondPointers.length}`
-    // );
-
-    // Top up user with stable coin
-    await mintSc.topUpSPl(user.liquidityAccount.address, 1000000000000000);
+    const iboState = await bondProgram.account.ibo.fetch(ibo);
+    const user: User = users.users[0]; // take some user out
 
     // Top up ibo with bond coin
     await mintBond.topUpSPl(
@@ -831,8 +698,20 @@ describe("dark-bonds", async () => {
       1000000000000000
     );
 
-    try {
-      const tx_lu1 = await bondProgram.methods
+    console.log(`User (${user.publicKey})`);
+
+    // Top up user with stable coin
+    await mintSc.topUpSPl(user.liquidityAccount.address, 1000000000000000);
+
+    for (let i = 0; i < 7; i++) {
+      // Derive the PDA of the first lockup
+      const lockup = await main.deriveLockupFromIbo(ibo, 0);
+      let [bond, aces] = await main.deriveBondPdaRand(ibo);
+
+      // Derive the first bond bank for this ibo
+      const bondBank = await main.deriveBondBankFromIbo(ibo, 0);
+
+      bondProgram.methods
         .buyBond(aces, new BN(purchaseAmount), 0)
         .accounts({
           buyer: user.publicKey,
@@ -857,13 +736,11 @@ describe("dark-bonds", async () => {
         })
         .signers([user])
         .rpc();
-    } catch (e) {
-      console.log("\nerror buying bond:\n\n", e);
+
+      console.log(
+        ` purchased bond [${iboState.bondCounter}] (${bond}) from ibo (${ibo})`
+      );
     }
-
-    // bondBank
-
-    // bond_counter += 1;
 
     // let bond0_state = await bondProgram.account.bond.fetch(bond.address);
     // console.log("bond0 owner: ", bond0_state.owner.toBase58());
@@ -873,78 +750,57 @@ describe("dark-bonds", async () => {
     //   bond0_state.totalClaimable.toString()
     // );
 
-    // // let ibo0_state = await bondProgram.account.ibo.fetch(ibo.address);
-    // // console.log("ibo0_state: ", ibo0_state.)
-
     // let masterBalanceEnd = await getTokenBalance(superAdminAta_sc);
     // console.log("masterBalanceEnd: ", masterBalanceEnd);
     // // assert(
     // //   purchaseAmount * 0.05 == masterBalanceEnd,
     // //   "take a cut of exactly 5%"
     // // );
-
     // masterBalance += purchaseAmount * 0.05;
-
     // Check that liquidity_token balance decresed
     // Check that buyer set as the owner in the bond
     // Check calculation of bond to receive is correct
   });
 
-  // it("Claim test 1", async () => {
-  //   // console.log("bond: ", bond2.toBase58());
+  it("Claim test 1", async () => {
+    const iboBank = await main.deriveIboBank(0);
+    let iboBankState = await bondProgram.account.iboBank.fetch(iboBank);
+    const ibo = await main.rederiveIboPdaRand(iboBankState.aces[0]);
+    let user: User = users.users[0];
+    let userState = await bondProgram.account.userAccount.fetch(
+      user.userAccount
+    );
 
-  //   let user: User = users.users[0];
-  //   let bond: Bond = user.bonds[0];
+    // Loop over all the blackboxes this user owns
+    for (let i = 0; i < userState.totalOwned.length; i++) {
+      // Rederive and fetch the correct bank
+      const bondBank = await main.deriveBondBankFromIbo(ibo, 0);
+      const bankState = await bondProgram.account.bondBank.fetch(bondBank);
 
-  //   console.log("bond.account.address: ", bond.account.address.toBase58());
+      let aces = bankState.aces[userState.totalOwned[i].bondIndex];
 
-  //   let bondBalanceStart = await getTokenBalance(bond.account);
-  //   let bond1_state = await bondProgram.account.bond.fetch(bond.address);
-  //   let bondStartTime = parseInt(bond1_state.bondStart.toString());
+      // Derive bond based on whats stored in users owned array
+      let bond = await main.rederiveBondPdaRand(ibo, aces);
 
-  //   let time_now_s = new Date().getTime() / 1000;
+      // try {
+      const tx_lu1 = await bondProgram.methods
+        .claim(ibo)
+        .accounts({
+          bondOwner: user.publicKey,
+          bond: bond,
+          bondOwnerAta: (await mintBond.makeAta(user.publicKey)).address,
+          bondAta: (await mintBond.makeAta(bond)).address,
+          main: main.address,
+          systemProgram: anchor.web3.SystemProgram.programId,
+        })
+        .signers([user])
+        .rpc();
 
-  //   console.log("bond started: ", bondStartTime);
-  //   console.log("bond end at:  ", bondStartTime + shortBond);
-  //   console.log("time now:     ", time_now_s);
-  //   let time_elapsed = time_now_s - bondStartTime;
-  //   console.log("time elapsed: ", time_elapsed);
+      console.log(` claimed owned bond [${i}] (${bond}) from ibo (${ibo})`);
+    }
 
-  //   await delay(shortBond / 2 - time_elapsed);
-  //   await delay(3);
-
-  //   console.log(" user.publicKey: ", user.publicKey.toBase58());
-  //   console.log(
-  //     "bond.ownerBondAccount.address: ",
-  //     bond.ownerBondAccount.address.toBase58()
-  //   );
-
-  //   // try {
-  //   const tx_lu1 = await bondProgram.methods
-  //     .claim(ibo.address, bond.idx)
-  //     .accounts({
-  //       bondOwner: user.publicKey,
-  //       bond: bond.address,
-  //       bondOwnerAta: bond.ownerBondAccount.address,
-  //       bondAta: bond.account.address,
-  //       main: main.address,
-  //       systemProgram: anchor.web3.SystemProgram.programId,
-  //     })
-  //     .signers([user])
-  //     .rpc();
-  //   // } catch (e) {
-  //   //   console.log("\nerror:\n\n", e);
-  //   // }
-
-  //   // Get bond amounts
-  //   let balanceBuyer = await getTokenBalance(bond.ownerBondAccount);
-  //   let bondBalance = await getTokenBalance(bond.account);
-
-  //   console.log("balanceBuyer: ", balanceBuyer);
-  //   console.log("bond: ", bondBalance);
-
-  //   // assert(roughlyEqual(0.5, balanceBuyer / bondBalanceStart, 15));
-  // });
+    console.log("\nMashallah ᕙ(▀̿ĺ̯▀̿ ̿)ᕗ");
+  });
 
   // it("Buyer 0 splits bond at 50%", async () => {
   //   // console.log("bond: ", bond2.toBase58());

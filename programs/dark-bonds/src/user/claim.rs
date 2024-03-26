@@ -16,7 +16,8 @@ pub struct Claim<'info> {
     pub bond_owner_ata: Box<Account<'info, TokenAccount>>,
     #[account(
         mut, 
-        token::authority = bond.key()
+        token::authority = bond.key(),
+        // token::mint = ibo.mint,
     )]
     pub bond_ata: Box<Account<'info, TokenAccount>>,
     #[account(
@@ -40,10 +41,8 @@ impl<'info> Claim<'info> {
 }
 
 // option to add % to claim?
-pub fn claim(ctx: Context<Claim>, ibo_address: Pubkey, bond_idx: u32) -> Result<()> {
-    let bond_owner: &mut Signer = &mut ctx.accounts.bond_owner;
-    let bond: &mut Account<Bond> = &mut ctx.accounts.bond;
-    let main: &mut Account<Main> = &mut ctx.accounts.main;
+pub fn claim(ctx: Context<Claim>, ibo_address: Pubkey) -> Result<()> {
+    let accounts = ctx.accounts;
 
     // msg!("\n\nProvided bond idx: {:?}", bond_idx);
     // msg!("Stored bond idx: {:?}", bond.idx);
@@ -52,30 +51,35 @@ pub fn claim(ctx: Context<Claim>, ibo_address: Pubkey, bond_idx: u32) -> Result<
     // require!(bond.time_elapsed(), BondErrors::WithdrawTooEarly);
 
     // Ensure the bond is not one of those where you can only claim it all at the end
-    require!(!bond.mature_only, BondErrors::BondMatureOnly);
+    require!(!accounts.bond.mature_only, BondErrors::BondMatureOnly);
 
     // Take SOL fee for buying a bond
-    take_fee(&main.to_account_info(), &bond_owner, main.user_fees.bond_claim_fee as u64, 0)?;
+    take_fee(
+        &accounts.main.to_account_info(),
+        &accounts.bond_owner,
+        accounts.main.user_fees.bond_claim_fee as u64,
+        0
+    )?;
 
     // Calculate balance that can be witdhrawn
-    let claimable_now = if Clock::get().unwrap().unix_timestamp > bond.maturity_date {
+    let claimable_now = if Clock::get().unwrap().unix_timestamp > accounts.bond.maturity_date {
         msg!("\n\nBond lock-up is OVER");
-        ctx.accounts.bond_ata.amount
+        accounts.bond_ata.amount
     } else {
         msg!("\n\nBond lock-up is ON");
-        bond.claim_amount()?
+        accounts.bond.claim_amount()?
     };
 
     msg!("\nClaiming now: {:?}", claimable_now);
 
     // Update withdraw date to now
-    bond.update_claim_date();
+    accounts.bond.update_claim_date();
 
     let seeds = &[
         BOND_SEED.as_bytes(),
         ibo_address.as_ref(),
-        &bond_idx.to_be_bytes(),
-        &[bond.bump],
+        accounts.bond.aces.as_ref(),
+        &[accounts.bond.bump],
     ];
 
     // msg!("total claimable_now: {:?}", bond.total_claimable);
@@ -87,7 +91,7 @@ pub fn claim(ctx: Context<Claim>, ibo_address: Pubkey, bond_idx: u32) -> Result<
     // msg!("Balances bond_owner_ata (to): {:?}", ctx.accounts.bond_owner_ata.amount);
 
     // Transfer SPL balance calculated
-    token::transfer(ctx.accounts.transfer_bond().with_signer(&[seeds]), 100)?;
+    token::transfer(accounts.transfer_bond().with_signer(&[seeds]), 100)?;
 
     // Invoke SPL to transfer
     Ok(())
