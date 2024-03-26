@@ -114,6 +114,12 @@ pub mod dark_bonds {
             recipient
         )
     }
+
+    /** Adds banks for bonds */
+    pub fn add_bond_bank(ctx: Context<AddBondBank>) -> Result<()> {
+        admin::add_bond_bank::add_bond_bank(ctx)
+    }
+
     /** Updates existing bond offering. */
     pub fn update_ibo(
         ctx: Context<UpdateIbo>,

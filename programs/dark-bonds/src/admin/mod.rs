@@ -8,6 +8,7 @@ pub mod update_lockup_gates;
 pub mod withdraw;
 pub mod update_ibo;
 pub mod update_rate;
+pub mod add_bond_bank;
 
 pub use withdraw::*;
 pub use update_ibo::*;
@@ -19,3 +20,4 @@ pub use add_gate::*;
 pub use remove_lockup::*;
 pub use create_ibo::*;
 pub use add_lockup::*;
+pub use add_bond_bank::*;

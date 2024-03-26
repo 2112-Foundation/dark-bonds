@@ -24,4 +24,6 @@ pub const GATE_SEED: &str = "gate";
 pub const TREE_SEED: &str = "tree";
 pub const VERTEX_SEED: &str = "vertex";
 pub const NFT_BASKET_SEED: &str = "nft_basket";
+
 pub const IBO_BANK_SEED: &str = "ibo_bank";
+pub const BOND_BANK_SEED: &str = "bond_bank";

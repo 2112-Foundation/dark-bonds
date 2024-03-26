@@ -509,6 +509,31 @@ export class Master {
     return [iboAccount, randomNumbers];
   }
 
+  /** Rederive IBO from aces */
+  async rederiveIboPdaRand(aces: number[]): Promise<PublicKey> {
+    const [iboAccount, nonce] = await PublicKey.findProgramAddress(
+      [Buffer.from(IBO_SEED), Buffer.from(aces)],
+      this.programAddress
+    );
+    return iboAccount;
+  }
+
+  /** Derive PDA of the gate from the ibo and an index at u32 size */
+  async deriveBondBankFromIbo(
+    ibo: PublicKey,
+    index: number
+  ): Promise<PublicKey> {
+    const [bondBank, _] = await PublicKey.findProgramAddress(
+      [
+        Buffer.from(BOND_BANK_SEED),
+        Buffer.from(ibo.toBytes()),
+        new BN(index).toArrayLike(Buffer, "be", 2),
+      ],
+      this.programAddress
+    );
+    return bondBank;
+  }
+
   /** Derive PDA of the gate from the ibo and an index at u32 size */
   async deriveGateFromIbo(ibo: PublicKey, index: number): Promise<PublicKey> {
     const [gateAccount, _] = await PublicKey.findProgramAddress(
