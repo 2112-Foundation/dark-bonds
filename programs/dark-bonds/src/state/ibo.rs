@@ -12,6 +12,7 @@ pub struct Ibo {
     pub bump: u8,
 
     pub index: u64,
+    pub aces: [u8; 32],
 
     /** All the different features that can be locked (once!) by the admin to make suers have more confidence */
     pub actions: PermittedAction,
@@ -45,11 +46,11 @@ pub struct Ibo {
     pub admin: Pubkey,
 
     /** Total number of indidividual bond option types created for this IBO.*/
-    pub lockup_counter: u32, // TODO Can definitaly reduce this one
+    pub lockup_counter: u16, // TODO Can definitaly reduce this one
     /** Total number of bonds issued under this IBO.*/
     pub bond_counter: u32,
     /** Total number of gates which restrict which lock up option can be used to purchase the bond.*/
-    pub gate_counter: u32, //
+    pub gate_counter: u16, //
 
     // Ignore for now
     pub nft_counter: u32, // TODO ned to also lock withdrawl of NFTs until its over delete and change to tree counter
@@ -66,6 +67,9 @@ pub struct Ibo {
     pub next_bond_bank_counter: u16,
     /** Counters for banks storing secondary market listings. */
     pub next_listing_bank_counter: u16,
+
+    pub bank_index: u16,
+    pub ibo_index: u16,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq, Eq)]

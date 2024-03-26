@@ -37,10 +37,10 @@ import {
 } from "@solana/spl-token";
 // import { assert, use } from "chai";
 import {
-  Ibo,
-  LockUp,
+  // Ibo,
+  // LockUp,
   Master,
-  Bond,
+  // Bond,
   Gate,
   // CollectionGate,
   // SplGate,
@@ -128,7 +128,7 @@ describe("dark-bonds", async () => {
   let mintWhiteList: Mint;
 
   // Ibo 0
-  let ibo: Ibo;
+  // let ibo: Ibo;
   let exchangeRate: number = 40;
   let liveDate: number = 1683718579;
   let swapCut = 200; // aka 2.0 %
@@ -309,65 +309,70 @@ describe("dark-bonds", async () => {
   });
 
   it("Register bond offering.", async () => {
-    ibo = await main.addIbo(
-      exchangeRate,
-      liveDate,
-      liveDate + 100000, // Can buy bonds until that point in the future
-      swapCut,
-      mintBond,
-      mintSc.mint,
-      adminIbo0,
-      adminIbo0.publicKey // If
-    );
+    // ibo = await main.addIbo(
+    //   exchangeRate,
+    //   liveDate,
+    //   liveDate + 100000, // Can buy bonds until that point in the future
+    //   swapCut,
+    //   mintBond,
+    //   mintSc.mint,
+    //   adminIbo0,
+    //   adminIbo0.publicKey // If
+    // );
 
-    console.log("ibo.ata: ", ibo.vaultAccount.address.toBase58());
-    await mintBond.topUpSPl(ibo.vaultAccount.address, 1000000000000000);
+    // Derive the address of the first IBO
+    const [ibo, aces] = await main.deriveIboPdaRand();
+
+    console.log("ibo.ata: ", ibo.toBase58());
+    await mintBond.topUpSPl(ibo, 1000000000000000);
     console.log("Minted");
+
+    const iboBank = await main.deriveIboBank(0);
+
     try {
       const tx = await bondProgram.methods
         .createIbo(
+          aces,
           "test description",
           "test link",
-          new BN(ibo.fixedExchangeRate),
-          new BN(ibo.liveDate),
-          new BN(ibo.endDate),
-          ibo.swapCut,
-          ibo.liquidityMint,
-          ibo.mintB.mint,
-          ibo.recipientAddressAccount.owner
+          new BN(exchangeRate),
+          new BN(liveDate),
+          new BN(liveDate + 100000),
+          swapCut,
+          mintSc.mint,
+          mintBond.mint,
+          adminIbo0.publicKey
         )
         .accounts({
           main: main.address,
-          admin: ibo.admin.publicKey,
-          ibo: ibo.address,
+          admin: adminIbo0.publicKey,
+          ibo,
           systemProgram: anchor.web3.SystemProgram.programId,
         })
-        .signers([ibo.admin])
+        .remainingAccounts({
+          pubkey: iboBank,
+          isWritable: true,
+          isSigner: false,
+        })
+        .signers([adminIbo0])
         .rpc();
     } catch (err) {
-      console.log("err: ", err);
+      console.log("\nError adding a new IBO: ", err);
     }
   });
 
   it("Add three different lockups.", async () => {
-    let lockUp0: LockUp = await ibo.addLockUp(
-      lockUp0Period,
-      lockUp0Apy,
-      false,
-      0
-    );
-    let lockUp1: LockUp = await ibo.addLockUp(
-      lockUp1Period,
-      lockUp1Apy,
-      false,
-      0
-    );
-    let lockUp2: LockUp = await ibo.addLockUp(
-      lockUp2Period,
-      lockUp2Apy,
-      false,
-      0
-    );
+    // Fetch the first ibo bank
+    const iboBank = await main.deriveIboBank(0);
+    let iboBankState = await bondProgram.account.iboBank.fetch(iboBank);
+
+    // Derive pda from the seeds in inex 0
+    const ibo = await main.rederiveBlackboxPdaRand(iboBankState.aces[0]);
+
+    // Derive the first lockup for this ibo
+    const lockUp0 = await main.deriveLockupFromIbo(ibo, 0);
+    const lockUp1 = await main.deriveLockupFromIbo(ibo, 1);
+    const lockUp2 = await main.deriveLockupFromIbo(ibo, 2);
 
     let lockUp0Instruction = bondProgram.instruction.addLockup(
       new BN(lockUp0Period),
@@ -378,9 +383,9 @@ describe("dark-bonds", async () => {
       pp,
       {
         accounts: {
-          admin: ibo.admin.publicKey,
-          ibo: ibo.address,
-          lockup: lockUp0.address,
+          admin: adminIbo0.publicKey,
+          ibo,
+          lockup: lockUp0,
           main: main.address,
           systemProgram: anchor.web3.SystemProgram.programId,
         },
@@ -395,9 +400,9 @@ describe("dark-bonds", async () => {
       pp,
       {
         accounts: {
-          admin: ibo.admin.publicKey,
-          ibo: ibo.address,
-          lockup: lockUp1.address,
+          admin: adminIbo0.publicKey,
+          ibo,
+          lockup: lockUp1,
           main: main.address,
           systemProgram: anchor.web3.SystemProgram.programId,
         },
@@ -412,9 +417,9 @@ describe("dark-bonds", async () => {
       pp,
       {
         accounts: {
-          admin: ibo.admin.publicKey,
-          ibo: ibo.address,
-          lockup: lockUp2.address,
+          admin: adminIbo0.publicKey,
+          ibo: ibo,
+          lockup: lockUp2,
           main: main.address,
           systemProgram: anchor.web3.SystemProgram.programId,
         },
@@ -428,41 +433,49 @@ describe("dark-bonds", async () => {
       let tx = await anchor.web3.sendAndConfirmTransaction(
         anchor.getProvider().connection,
         transaction,
-        [ibo.admin],
+        [adminIbo0],
         {
           skipPreflight: true,
           preflightCommitment: "single",
         }
       );
     } catch (err) {
-      console.log("err: ", err);
+      console.log("Error adding lockups: ", err);
     }
   });
 
   it("Add gated lockup for collection.", async () => {
-    let lockUp3: LockUp = await ibo.addLockUp(DAY_SECONDS, lockUp2Apy, true, 0);
-    console.log("\nadded lock up with idx: ", lockUp3.index);
+    // let lockUp3: LockUp = await ibo.addLockUp(DAY_SECONDS, lockUp2Apy, true, 0);
+
+    // Fetch the first ibo bank
+    const iboBank = await main.deriveIboBank(0);
+    let iboBankState = await bondProgram.account.iboBank.fetch(iboBank);
+
+    // Derive pda from the seeds in inex 0
+    const ibo = await main.rederiveBlackboxPdaRand(iboBankState.aces[0]);
+    const lockUp3 = await main.deriveLockupFromIbo(ibo, 3);
+
     let collectionM: NftMint0 = cm.collections[0];
 
     console.log("Master addres: ", main.address.toBase58());
 
     const tx = await bondProgram.methods
       .addLockup(
-        new BN(lockUp3.period),
-        new BN(lockUp3.apy),
+        new BN(DAY_SECONDS),
+        new BN(lockUp2Apy),
         false,
         new BN(0),
         0,
         pp
       )
       .accounts({
-        admin: ibo.admin.publicKey,
-        ibo: ibo.address,
-        lockup: lockUp3.address,
+        admin: adminIbo0.publicKey,
+        ibo,
+        lockup: lockUp3,
         main: main.address,
         systemProgram: anchor.web3.SystemProgram.programId,
       })
-      .signers([ibo.admin])
+      .signers([adminIbo0])
       .rpc();
 
     // TODO two of these are the same, either doesnt get used in chain at all and is redundant
@@ -477,22 +490,21 @@ describe("dark-bonds", async () => {
       collectionM.masterMint,
       collectionM.masterEdition
     );
-    // const si = createSplTypeInput(mintWhiteList.mint, 100, 40)
 
-    let gate0 = await ibo.addGate([newGateSetting]);
-    console.log("\n\nTHIS GATE INDEX: ", gate0.index);
+    // Derive gate from ibo and index 0
+    const gate0 = await main.deriveGateFromIbo(ibo, 0);
 
     const tx2 = await bondProgram.methods
       .addGate([gateType])
       .accounts({
-        admin: ibo.admin.publicKey,
-        ibo: ibo.address,
-        lockup: lockUp3.address,
-        gate: gate0.address,
+        admin: adminIbo0.publicKey,
+        ibo,
+        lockup: lockUp3,
+        gate: gate0,
         main: main.address,
         systemProgram: anchor.web3.SystemProgram.programId,
       })
-      .signers([ibo.admin])
+      .signers([adminIbo0])
       .rpc();
 
     // Update lock up to reflect those changes
@@ -502,100 +514,112 @@ describe("dark-bonds", async () => {
         []
       )
       .accounts({
-        admin: ibo.admin.publicKey,
-        ibo: ibo.address,
-        lockup: lockUp3.address,
+        admin: adminIbo0.publicKey,
+        ibo: ibo,
+        lockup: lockUp3,
         main: main.address,
         systemProgram: anchor.web3.SystemProgram.programId,
       })
-      .signers([ibo.admin])
+      .signers([adminIbo0])
       .rpc();
-
-    lockUp3.addGateIdx(gate0.index);
   });
 
   it("Add gated lockup for SPL.", async () => {
-    let lockUp4 = await ibo.addLockUp(lockUp2Period, lockUp2Apy, true, 0);
-    console.log("\nadded lock up with idx: ", lockUp4.index);
+    // Fetch the first ibo bank
+    const iboBank = await main.deriveIboBank(0);
+    let iboBankState = await bondProgram.account.iboBank.fetch(iboBank);
+
+    // Derive pda from the seeds in inex 0
+    const ibo = await main.rederiveBlackboxPdaRand(iboBankState.aces[0]);
+    // let lockUp4 = await ibo.addLockUp(lockUp2Period, lockUp2Apy, true, 0);
+    const lockUp4 = await main.deriveLockupFromIbo(ibo, 4);
 
     const tx = await bondProgram.methods
       .addLockup(
-        new BN(lockUp4.period),
-        new BN(lockUp4.apy),
+        new BN(lockUp2Period),
+        new BN(lockUp2Apy),
         false,
         new BN(0),
         0,
         pp
       )
       .accounts({
-        admin: ibo.admin.publicKey,
-        ibo: ibo.address,
-        lockup: lockUp4.address,
+        admin: adminIbo0.publicKey,
+        ibo,
+        lockup: lockUp4,
         main: main.address,
         systemProgram: anchor.web3.SystemProgram.programId,
       })
-      .signers([ibo.admin])
+      .signers([adminIbo0])
       .rpc();
 
     const newGateSetting = createSplTypeInput(mintWhiteList.mint, 100, 40);
-    let gate1 = await ibo.addGate([newGateSetting]);
+    // let gate1 = await ibo.addGate([newGateSetting]);
+
+    // Derive gate from ibo and index 0
+    const gate1 = await main.deriveGateFromIbo(ibo, 1);
 
     console.log("\n\nTHIS GATE INDEX: ", newGateSetting);
 
     const tx2 = await bondProgram.methods
       .addGate([newGateSetting])
       .accounts({
-        admin: ibo.admin.publicKey,
-        ibo: ibo.address,
-        lockup: lockUp4.address,
-        gate: gate1.address,
+        admin: adminIbo0.publicKey,
+        ibo,
+        lockup: lockUp4,
+        gate: gate1,
         main: main.address,
         systemProgram: anchor.web3.SystemProgram.programId,
       })
-      .signers([ibo.admin])
+      .signers([adminIbo0])
       .rpc();
 
     // Update lock up to reflect those changes
     const tx3 = await bondProgram.methods
       .updateLockupGates(
-        [gate1.index], // 0th gate PDA
+        [1], // 0th gate PDA
         []
       )
       .accounts({
-        admin: ibo.admin.publicKey,
-        ibo: ibo.address,
-        lockup: lockUp4.address,
+        admin: adminIbo0.publicKey,
+        ibo: ibo,
+        lockup: lockUp4,
         main: main.address,
         systemProgram: anchor.web3.SystemProgram.programId,
       })
-      .signers([ibo.admin])
+      .signers([adminIbo0])
       .rpc();
-
-    lockUp4.addGateIdx(gate1.index);
   });
 
   it("Add combined gated lockup with SPL and collection.", async () => {
+    // Fetch the first ibo bank
+    const iboBank = await main.deriveIboBank(0);
+    let iboBankState = await bondProgram.account.iboBank.fetch(iboBank);
+
+    // Derive pda from the seeds in inex 0
+    const ibo = await main.rederiveBlackboxPdaRand(iboBankState.aces[0]);
     let collectionM: NftMint0 = cm.collections[0];
-    let lockUp5 = await ibo.addLockUp(lockUp2Period, lockUp2Apy, true, 0);
-    console.log("\nadded lock up with idx: ", lockUp5.index);
+    // let lockUp5 = await ibo.addLockUp(lockUp2Period, lockUp2Apy, true, 0);
+    const lockUp5 = await main.deriveLockupFromIbo(ibo, 5);
+    console.log("\nadded lock up with idx: ", lockUp5);
 
     const tx = await bondProgram.methods
       .addLockup(
-        new BN(lockUp5.period),
-        new BN(lockUp5.apy),
+        new BN(lockUp2Period),
+        new BN(lockUp2Apy),
         false,
         new BN(0),
         0,
         pp
       )
       .accounts({
-        admin: ibo.admin.publicKey,
-        ibo: ibo.address,
+        admin: adminIbo0.publicKey,
+        ibo,
         main: main.address,
-        lockup: lockUp5.address,
+        lockup: lockUp5,
         systemProgram: anchor.web3.SystemProgram.programId,
       })
-      .signers([ibo.admin])
+      .signers([adminIbo0])
       .rpc();
 
     const gateType1 = createCollectionTypeInput(
@@ -614,687 +638,687 @@ describe("dark-bonds", async () => {
     );
 
     // Stack gates
-    let gate2 = await ibo.addGate([
-      newGateSettingSpl,
-      newGateSettingCollection,
-      // newGateSettingCollection,
-    ]);
+    // let gate2 = await ibo.addGate([
+    //   newGateSettingSpl,
+    //   newGateSettingCollection,
+    //   // newGateSettingCollection,
+    // ]);
 
-    console.log("\n\nTHIS GATE INDEX: ", gate2.index);
+    const gate2 = await main.deriveGateFromIbo(ibo, 2);
+
+    // console.log("\n\nTHIS GATE INDEX: ", gate2.index);
 
     // Adding both types at once
     const tx2 = await bondProgram.methods
       .addGate([gateType1, gateType2])
       .accounts({
-        admin: ibo.admin.publicKey,
-        ibo: ibo.address,
-        lockup: lockUp5.address,
+        admin: adminIbo0.publicKey,
+        ibo,
+        lockup: lockUp5,
         main: main.address,
-        gate: gate2.address,
+        gate: gate2,
         systemProgram: anchor.web3.SystemProgram.programId,
       })
-      .signers([ibo.admin])
+      .signers([adminIbo0])
       .rpc();
 
     // Update lock up to reflect those changes
     const tx3 = await bondProgram.methods
       .updateLockupGates(
-        [gate2.index], // 0th gate PDA
+        [0], // 0th gate PDA
         []
       )
       .accounts({
-        admin: ibo.admin.publicKey,
-        ibo: ibo.address,
-        lockup: lockUp5.address,
+        admin: adminIbo0.publicKey,
+        ibo,
+        lockup: lockUp5,
         main: main.address,
         systemProgram: anchor.web3.SystemProgram.programId,
       })
-      .signers([ibo.admin])
+      .signers([adminIbo0])
       .rpc();
-
-    lockUp5.addGateIdx(gate2.index);
   });
 
-  // TODO implement consuming a whole struct
-  xit("Lock further lockups.", async () => {
-    const tx_lu1 = await bondProgram.methods
-      .lock(true, true)
-      .accounts({
-        admin: ibo.admin.publicKey,
-        ibo: ibo.address,
-      })
-      .signers([ibo.admin])
-      .rpc();
+  // // TODO implement consuming a whole struct
+  // xit("Lock further lockups.", async () => {
+  //   const tx_lu1 = await bondProgram.methods
+  //     .lock(true, true)
+  //     .accounts({
+  //       admin: ibo.admin.publicKey,
+  //       ibo: ibo.address,
+  //     })
+  //     .signers([ibo.admin])
+  //     .rpc();
 
-    // Assert lock changed to true
-    // let ibo0_state = await bondProgram.account.ibo.fetch(ibo.address);
-    // assert(ibo0_state.lockupsLocked == true);
-  });
+  //   // Assert lock changed to true
+  //   // let ibo0_state = await bondProgram.account.ibo.fetch(ibo.address);
+  //   // assert(ibo0_state.lockupsLocked == true);
+  // });
 
   it("Buyer 0 buys with lockkup rate 0", async () => {
     // masterBalance = await getTokenBalance(superAdminAta_sc);
-    console.log("superAdmin: ", superAdmin.publicKey.toBase58()); // Add a bond
-    let lockUp: LockUp = ibo.lockups[0];
+    // console.log("superAdmin: ", superAdmin.publicKey.toBase58()); // Add a bond
+    // let lockUp: LockUp = ibo.lockups[0];
     const user: User = users.users[0]; // take some user out
-    const bond: Bond = await ibo.issueBond(ibo.bondCounter, purchaseAmount);
-    user.issueBond(bond);
+    // const bond: Bond = await ibo.issueBond(ibo.bondCounter, purchaseAmount);
+    // user.issueBond(bond);
 
-    console.log("/sc mint: ", mintSC.toBase58());
-    console.log("mint buyer ata mint: ", user.liquidityAccount.mint.toBase58());
-    console.log(
-      "masterRecipientAta ata mint: ",
-      superAdminAta_sc.mint.toBase58()
-    );
-
-    // Get latest bond pointer
-    let bp: PublicKey = await user.getBondPointerAddress();
-
-    console.log(
-      `Using  bp ${bp.toBase58()} at index ${user.bondPointers.length}`
-    );
-    // try {
-    const tx_lu1 = await bondProgram.methods
-      .buyBond(new BN(purchaseAmount), 0)
-      .accounts({
-        buyer: user.publicKey,
-        bond: bond.address,
-        ibo: ibo.address,
-        lockup: lockUp.address,
-        buyerAta: user.liquidityAccount.address,
-        recipientAta: ibo.recipientAddressAccount.address,
-        main: main.address,
-        masterRecipientAta: superAdminAta_sc.address,
-        iboAta: ibo.vaultAccount.address,
-        bondAta: bond.account.address,
-        userAccount: user.userAccount,
-        systemProgram: anchor.web3.SystemProgram.programId,
-        tokenProgram: TOKEN_PROGRAM_ID,
-        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-      })
-      .signers([user])
-      .rpc();
-    // } catch (e) {
-    //   console.log("\nerror:\n\n", e);
-    // }
-
-    // bond_counter += 1;
-
-    let bond0_state = await bondProgram.account.bond.fetch(bond.address);
-    console.log("bond0 owner: ", bond0_state.owner.toBase58());
-    console.log("bond0 maturity date: ", bond0_state.maturityDate.toString());
-    console.log(
-      "bond0 total to claim: ",
-      bond0_state.totalClaimable.toString()
-    );
-
-    // let ibo0_state = await bondProgram.account.ibo.fetch(ibo.address);
-    // console.log("ibo0_state: ", ibo0_state.)
-
-    let masterBalanceEnd = await getTokenBalance(superAdminAta_sc);
-    console.log("masterBalanceEnd: ", masterBalanceEnd);
-    // assert(
-    //   purchaseAmount * 0.05 == masterBalanceEnd,
-    //   "take a cut of exactly 5%"
-    // );
-
-    // masterBalance += purchaseAmount * 0.05;
-
-    // Check that liquidity_token balance decresed
-    // Check that buyer set as the owner in the bond
-    // Check calculation of bond to receive is correct
-  });
-
-  it("Buyer 0 buys with lockkup rate 0 bond idx1", async () => {
-    // masterBalance = await getTokenBalance(superAdminAta_sc);
-    console.log("superAdmin: ", superAdmin.publicKey.toBase58()); // Add a bond
-    let lockUp: LockUp = ibo.lockups[0];
-    const user: User = users.users[0]; // take some user out
-    const bond: Bond = await ibo.issueBond(ibo.bondCounter, purchaseAmount);
-    user.issueBond(bond);
-
-    console.log("/sc mint: ", mintSC.toBase58());
-    console.log("mint buyer ata mint: ", user.liquidityAccount.mint.toBase58());
-    console.log(
-      "masterRecipientAta ata mint: ",
-      superAdminAta_sc.mint.toBase58()
-    );
-
-    // Get latest bond pointer
-    let bp: PublicKey = await user.getBondPointerAddress();
-
-    console.log(
-      `Using  bp ${bp.toBase58()} at index ${user.bondPointers.length}`
-    );
-
-    const tx_lu1 = await bondProgram.methods
-      .buyBond(new BN(purchaseAmount), 0)
-      .accounts({
-        buyer: user.publicKey,
-        bond: bond.address,
-        ibo: ibo.address,
-        lockup: lockUp.address,
-        buyerAta: user.liquidityAccount.address,
-        recipientAta: ibo.recipientAddressAccount.address,
-        main: main.address,
-        masterRecipientAta: superAdminAta_sc.address,
-        iboAta: ibo.vaultAccount.address,
-        bondAta: bond.account.address,
-        userAccount: user.userAccount,
-        systemProgram: anchor.web3.SystemProgram.programId,
-        tokenProgram: TOKEN_PROGRAM_ID,
-        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-      })
-      .signers([user])
-      .rpc();
-
-    // bond_counter += 1;
-
-    let bond0_state = await bondProgram.account.bond.fetch(bond.address);
-    console.log("bond0 owner: ", bond0_state.owner.toBase58());
-    console.log("bond0 maturity date: ", bond0_state.maturityDate.toString());
-    console.log(
-      "bond0 total to claim: ",
-      bond0_state.totalClaimable.toString()
-    );
-
-    // let ibo0_state = await bondProgram.account.ibo.fetch(ibo.address);
-    // console.log("ibo0_state: ", ibo0_state.)
-
-    let masterBalanceEnd = await getTokenBalance(superAdminAta_sc);
-    console.log("masterBalanceEnd: ", masterBalanceEnd);
-    // assert(
-    //   purchaseAmount * 0.05 == masterBalanceEnd,
-    //   "take a cut of exactly 5%"
-    // );
-
-    // masterBalance += purchaseAmount * 0.05;
-
-    // Check that liquidity_token balance decresed
-    // Check that buyer set as the owner in the bond
-    // Check calculation of bond to receive is correct
-  });
-
-  it("Claim test 1", async () => {
-    // console.log("bond: ", bond2.toBase58());
-
-    let user: User = users.users[0];
-    let bond: Bond = user.bonds[0];
-
-    console.log("bond.account.address: ", bond.account.address.toBase58());
-
-    let bondBalanceStart = await getTokenBalance(bond.account);
-    let bond1_state = await bondProgram.account.bond.fetch(bond.address);
-    let bondStartTime = parseInt(bond1_state.bondStart.toString());
-
-    let time_now_s = new Date().getTime() / 1000;
-
-    console.log("bond started: ", bondStartTime);
-    console.log("bond end at:  ", bondStartTime + shortBond);
-    console.log("time now:     ", time_now_s);
-    let time_elapsed = time_now_s - bondStartTime;
-    console.log("time elapsed: ", time_elapsed);
-
-    await delay(shortBond / 2 - time_elapsed);
-    await delay(3);
-
-    console.log(" user.publicKey: ", user.publicKey.toBase58());
-    console.log(
-      "bond.ownerBondAccount.address: ",
-      bond.ownerBondAccount.address.toBase58()
-    );
-
-    // try {
-    const tx_lu1 = await bondProgram.methods
-      .claim(ibo.address, bond.idx)
-      .accounts({
-        bondOwner: user.publicKey,
-        bond: bond.address,
-        bondOwnerAta: bond.ownerBondAccount.address,
-        bondAta: bond.account.address,
-        main: main.address,
-        systemProgram: anchor.web3.SystemProgram.programId,
-      })
-      .signers([user])
-      .rpc();
-    // } catch (e) {
-    //   console.log("\nerror:\n\n", e);
-    // }
-
-    // Get bond amounts
-    let balanceBuyer = await getTokenBalance(bond.ownerBondAccount);
-    let bondBalance = await getTokenBalance(bond.account);
-
-    console.log("balanceBuyer: ", balanceBuyer);
-    console.log("bond: ", bondBalance);
-
-    // assert(roughlyEqual(0.5, balanceBuyer / bondBalanceStart, 15));
-  });
-
-  it("Buyer 0 splits bond at 50%", async () => {
-    // console.log("bond: ", bond2.toBase58());
-
-    // let bondBalanceStart = await getTokenBalance(bond2ATA_b);
-    // let bond2_state = await bondProgram.account.bond.fetch(bond2);
-
-    let ibo0_state = await bondProgram.account.ibo.fetch(ibo.address);
-    console.log("\n\n\nibo0_state start: ", ibo0_state.bondCounter.toString());
-
-    let user: User = users.users[0];
-    let bondOld: Bond = user.bonds[0];
-
-    console.log("Old bond balance stored: ", bondOld.amount);
-    console.log(
-      "Old bond balance chain : ",
-      await getTokenBalance(bondOld.account)
-    );
-
-    const splitAmount = Math.round(bondOld.amount / 2);
-
-    console.log("After split");
-
-    // SPlit the bond
-    const newBondExt: Bond = await user.issueBond(
-      await bondOld.split(splitAmount)
-    );
-
-    console.log("splitAmount: ", splitAmount);
-
-    // Spend 500 for rate 1 as player 1
-    try {
-      const tx_lu1 = await bondProgram.methods
-        .split(50, ibo.address, bondOld.idx)
-        .accounts({
-          owner: user.publicKey,
-          bond: bondOld.address,
-          newBond: newBondExt.address,
-          main: main.address,
-          ibo: ibo.address,
-          bondAtaOld: bondOld.account.address,
-          bondAtaNew: newBondExt.account.address,
-          systemProgram: anchor.web3.SystemProgram.programId,
-        })
-        .signers([user])
-        .rpc();
-    } catch (e) {
-      console.log("\nerror:\n\n", e);
-    }
-
-    // console.log("Transaction gucci");
-
-    let bond1_balance = await getTokenBalance(bondOld.account);
-    let bond3_balance = await getTokenBalance(newBondExt.account);
-    console.log("bond1_balance: ", bond1_balance);
-    console.log("bond3_balance: ", bond3_balance);
-    // Equal amount of tokens split
-    // assert(bond1_balance - bond3_balance == 0);
-
-    // let ibo0_state_end = await bondProgram.account.ibo.fetch(ibo.address);
+    // console.log("/sc mint: ", mintSC.toBase58());
+    // console.log("mint buyer ata mint: ", user.liquidityAccount.mint.toBase58());
     // console.log(
-    //   "\n\n\nibo0_state end: ",
-    //   ibo0_state_end.bondCounter.toString()
+    //   "masterRecipientAta ata mint: ",
+    //   superAdminAta_sc.mint.toBase58()
     // );
-  });
 
-  it("Set swap on the split on a bond", async () => {
-    // Get latest bond
-    let user: User = users.users[0];
-    let bondSplit: Bond = user.bonds[user.bonds.length - 1];
-    // User will sell splitted bond at 200
-    bondSplit.setSwap(200);
+    // // Get latest bond pointer
+    // let bp: PublicKey = await user.getBondPointerAddress();
 
+    // console.log(
+    //   `Using  bp ${bp.toBase58()} at index ${user.bondPointers.length}`
+    // );
+    // try {
     const tx_lu1 = await bondProgram.methods
-      .setSwap(new BN(bondSplit.swapPrice))
+      .buyBond(new BN(purchaseAmount), 0)
       .accounts({
-        owner: user.publicKey,
-        bond: bondSplit.address,
-      })
-      .signers([user])
-      .rpc();
-
-    let bond1_state = await bondProgram.account.bond.fetch(bondSplit.address);
-
-    // console.log("bond1_state.sell_price: ", bond1_state.swapPrice.toString());
-
-    // assert((200).toString() == bond1_state.swapPrice.toString());
-  });
-
-  it("Buy bond offered on swap", async () => {
-    // Find any bonds on swap
-    const bondSale: Bond = ibo.getBondsOnSwap()[0];
-
-    // Get random buyer
-    const buyer: User = users.users[4];
-
-    let bp: PublicKey = await buyer.getBondPointerAddress();
-    // Update counter
-
-    // TODO should really be here
-    buyer.bondCounter++;
-
-    const tx_lu1 = await bondProgram.methods
-      .buySwap()
-      .accounts({
-        buyer: buyer.publicKey,
-        bond: bondSale.address,
-        buyerAta: buyer.liquidityAccount.address,
+        buyer: user.publicKey,
+        bond: bond.address,
+        ibo: ibo.address,
+        lockup: lockUp.address,
+        buyerAta: user.liquidityAccount.address,
+        recipientAta: ibo.recipientAddressAccount.address,
         main: main.address,
         masterRecipientAta: superAdminAta_sc.address,
-        sellerAta: bondSale.ownerLiquidityAccount.address,
-        userAccount: buyer.userAccount,
-        ibo: bondSale.parent.address,
-        iboAdminAta: bondSale.parent.recipientAddressAccount.address,
+        iboAta: ibo.vaultAccount.address,
+        bondAta: bond.account.address,
+        userAccount: user.userAccount,
+        systemProgram: anchor.web3.SystemProgram.programId,
         tokenProgram: TOKEN_PROGRAM_ID,
         associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
       })
-      .signers([buyer])
+      .signers([user])
       .rpc();
-
-    // let bond1_state = await bondProgram.account.bond.fetch(bond1);
-
-    // // New owner set
-    // assert(resaleBuyer1.publicKey.toBase58() == bond1_state.owner.toBase58());
-  });
-
-  it("Buy collection gated bond offered on ibo", async () => {
-    // Get lock-up TODO fix its hardcoded for now
-    const lockup: LockUp = ibo.lockups[3];
-
-    // Get gate indexes available for this lockup
-    const gatesIdxs: number[] = lockup.gates;
-
-    console.log("\n\nTotal gates for this lock-up: ", gatesIdxs.length);
-    console.log("gatesIdxs: ", gatesIdxs);
-    console.log("lockup: ", lockup);
-
-    // Get gate
-    const gate: Gate = ibo.gates[gatesIdxs[0]];
-
-    console.log("\n\nlockup: ", lockup);
-    console.log("gate: ", gate);
-
-    // Need to ensure they have NFT
-    const user: User = users.users[5];
-    const bond: Bond = await ibo.issueBond(lockup.index, purchaseAmount);
-
-    console.log("nftWallet.publicKey: ", nftWallet.publicKey.toBase58());
-
-    // Spend 500 for rate 1 as player 1
-
-    // Get latest bond pointer
-    let bp: PublicKey = await user.getBondPointerAddress();
-
-    console.log(
-      `Using  bp ${bp.toBase58()} at index ${user.bondPointers.length}`
-    );
-
-    async function submit() {
-      const tx_lu1 = await bondProgram.methods
-        .buyBond(new BN(10000), gate.index)
-        .accounts({
-          buyer: user.publicKey,
-          bond: bond.address,
-          ibo: ibo.address,
-          lockup: lockup.address,
-          main: main.address,
-          userAccount: user.userAccount,
-          buyerAta: user.liquidityAccount.address,
-          recipientAta: ibo.recipientAddressAccount.address,
-          iboAta: ibo.vaultAccount.address,
-          bondAta: bond.account.address,
-          masterRecipientAta: superAdminAta_sc.address,
-          systemProgram: anchor.web3.SystemProgram.programId,
-          tokenProgram: TOKEN_PROGRAM_ID,
-        })
-        .remainingAccounts([
-          { pubkey: gate.address, isWritable: true, isSigner: false },
-          {
-            pubkey: collectionM.nfts[0].metadata,
-            isWritable: false,
-            isSigner: false,
-          },
-          {
-            pubkey: collectionM.nfts[0].mint,
-            isWritable: false,
-            isSigner: false,
-          },
-          {
-            pubkey: await collectionM.nfts[0].getAta(user.publicKey),
-            isWritable: false,
-            isSigner: false,
-          },
-        ])
-        .signers([user])
-        .rpc();
-    }
-
-    // rejects without NFT
-    await assert.isRejected(submit(), Error);
-
-    // Treansfer nft to the user
-    let collectionM: NftMint0 = cm.collections[0];
-    console.log("Sending nft: ");
-    await collectionM.nfts[0].transferFromMinter(user.publicKey);
-    console.log("Sent nft: ");
-    try {
-      await submit();
-    } catch (e) {
-      console.log("\n\n\nerror:\n", e);
-    }
-
-    console.log("\n\nGATED BUY\n\n");
-  });
-
-  // // IMPLEMENT SPL GATE
-  it("Buy SPL gated bond offered on ibo", async () => {
-    console.log("Total lock-ups: ", ibo.lockups.length);
-
-    // Get the last gate which is the SPL one
-    // const lockup: LockUp = ibo.lockups[ibo.lockups.length - 1];
-    const lockup: LockUp = ibo.lockups[4];
-
-    // ASsert it is the SPL gate
-    console.log("\nlockup: ", lockup);
-
-    // Get gate indexes available for this lockup
-    const gatesIdxs: number[] = lockup.gates;
-
-    console.log("Total gates for this lock-up: ", gatesIdxs.length);
-    console.log("gatesIdxs: ", gatesIdxs);
-
-    const gate: Gate = ibo.gates[gatesIdxs[gatesIdxs.length - 1]];
-
-    // Assert gate is the combined type one
-    // assert(typeof Gate == gate);
-    expect(gate).to.be.instanceOf(Gate);
-    // console.log("\n\nType of gane: ", typeof gate);
-    // console.log("\ngate type: ", gate, " at idx: ", gate.index);
-
-    const user: User = users.users[4];
-    const bond: Bond = await ibo.issueBond(lockup.index, purchaseAmount);
-
-    // Get ATA for that user for whitelist
-    const userWlAta: Account = await mintWhiteList.makeAta(user.publicKey);
-    const userScAta: Account = await mintSc.makeAta(user.publicKey);
-
-    // Get latest bond pointer
-    let bp: PublicKey = await user.getBondPointerAddress();
-
-    console.log(
-      `Using  bp ${bp.toBase58()} at index ${user.bondPointers.length}`
-    );
-
-    async function submit() {
-      const tx_lu1 = await bondProgram.methods
-        .buyBond(new BN(10000), gate.index)
-        .accounts({
-          buyer: user.publicKey,
-          bond: bond.address,
-          ibo: ibo.address,
-          lockup: lockup.address,
-          main: main.address,
-          userAccount: user.userAccount,
-          buyerAta: user.liquidityAccount.address,
-          recipientAta: ibo.recipientAddressAccount.address,
-          iboAta: ibo.vaultAccount.address,
-          bondAta: bond.account.address,
-          masterRecipientAta: superAdminAta_sc.address,
-          systemProgram: anchor.web3.SystemProgram.programId,
-          tokenProgram: TOKEN_PROGRAM_ID,
-        })
-        .remainingAccounts([
-          { pubkey: gate.address, isWritable: true, isSigner: false },
-          {
-            pubkey: mintWhiteList.mint,
-            isWritable: true,
-            isSigner: false,
-          },
-          { pubkey: userWlAta.address, isWritable: true, isSigner: false },
-        ])
-        .signers([user])
-        .rpc();
-
-      console.log("\n\nSUBBITED no erro TARNSACITO");
-    }
-
-    // Transfer whitelisted token to the user
-    console.log("\nstart balance WL", await getTokenBalance(userWlAta));
-    console.log("\nstart balance SC", await getTokenBalance(userScAta));
-
-    // await delay(5);
-    console.log("end balance WL", await getTokenBalance(userWlAta));
-    console.log("Calling buy SPL gated bond");
-
-    // Get starting balance in WL for the user
-    const userWlBalanceStart = await getTokenBalance(userWlAta);
-
-    // Assert it fails when submitted without SPL ownership for the caller
-    await assert.isRejected(submit(), Error);
-
-    // Top up the user
-    await mintWhiteList.topUpSPl(userWlAta.address, 777655);
-    await delay(3);
-    await submit();
-
-    // Calls after topup
-    // try {
-    //   await submit();
     // } catch (e) {
-    //   console.log("\n\n\nerror:\n", e);
+    //   console.log("\nerror:\n\n", e);
     // }
 
-    // Assert amount has been subtracted for one that does so
-    const userWlBalanceEnd = await getTokenBalance(userWlAta);
+    // bond_counter += 1;
 
-    console.log("\n\nUser start balance: ", userWlBalanceStart);
-    console.log("\n\nUser end balance: ", userWlBalanceEnd);
-  });
-
-  it("Buy SPL and collection gated bond offered on ibo", async () => {
-    console.log("Total lock-ups: ", ibo.lockups.length);
-
-    const lockup: LockUp = ibo.lockups[5];
-
-    // ASsert it is the SPL gate
-    console.log("\nlockup: ", lockup);
-
-    // Get gate indexes available for this lockup
-    const gatesIdxs: number[] = lockup.gates;
-
-    console.log("Total gates for this lock-up: ", gatesIdxs.length);
-    console.log("gatesIdxs: ", gatesIdxs);
-
-    const gate: Gate = ibo.gates[gatesIdxs[gatesIdxs.length - 1]];
-
-    expect(gate).to.be.instanceOf(Gate);
-
-    console.log("\n\nType of gane: ", typeof gate);
-    console.log("\ngate type: ", gate, " at idx: ", gate.index);
-
-    // Need to ensure they have NFT
-    const user: User = users.users[2];
-    const bond: Bond = await ibo.issueBond(lockup.index, purchaseAmount);
-    const userWlAta: Account = await mintWhiteList.makeAta(user.publicKey);
-    const userScAta: Account = await mintSc.makeAta(user.publicKey);
-    let collectionM: NftMint0 = cm.collections[0];
-
-    // Get latest bond pointer
-    let bp: PublicKey = await user.getBondPointerAddress();
-
+    let bond0_state = await bondProgram.account.bond.fetch(bond.address);
+    console.log("bond0 owner: ", bond0_state.owner.toBase58());
+    console.log("bond0 maturity date: ", bond0_state.maturityDate.toString());
     console.log(
-      `Using  bp ${bp.toBase58()} at index ${user.bondPointers.length}`
+      "bond0 total to claim: ",
+      bond0_state.totalClaimable.toString()
     );
 
-    async function submit() {
-      const tx_lu1 = await bondProgram.methods
-        .buyBond(new BN(10000), gate.index)
-        .accounts({
-          buyer: user.publicKey,
-          bond: bond.address,
-          ibo: ibo.address,
-          lockup: lockup.address,
-          main: main.address,
-          userAccount: user.userAccount,
-          buyerAta: user.liquidityAccount.address,
-          recipientAta: ibo.recipientAddressAccount.address,
-          iboAta: ibo.vaultAccount.address,
-          bondAta: bond.account.address,
-          masterRecipientAta: superAdminAta_sc.address,
-          systemProgram: anchor.web3.SystemProgram.programId,
-          tokenProgram: TOKEN_PROGRAM_ID,
-        })
-        .remainingAccounts([
-          { pubkey: gate.address, isWritable: false, isSigner: false },
-          {
-            pubkey: collectionM.nfts[0].metadata,
-            isWritable: false,
-            isSigner: false,
-          },
-          {
-            pubkey: collectionM.nfts[0].mint,
-            isWritable: false,
-            isSigner: false,
-          },
-          {
-            pubkey: await collectionM.nfts[0].getAta(user.publicKey),
-            isWritable: false,
-            isSigner: false,
-          },
-          {
-            pubkey: mintWhiteList.mint,
-            isWritable: true,
-            isSigner: false,
-          },
-          { pubkey: userWlAta.address, isWritable: true, isSigner: false },
-        ])
-        .signers([user])
-        .rpc();
-    }
+    // let ibo0_state = await bondProgram.account.ibo.fetch(ibo.address);
+    // console.log("ibo0_state: ", ibo0_state.)
 
-    // Fails due to missing NFT
-    await assert.isRejected(submit(), Error);
-    // Sending nft
-    await collectionM.nfts[2].transferFromMinter(user.publicKey);
+    let masterBalanceEnd = await getTokenBalance(superAdminAta_sc);
+    console.log("masterBalanceEnd: ", masterBalanceEnd);
+    // assert(
+    //   purchaseAmount * 0.05 == masterBalanceEnd,
+    //   "take a cut of exactly 5%"
+    // );
 
-    // Fails due to missing SPL
-    await assert.isRejected(submit(), Error);
-    // Mint wl SPL
-    await mintWhiteList.topUpSPl(userWlAta.address, 777655);
+    // masterBalance += purchaseAmount * 0.05;
 
-    await delay(2);
-
-    await submit();
-
-    console.log("end balance WL", await getTokenBalance(userWlAta));
-
-    // Get starting balance in WL for the user
-    const userWlBalanceStart = await getTokenBalance(userWlAta);
-
-    console.log("Calling buy SPL gated bond");
-
-    // Assert amount has been subtracted for one that does so
-    const userWlBalanceEnd = await getTokenBalance(userWlAta);
-
-    console.log("\n\nUser start balance: ", userWlBalanceStart);
-    console.log("\n\nUser end balance: ", userWlBalanceEnd);
+    // Check that liquidity_token balance decresed
+    // Check that buyer set as the owner in the bond
+    // Check calculation of bond to receive is correct
   });
+
+  // it("Buyer 0 buys with lockkup rate 0 bond idx1", async () => {
+  //   // masterBalance = await getTokenBalance(superAdminAta_sc);
+  //   console.log("superAdmin: ", superAdmin.publicKey.toBase58()); // Add a bond
+  //   let lockUp: LockUp = ibo.lockups[0];
+  //   const user: User = users.users[0]; // take some user out
+  //   const bond: Bond = await ibo.issueBond(ibo.bondCounter, purchaseAmount);
+  //   user.issueBond(bond);
+
+  //   console.log("/sc mint: ", mintSC.toBase58());
+  //   console.log("mint buyer ata mint: ", user.liquidityAccount.mint.toBase58());
+  //   console.log(
+  //     "masterRecipientAta ata mint: ",
+  //     superAdminAta_sc.mint.toBase58()
+  //   );
+
+  //   // Get latest bond pointer
+  //   let bp: PublicKey = await user.getBondPointerAddress();
+
+  //   console.log(
+  //     `Using  bp ${bp.toBase58()} at index ${user.bondPointers.length}`
+  //   );
+
+  //   const tx_lu1 = await bondProgram.methods
+  //     .buyBond(new BN(purchaseAmount), 0)
+  //     .accounts({
+  //       buyer: user.publicKey,
+  //       bond: bond.address,
+  //       ibo: ibo.address,
+  //       lockup: lockUp.address,
+  //       buyerAta: user.liquidityAccount.address,
+  //       recipientAta: ibo.recipientAddressAccount.address,
+  //       main: main.address,
+  //       masterRecipientAta: superAdminAta_sc.address,
+  //       iboAta: ibo.vaultAccount.address,
+  //       bondAta: bond.account.address,
+  //       userAccount: user.userAccount,
+  //       systemProgram: anchor.web3.SystemProgram.programId,
+  //       tokenProgram: TOKEN_PROGRAM_ID,
+  //       associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+  //     })
+  //     .signers([user])
+  //     .rpc();
+
+  //   // bond_counter += 1;
+
+  //   let bond0_state = await bondProgram.account.bond.fetch(bond.address);
+  //   console.log("bond0 owner: ", bond0_state.owner.toBase58());
+  //   console.log("bond0 maturity date: ", bond0_state.maturityDate.toString());
+  //   console.log(
+  //     "bond0 total to claim: ",
+  //     bond0_state.totalClaimable.toString()
+  //   );
+
+  //   // let ibo0_state = await bondProgram.account.ibo.fetch(ibo.address);
+  //   // console.log("ibo0_state: ", ibo0_state.)
+
+  //   let masterBalanceEnd = await getTokenBalance(superAdminAta_sc);
+  //   console.log("masterBalanceEnd: ", masterBalanceEnd);
+  //   // assert(
+  //   //   purchaseAmount * 0.05 == masterBalanceEnd,
+  //   //   "take a cut of exactly 5%"
+  //   // );
+
+  //   // masterBalance += purchaseAmount * 0.05;
+
+  //   // Check that liquidity_token balance decresed
+  //   // Check that buyer set as the owner in the bond
+  //   // Check calculation of bond to receive is correct
+  // });
+
+  // it("Claim test 1", async () => {
+  //   // console.log("bond: ", bond2.toBase58());
+
+  //   let user: User = users.users[0];
+  //   let bond: Bond = user.bonds[0];
+
+  //   console.log("bond.account.address: ", bond.account.address.toBase58());
+
+  //   let bondBalanceStart = await getTokenBalance(bond.account);
+  //   let bond1_state = await bondProgram.account.bond.fetch(bond.address);
+  //   let bondStartTime = parseInt(bond1_state.bondStart.toString());
+
+  //   let time_now_s = new Date().getTime() / 1000;
+
+  //   console.log("bond started: ", bondStartTime);
+  //   console.log("bond end at:  ", bondStartTime + shortBond);
+  //   console.log("time now:     ", time_now_s);
+  //   let time_elapsed = time_now_s - bondStartTime;
+  //   console.log("time elapsed: ", time_elapsed);
+
+  //   await delay(shortBond / 2 - time_elapsed);
+  //   await delay(3);
+
+  //   console.log(" user.publicKey: ", user.publicKey.toBase58());
+  //   console.log(
+  //     "bond.ownerBondAccount.address: ",
+  //     bond.ownerBondAccount.address.toBase58()
+  //   );
+
+  //   // try {
+  //   const tx_lu1 = await bondProgram.methods
+  //     .claim(ibo.address, bond.idx)
+  //     .accounts({
+  //       bondOwner: user.publicKey,
+  //       bond: bond.address,
+  //       bondOwnerAta: bond.ownerBondAccount.address,
+  //       bondAta: bond.account.address,
+  //       main: main.address,
+  //       systemProgram: anchor.web3.SystemProgram.programId,
+  //     })
+  //     .signers([user])
+  //     .rpc();
+  //   // } catch (e) {
+  //   //   console.log("\nerror:\n\n", e);
+  //   // }
+
+  //   // Get bond amounts
+  //   let balanceBuyer = await getTokenBalance(bond.ownerBondAccount);
+  //   let bondBalance = await getTokenBalance(bond.account);
+
+  //   console.log("balanceBuyer: ", balanceBuyer);
+  //   console.log("bond: ", bondBalance);
+
+  //   // assert(roughlyEqual(0.5, balanceBuyer / bondBalanceStart, 15));
+  // });
+
+  // it("Buyer 0 splits bond at 50%", async () => {
+  //   // console.log("bond: ", bond2.toBase58());
+
+  //   // let bondBalanceStart = await getTokenBalance(bond2ATA_b);
+  //   // let bond2_state = await bondProgram.account.bond.fetch(bond2);
+
+  //   let ibo0_state = await bondProgram.account.ibo.fetch(ibo.address);
+  //   console.log("\n\n\nibo0_state start: ", ibo0_state.bondCounter.toString());
+
+  //   let user: User = users.users[0];
+  //   let bondOld: Bond = user.bonds[0];
+
+  //   console.log("Old bond balance stored: ", bondOld.amount);
+  //   console.log(
+  //     "Old bond balance chain : ",
+  //     await getTokenBalance(bondOld.account)
+  //   );
+
+  //   const splitAmount = Math.round(bondOld.amount / 2);
+
+  //   console.log("After split");
+
+  //   // SPlit the bond
+  //   const newBondExt: Bond = await user.issueBond(
+  //     await bondOld.split(splitAmount)
+  //   );
+
+  //   console.log("splitAmount: ", splitAmount);
+
+  //   // Spend 500 for rate 1 as player 1
+  //   try {
+  //     const tx_lu1 = await bondProgram.methods
+  //       .split(50, ibo.address, bondOld.idx)
+  //       .accounts({
+  //         owner: user.publicKey,
+  //         bond: bondOld.address,
+  //         newBond: newBondExt.address,
+  //         main: main.address,
+  //         ibo: ibo.address,
+  //         bondAtaOld: bondOld.account.address,
+  //         bondAtaNew: newBondExt.account.address,
+  //         systemProgram: anchor.web3.SystemProgram.programId,
+  //       })
+  //       .signers([user])
+  //       .rpc();
+  //   } catch (e) {
+  //     console.log("\nerror:\n\n", e);
+  //   }
+
+  //   // console.log("Transaction gucci");
+
+  //   let bond1_balance = await getTokenBalance(bondOld.account);
+  //   let bond3_balance = await getTokenBalance(newBondExt.account);
+  //   console.log("bond1_balance: ", bond1_balance);
+  //   console.log("bond3_balance: ", bond3_balance);
+  //   // Equal amount of tokens split
+  //   // assert(bond1_balance - bond3_balance == 0);
+
+  //   // let ibo0_state_end = await bondProgram.account.ibo.fetch(ibo.address);
+  //   // console.log(
+  //   //   "\n\n\nibo0_state end: ",
+  //   //   ibo0_state_end.bondCounter.toString()
+  //   // );
+  // });
+
+  // it("Set swap on the split on a bond", async () => {
+  //   // Get latest bond
+  //   let user: User = users.users[0];
+  //   let bondSplit: Bond = user.bonds[user.bonds.length - 1];
+  //   // User will sell splitted bond at 200
+  //   bondSplit.setSwap(200);
+
+  //   const tx_lu1 = await bondProgram.methods
+  //     .setSwap(new BN(bondSplit.swapPrice))
+  //     .accounts({
+  //       owner: user.publicKey,
+  //       bond: bondSplit.address,
+  //     })
+  //     .signers([user])
+  //     .rpc();
+
+  //   let bond1_state = await bondProgram.account.bond.fetch(bondSplit.address);
+
+  //   // console.log("bond1_state.sell_price: ", bond1_state.swapPrice.toString());
+
+  //   // assert((200).toString() == bond1_state.swapPrice.toString());
+  // });
+
+  // it("Buy bond offered on swap", async () => {
+  //   // Find any bonds on swap
+  //   const bondSale: Bond = ibo.getBondsOnSwap()[0];
+
+  //   // Get random buyer
+  //   const buyer: User = users.users[4];
+
+  //   let bp: PublicKey = await buyer.getBondPointerAddress();
+  //   // Update counter
+
+  //   // TODO should really be here
+  //   buyer.bondCounter++;
+
+  //   const tx_lu1 = await bondProgram.methods
+  //     .buySwap()
+  //     .accounts({
+  //       buyer: buyer.publicKey,
+  //       bond: bondSale.address,
+  //       buyerAta: buyer.liquidityAccount.address,
+  //       main: main.address,
+  //       masterRecipientAta: superAdminAta_sc.address,
+  //       sellerAta: bondSale.ownerLiquidityAccount.address,
+  //       userAccount: buyer.userAccount,
+  //       ibo: bondSale.parent.address,
+  //       iboAdminAta: bondSale.parent.recipientAddressAccount.address,
+  //       tokenProgram: TOKEN_PROGRAM_ID,
+  //       associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+  //     })
+  //     .signers([buyer])
+  //     .rpc();
+
+  //   // let bond1_state = await bondProgram.account.bond.fetch(bond1);
+
+  //   // // New owner set
+  //   // assert(resaleBuyer1.publicKey.toBase58() == bond1_state.owner.toBase58());
+  // });
+
+  // it("Buy collection gated bond offered on ibo", async () => {
+  //   // Get lock-up TODO fix its hardcoded for now
+  //   const lockup: LockUp = ibo.lockups[3];
+
+  //   // Get gate indexes available for this lockup
+  //   const gatesIdxs: number[] = lockup.gates;
+
+  //   console.log("\n\nTotal gates for this lock-up: ", gatesIdxs.length);
+  //   console.log("gatesIdxs: ", gatesIdxs);
+  //   console.log("lockup: ", lockup);
+
+  //   // Get gate
+  //   const gate: Gate = ibo.gates[gatesIdxs[0]];
+
+  //   console.log("\n\nlockup: ", lockup);
+  //   console.log("gate: ", gate);
+
+  //   // Need to ensure they have NFT
+  //   const user: User = users.users[5];
+  //   const bond: Bond = await ibo.issueBond(lockup.index, purchaseAmount);
+
+  //   console.log("nftWallet.publicKey: ", nftWallet.publicKey.toBase58());
+
+  //   // Spend 500 for rate 1 as player 1
+
+  //   // Get latest bond pointer
+  //   let bp: PublicKey = await user.getBondPointerAddress();
+
+  //   console.log(
+  //     `Using  bp ${bp.toBase58()} at index ${user.bondPointers.length}`
+  //   );
+
+  //   async function submit() {
+  //     const tx_lu1 = await bondProgram.methods
+  //       .buyBond(new BN(10000), gate.index)
+  //       .accounts({
+  //         buyer: user.publicKey,
+  //         bond: bond.address,
+  //         ibo: ibo.address,
+  //         lockup: lockup.address,
+  //         main: main.address,
+  //         userAccount: user.userAccount,
+  //         buyerAta: user.liquidityAccount.address,
+  //         recipientAta: ibo.recipientAddressAccount.address,
+  //         iboAta: ibo.vaultAccount.address,
+  //         bondAta: bond.account.address,
+  //         masterRecipientAta: superAdminAta_sc.address,
+  //         systemProgram: anchor.web3.SystemProgram.programId,
+  //         tokenProgram: TOKEN_PROGRAM_ID,
+  //       })
+  //       .remainingAccounts([
+  //         { pubkey: gate.address, isWritable: true, isSigner: false },
+  //         {
+  //           pubkey: collectionM.nfts[0].metadata,
+  //           isWritable: false,
+  //           isSigner: false,
+  //         },
+  //         {
+  //           pubkey: collectionM.nfts[0].mint,
+  //           isWritable: false,
+  //           isSigner: false,
+  //         },
+  //         {
+  //           pubkey: await collectionM.nfts[0].getAta(user.publicKey),
+  //           isWritable: false,
+  //           isSigner: false,
+  //         },
+  //       ])
+  //       .signers([user])
+  //       .rpc();
+  //   }
+
+  //   // rejects without NFT
+  //   await assert.isRejected(submit(), Error);
+
+  //   // Treansfer nft to the user
+  //   let collectionM: NftMint0 = cm.collections[0];
+  //   console.log("Sending nft: ");
+  //   await collectionM.nfts[0].transferFromMinter(user.publicKey);
+  //   console.log("Sent nft: ");
+  //   try {
+  //     await submit();
+  //   } catch (e) {
+  //     console.log("\n\n\nerror:\n", e);
+  //   }
+
+  //   console.log("\n\nGATED BUY\n\n");
+  // });
+
+  // // // IMPLEMENT SPL GATE
+  // it("Buy SPL gated bond offered on ibo", async () => {
+  //   console.log("Total lock-ups: ", ibo.lockups.length);
+
+  //   // Get the last gate which is the SPL one
+  //   // const lockup: LockUp = ibo.lockups[ibo.lockups.length - 1];
+  //   const lockup: LockUp = ibo.lockups[4];
+
+  //   // ASsert it is the SPL gate
+  //   console.log("\nlockup: ", lockup);
+
+  //   // Get gate indexes available for this lockup
+  //   const gatesIdxs: number[] = lockup.gates;
+
+  //   console.log("Total gates for this lock-up: ", gatesIdxs.length);
+  //   console.log("gatesIdxs: ", gatesIdxs);
+
+  //   const gate: Gate = ibo.gates[gatesIdxs[gatesIdxs.length - 1]];
+
+  //   // Assert gate is the combined type one
+  //   // assert(typeof Gate == gate);
+  //   expect(gate).to.be.instanceOf(Gate);
+  //   // console.log("\n\nType of gane: ", typeof gate);
+  //   // console.log("\ngate type: ", gate, " at idx: ", gate.index);
+
+  //   const user: User = users.users[4];
+  //   const bond: Bond = await ibo.issueBond(lockup.index, purchaseAmount);
+
+  //   // Get ATA for that user for whitelist
+  //   const userWlAta: Account = await mintWhiteList.makeAta(user.publicKey);
+  //   const userScAta: Account = await mintSc.makeAta(user.publicKey);
+
+  //   // Get latest bond pointer
+  //   let bp: PublicKey = await user.getBondPointerAddress();
+
+  //   console.log(
+  //     `Using  bp ${bp.toBase58()} at index ${user.bondPointers.length}`
+  //   );
+
+  //   async function submit() {
+  //     const tx_lu1 = await bondProgram.methods
+  //       .buyBond(new BN(10000), gate.index)
+  //       .accounts({
+  //         buyer: user.publicKey,
+  //         bond: bond.address,
+  //         ibo: ibo.address,
+  //         lockup: lockup.address,
+  //         main: main.address,
+  //         userAccount: user.userAccount,
+  //         buyerAta: user.liquidityAccount.address,
+  //         recipientAta: ibo.recipientAddressAccount.address,
+  //         iboAta: ibo.vaultAccount.address,
+  //         bondAta: bond.account.address,
+  //         masterRecipientAta: superAdminAta_sc.address,
+  //         systemProgram: anchor.web3.SystemProgram.programId,
+  //         tokenProgram: TOKEN_PROGRAM_ID,
+  //       })
+  //       .remainingAccounts([
+  //         { pubkey: gate.address, isWritable: true, isSigner: false },
+  //         {
+  //           pubkey: mintWhiteList.mint,
+  //           isWritable: true,
+  //           isSigner: false,
+  //         },
+  //         { pubkey: userWlAta.address, isWritable: true, isSigner: false },
+  //       ])
+  //       .signers([user])
+  //       .rpc();
+
+  //     console.log("\n\nSUBBITED no erro TARNSACITO");
+  //   }
+
+  //   // Transfer whitelisted token to the user
+  //   console.log("\nstart balance WL", await getTokenBalance(userWlAta));
+  //   console.log("\nstart balance SC", await getTokenBalance(userScAta));
+
+  //   // await delay(5);
+  //   console.log("end balance WL", await getTokenBalance(userWlAta));
+  //   console.log("Calling buy SPL gated bond");
+
+  //   // Get starting balance in WL for the user
+  //   const userWlBalanceStart = await getTokenBalance(userWlAta);
+
+  //   // Assert it fails when submitted without SPL ownership for the caller
+  //   await assert.isRejected(submit(), Error);
+
+  //   // Top up the user
+  //   await mintWhiteList.topUpSPl(userWlAta.address, 777655);
+  //   await delay(3);
+  //   await submit();
+
+  //   // Calls after topup
+  //   // try {
+  //   //   await submit();
+  //   // } catch (e) {
+  //   //   console.log("\n\n\nerror:\n", e);
+  //   // }
+
+  //   // Assert amount has been subtracted for one that does so
+  //   const userWlBalanceEnd = await getTokenBalance(userWlAta);
+
+  //   console.log("\n\nUser start balance: ", userWlBalanceStart);
+  //   console.log("\n\nUser end balance: ", userWlBalanceEnd);
+  // });
+
+  // it("Buy SPL and collection gated bond offered on ibo", async () => {
+  //   console.log("Total lock-ups: ", ibo.lockups.length);
+
+  //   const lockup: LockUp = ibo.lockups[5];
+
+  //   // ASsert it is the SPL gate
+  //   console.log("\nlockup: ", lockup);
+
+  //   // Get gate indexes available for this lockup
+  //   const gatesIdxs: number[] = lockup.gates;
+
+  //   console.log("Total gates for this lock-up: ", gatesIdxs.length);
+  //   console.log("gatesIdxs: ", gatesIdxs);
+
+  //   const gate: Gate = ibo.gates[gatesIdxs[gatesIdxs.length - 1]];
+
+  //   expect(gate).to.be.instanceOf(Gate);
+
+  //   console.log("\n\nType of gane: ", typeof gate);
+  //   console.log("\ngate type: ", gate, " at idx: ", gate.index);
+
+  //   // Need to ensure they have NFT
+  //   const user: User = users.users[2];
+  //   const bond: Bond = await ibo.issueBond(lockup.index, purchaseAmount);
+  //   const userWlAta: Account = await mintWhiteList.makeAta(user.publicKey);
+  //   const userScAta: Account = await mintSc.makeAta(user.publicKey);
+  //   let collectionM: NftMint0 = cm.collections[0];
+
+  //   // Get latest bond pointer
+  //   let bp: PublicKey = await user.getBondPointerAddress();
+
+  //   console.log(
+  //     `Using  bp ${bp.toBase58()} at index ${user.bondPointers.length}`
+  //   );
+
+  //   async function submit() {
+  //     const tx_lu1 = await bondProgram.methods
+  //       .buyBond(new BN(10000), gate.index)
+  //       .accounts({
+  //         buyer: user.publicKey,
+  //         bond: bond.address,
+  //         ibo: ibo.address,
+  //         lockup: lockup.address,
+  //         main: main.address,
+  //         userAccount: user.userAccount,
+  //         buyerAta: user.liquidityAccount.address,
+  //         recipientAta: ibo.recipientAddressAccount.address,
+  //         iboAta: ibo.vaultAccount.address,
+  //         bondAta: bond.account.address,
+  //         masterRecipientAta: superAdminAta_sc.address,
+  //         systemProgram: anchor.web3.SystemProgram.programId,
+  //         tokenProgram: TOKEN_PROGRAM_ID,
+  //       })
+  //       .remainingAccounts([
+  //         { pubkey: gate.address, isWritable: false, isSigner: false },
+  //         {
+  //           pubkey: collectionM.nfts[0].metadata,
+  //           isWritable: false,
+  //           isSigner: false,
+  //         },
+  //         {
+  //           pubkey: collectionM.nfts[0].mint,
+  //           isWritable: false,
+  //           isSigner: false,
+  //         },
+  //         {
+  //           pubkey: await collectionM.nfts[0].getAta(user.publicKey),
+  //           isWritable: false,
+  //           isSigner: false,
+  //         },
+  //         {
+  //           pubkey: mintWhiteList.mint,
+  //           isWritable: true,
+  //           isSigner: false,
+  //         },
+  //         { pubkey: userWlAta.address, isWritable: true, isSigner: false },
+  //       ])
+  //       .signers([user])
+  //       .rpc();
+  //   }
+
+  //   // Fails due to missing NFT
+  //   await assert.isRejected(submit(), Error);
+  //   // Sending nft
+  //   await collectionM.nfts[2].transferFromMinter(user.publicKey);
+
+  //   // Fails due to missing SPL
+  //   await assert.isRejected(submit(), Error);
+  //   // Mint wl SPL
+  //   await mintWhiteList.topUpSPl(userWlAta.address, 777655);
+
+  //   await delay(2);
+
+  //   await submit();
+
+  //   console.log("end balance WL", await getTokenBalance(userWlAta));
+
+  //   // Get starting balance in WL for the user
+  //   const userWlBalanceStart = await getTokenBalance(userWlAta);
+
+  //   console.log("Calling buy SPL gated bond");
+
+  //   // Assert amount has been subtracted for one that does so
+  //   const userWlBalanceEnd = await getTokenBalance(userWlAta);
+
+  //   console.log("\n\nUser start balance: ", userWlBalanceStart);
+  //   console.log("\n\nUser end balance: ", userWlBalanceEnd);
+  // });
 });

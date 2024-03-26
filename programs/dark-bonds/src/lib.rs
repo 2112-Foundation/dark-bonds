@@ -89,6 +89,7 @@ pub mod dark_bonds {
     /** Creates a bond offering. */
     pub fn create_ibo(
         ctx: Context<CreateIBO>,
+        aces: [u8; 32],
         description: String,
         link: String,
         fixed_exchange_rate: u64,
@@ -101,6 +102,7 @@ pub mod dark_bonds {
     ) -> Result<()> {
         admin::create_ibo::create_ibo(
             ctx,
+            aces,
             description,
             link,
             fixed_exchange_rate,

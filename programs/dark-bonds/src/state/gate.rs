@@ -8,6 +8,8 @@ use mpl_token_metadata::accounts::Metadata;
 #[account]
 #[derive(PartialEq, Eq)]
 pub struct Gate {
+    /** Index of this gate.*/
+    pub index: u16,
     /** Type of gate_settings.*/
     pub gate_settings: Vec<GateType>,
 }

@@ -12,7 +12,7 @@ pub struct AddLockUp<'info> {
         has_one = admin, 
         seeds = [
             IBO_SEED.as_bytes(),  
-            &ibo.index.to_be_bytes()
+            ibo.aces.as_ref()
         ],
         bump = ibo.bump,
         constraint = ibo.actions.lockup_modification @BondErrors::IboLockupsLocked

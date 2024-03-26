@@ -13,7 +13,7 @@ pub struct UpdateIbo<'info> {
         mut,
         seeds = [
             IBO_SEED.as_bytes(), 
-            &ibo.index.to_be_bytes()
+            &ibo.aces.as_ref()
         ],
         bump = ibo.bump,        
         has_one = admin
